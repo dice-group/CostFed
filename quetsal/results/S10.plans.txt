@@ -1,0 +1,117 @@
+
+
+Quetsal (modified) plan (~20 sec)
+
+Projection
+      ProjectionElemList
+         ProjectionElem "Drug"
+         ProjectionElem "IntDrug"
+         ProjectionElem "IntEffect"
+      NJoin
+         ExclusiveGroup
+            ExclusiveStatement
+               Var (name=y)
+               Var (name=_const_9f24f144_uri, value=http://www.w3.org/2002/07/owl#sameAs, anonymous)
+               Var (name=Drug)
+               StatementSource (id=sparql_ws24348.avicomp.com:8892_sparql, type=REMOTE)
+            ExclusiveStatement
+               Var (name=Int)
+               Var (name=_const_f7ea054f_uri, value=http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/interactionDrug1, anonymous)
+               Var (name=y)
+               StatementSource (id=sparql_ws24348.avicomp.com:8892_sparql, type=REMOTE)
+            ExclusiveStatement
+               Var (name=Int)
+               Var (name=_const_f7ea0550_uri, value=http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/interactionDrug2, anonymous)
+               Var (name=IntDrug)
+               StatementSource (id=sparql_ws24348.avicomp.com:8892_sparql, type=REMOTE)
+            ExclusiveStatement
+               Var (name=Int)
+               Var (name=_const_32f350dd_uri, value=http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/text, anonymous)
+               Var (name=IntEffect)
+               StatementSource (id=sparql_ws24348.avicomp.com:8892_sparql, type=REMOTE)
+            LocalVars (y, Int)
+         ExclusiveStatement
+            Var (name=Drug)
+            Var (name=_const_f5e5585a_uri, value=http://www.w3.org/1999/02/22-rdf-syntax-ns#type, anonymous)
+            Var (name=_const_44cb98be_uri, value=http://dbpedia.org/ontology/Drug, anonymous)
+            StatementSource (id=sparql_ws24348.avicomp.com:8891_sparql, type=REMOTE)
+
+FedX execution plan: (~ 9 sec)
+
+   Projection
+      ProjectionElemList
+         ProjectionElem "Drug"
+         ProjectionElem "IntDrug"
+         ProjectionElem "IntEffect"
+      NJoin
+         ExclusiveStatement
+            Var (name=Drug)
+            Var (name=_const_f5e5585a_uri, value=http://www.w3.org/1999/02/22-rdf-syntax-ns#type, anonymous)
+            Var (name=_const_44cb98be_uri, value=http://dbpedia.org/ontology/Drug, anonymous)
+            StatementSource (id=sparql_ws24348.avicomp.com:8891_sparql, type=REMOTE)
+         StatementSourcePattern
+            Var (name=y)
+            Var (name=_const_9f24f144_uri, value=http://www.w3.org/2002/07/owl#sameAs, anonymous)
+            Var (name=Drug)
+            StatementSource (id=sparql_ws24348.avicomp.com:8891_sparql, type=REMOTE)
+            StatementSource (id=sparql_ws24348.avicomp.com:8892_sparql, type=REMOTE)
+            StatementSource (id=sparql_ws24348.avicomp.com:8893_sparql, type=REMOTE)
+            StatementSource (id=sparql_ws24348.avicomp.com:8894_sparql, type=REMOTE)
+            StatementSource (id=sparql_ws24348.avicomp.com:8895_sparql, type=REMOTE)
+            StatementSource (id=sparql_ws24348.avicomp.com:8896_sparql, type=REMOTE)
+            StatementSource (id=sparql_ws24348.avicomp.com:8897_sparql, type=REMOTE)
+            StatementSource (id=sparql_ws24348.avicomp.com:8898_sparql, type=REMOTE)
+         ExclusiveGroup
+            ExclusiveStatement
+               Var (name=Int)
+               Var (name=_const_f7ea054f_uri, value=http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/interactionDrug1, anonymous)
+               Var (name=y)
+               StatementSource (id=sparql_ws24348.avicomp.com:8892_sparql, type=REMOTE)
+            ExclusiveStatement
+               Var (name=Int)
+               Var (name=_const_f7ea0550_uri, value=http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/interactionDrug2, anonymous)
+               Var (name=IntDrug)
+               StatementSource (id=sparql_ws24348.avicomp.com:8892_sparql, type=REMOTE)
+            ExclusiveStatement
+               Var (name=Int)
+               Var (name=_const_32f350dd_uri, value=http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/text, anonymous)
+               Var (name=IntEffect)
+               StatementSource (id=sparql_ws24348.avicomp.com:8892_sparql, type=REMOTE)
+            LocalVars (Int)
+
+
+Quetsal manual modified plan: (~2 sec)
+
+Projection
+      ProjectionElemList
+         ProjectionElem "Drug"
+         ProjectionElem "IntDrug"
+         ProjectionElem "IntEffect"
+      NJoin
+         ExclusiveStatement
+            Var (name=Drug)
+            Var (name=_const_f5e5585a_uri, value=http://www.w3.org/1999/02/22-rdf-syntax-ns#type, anonymous)
+            Var (name=_const_44cb98be_uri, value=http://dbpedia.org/ontology/Drug, anonymous)
+            StatementSource (id=sparql_ws24348.avicomp.com:8891_sparql, type=REMOTE)
+         ExclusiveStatement
+            Var (name=y)
+            Var (name=_const_9f24f144_uri, value=http://www.w3.org/2002/07/owl#sameAs, anonymous)
+            Var (name=Drug)
+            StatementSource (id=sparql_ws24348.avicomp.com:8892_sparql, type=REMOTE)
+         ExclusiveGroup
+            ExclusiveStatement
+               Var (name=Int)
+               Var (name=_const_f7ea054f_uri, value=http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/interactionDrug1, anonymous)
+               Var (name=y)
+               StatementSource (id=sparql_ws24348.avicomp.com:8892_sparql, type=REMOTE)
+            ExclusiveStatement
+               Var (name=Int)
+               Var (name=_const_f7ea0550_uri, value=http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/interactionDrug2, anonymous)
+               Var (name=IntDrug)
+               StatementSource (id=sparql_ws24348.avicomp.com:8892_sparql, type=REMOTE)
+            ExclusiveStatement
+               Var (name=Int)
+               Var (name=_const_32f350dd_uri, value=http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/text, anonymous)
+               Var (name=IntEffect)
+               StatementSource (id=sparql_ws24348.avicomp.com:8892_sparql, type=REMOTE)
+            LocalVars (Int)
