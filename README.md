@@ -26,7 +26,7 @@ We have compared 5 - [FedX](https://www.mpi-inf.mpg.de/~khose/publications/ISWC2
 
 ###Authors
 
-  * [Alexander Potocki]() (AKSW, University of Leipzig) 
+  * Alexander Potocki (AKSW, University of Leipzig) 
   * [Muhammad Saleem] (https://sites.google.com/site/saleemsweb/) (AKSW, University of Leipzig) 
   *  [Axel-Cyrille Ngonga Ngomo](http://aksw.org/AxelNgonga.html) (AKSW, University of Leipzig)
  
