@@ -4,14 +4,12 @@
 
 ### How to Run CostFed?
 * Checkout the source code and import as new maven project. it will create three sub-projects, i.e, costfed, fex, and semagrow-bench. 
-* Main Evaluation Class: costfed/src/main/java/org/aksw/simba/start/QueryEvaluation.java
+* Index: Since CostFed is an index-assisted appraoch, the first step is to generate an index for all the endpoints in hand. The index generation, updation is given costfed/src/main/java/org/aksw/simba/quetsal/util/TBSSSummariesGenerator.java. Note for FedBench, LargeRDFBench, the index is already given at costfed/summaries/sum-localhost.n3. 
+* Main Evaluation Class: costfed/src/main/java/org/aksw/simba/start/QueryEvaluation.java. Here you need to specify the URLs of the SPARQL endpoints which you want the given query to be federated. 
 * Configuration File: Set properties in /costfed/costfed.props or run with default
-* Update summary file costfed/summaries/sum-localhost.n3 if needed or generate new one (see below) and set its path in the costfed.props file
 * Start Execution:  org.aksw.simba.start.QueryEvaluation with argument - name of property, i.e.,	   org.aksw.simba.start.QueryEvaluation costfed.props. 
 
-### Summary generation
-* Summaries generator, update: costfed/src/main/java/org/aksw/simba/quetsal/util/TBSSSummariesGenerator.java
-	
+
 ### Used Benchmarks
 The queries used in the evaluation can be downloaded from [FedBench](http://fedbench.fluidops.net/) and [LargeRDFBech](https://github.com/AKSW/largerdfbench) homepage. 
 
