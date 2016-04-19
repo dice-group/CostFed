@@ -38,7 +38,7 @@
   
   <modules>
         <module>fedx</module>
-        <module>quetsal</module>
+        <module>costfed</module>
         <module>semagrow-bench</module>
   </modules>
 </project>

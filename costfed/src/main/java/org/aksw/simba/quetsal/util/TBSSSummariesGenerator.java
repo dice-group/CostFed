@@ -82,11 +82,12 @@ public class TBSSSummariesGenerator {
 //*/
 		//List<String> endpoints = Arrays.asList("http://" + host + ":8890/sparql", "http://" + host + ":8890/sparql");
 		String outputFile = "summaries/sum-localhost.n3";
+		int branchLimit = 4;
+		
 	//	String namedGraph = "http://aksw.org/fedbench/";  //can be null. in that case all graph will be considered 
 		String namedGraph = null;
 		TBSSSummariesGenerator generator = new TBSSSummariesGenerator(outputFile);
 		long startTime = System.currentTimeMillis();
-		int branchLimit = 4;
 		generator.generateSummaries(endpoints, namedGraph, branchLimit);
 		//generator.generateDAWSummaries(endpoints, namedGraph, branchLimit, 0.5);
 		log.info("Data Summaries Generation Time (min): "+ (double)(System.currentTimeMillis() - startTime) / (1000 * 60));
