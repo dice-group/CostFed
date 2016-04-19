@@ -2,6 +2,21 @@
  
  CostFed is an index-assisted federation engine for federated SPARQL query processing over multiple SPARQL endpoints. CostFed makes use of the statistical data collected from endpoints to perform efficient source selection and cost-based query planning. We compare CostFed with state-of-art SPARQL endpoint federation engines on FedBench. Our evaluation shows that CostFed is 3 to 121 times faster than the state-of-the-art on FedBench.
 
+### Quick fedbench Start
+* modify costfed/src/main/java/org/aksw/simba/start/QueryEvaluation.java :
+	correct host, endpoints and queries variables
+* update summary file costfed/summaries/sum-localhost.n3 if needed or generate new one
+* update the path to the corresponded summary file in the property file (e.g. costfed.props)
+* start fedbench  org.aksw.simba.start.QueryEvaluation with argument - name of property file
+  e.g.
+	org.aksw.simba.start.QueryEvaluation fedx.props runs original fedx engine
+	org.aksw.simba.start.QueryEvaluation costfed.props runs costfed engine
+
+### Summary generation
+* modify costfed/src/main/java/org/aksw/simba/quetsal/util/TBSSSummariesGenerator.java
+	correct host, endpoints and outputFile variables
+* run org.aksw.simba.quetsal.util.TBSSSummariesGenerator
+
 ### Used Benchmarks
 The queries used in the evaluation can be downloaded from [FedBench](http://fedbench.fluidops.net/) and [LargeRDFBech](https://github.com/AKSW/largerdfbench) homepage. 
 
