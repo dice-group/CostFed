@@ -19,6 +19,7 @@ package com.fluidops.fedx.evaluation;
 
 import java.util.List;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.StatementPattern;
@@ -39,6 +40,7 @@ import com.fluidops.fedx.evaluation.iterator.FilteringIteration;
 import com.fluidops.fedx.evaluation.iterator.GroupedCheckConversionIteration;
 import com.fluidops.fedx.evaluation.iterator.IndependentJoingroupBindingsIteration;
 import com.fluidops.fedx.evaluation.iterator.IndependentJoingroupBindingsIteration3;
+import com.fluidops.fedx.evaluation.iterator.QueueIteration;
 import com.fluidops.fedx.evaluation.iterator.SingleBindingSetIteration;
 import com.fluidops.fedx.evaluation.join.ControlledWorkerBoundJoin;
 import com.fluidops.fedx.exception.IllegalQueryException;
@@ -72,7 +74,6 @@ public class SparqlFederationEvalStrategy extends FederationEvalStrategy {
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluateBoundJoinStatementPattern(
 			StatementTupleExpr stmt, List<BindingSet> bindings)
 	{
-		
 		// we can omit the bound join handling
 		if (bindings.size()==1)
 			return evaluate(stmt, bindings.get(0));
@@ -106,7 +107,7 @@ public class SparqlFederationEvalStrategy extends FederationEvalStrategy {
 	@Override
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluateGroupedCheck(
 			CheckStatementPattern stmt, List<BindingSet> bindings)
-			throws QueryEvaluationException  {
+	{
 
 		if (bindings.size()==1)
 			return stmt.evaluate(bindings.get(0));
@@ -200,5 +201,11 @@ public class SparqlFederationEvalStrategy extends FederationEvalStrategy {
 			return new EmptyIteration<BindingSet, QueryEvaluationException>();
 		}		
 		
+	}
+
+
+	@Override
+	public void evaluate(QueueIteration<BindingSet> qit, TupleExpr expr, List<BindingSet> bindings) {
+		throw new NotImplementedException("evaluate");
 	}
 }

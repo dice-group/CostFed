@@ -2,138 +2,95 @@ package org.aksw.simba.quetsal.core;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.aksw.simba.quetsal.core.algebra.BindJoin;
 import org.aksw.simba.quetsal.core.algebra.HashJoin;
+import org.aksw.simba.quetsal.core.algebra.JoinRestarter;
+import org.aksw.simba.quetsal.core.algebra.TopKSourceStatementPattern;
 import org.apache.log4j.Logger;
-import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.QueryModelNode;
-import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.Union;
 
 import com.fluidops.fedx.Config;
 import com.fluidops.fedx.algebra.ExclusiveGroup;
 import com.fluidops.fedx.algebra.NJoin;
-import com.fluidops.fedx.algebra.StatementSource;
+import com.fluidops.fedx.algebra.StatementSourcePattern;
 import com.fluidops.fedx.optimizer.OptimizerUtil;
-import com.fluidops.fedx.optimizer.StatementGroupOptimizer;
 import com.fluidops.fedx.structures.QueryInfo;
 
-public class JoinOrderOptimizer extends StatementGroupOptimizer {
-	public static Logger log = Logger.getLogger(JoinOrderOptimizer.class);
+public class TopKJoinOrderOptimizer extends JoinOrderOptimizer {
+	public static Logger log = Logger.getLogger(TopKJoinOrderOptimizer.class);
+			
+	public TopKJoinOrderOptimizer(QueryInfo queryInfo) {
+		super(queryInfo);
+	}
 
-    protected static double C_TRANSFER_TUPLE = 0.02;
-    protected static double C_TRANSFER_QUERY = 50;
-        
+	class TopKEstimatorVisitor extends JoinOrderOptimizer.EstimatorVisitor {
 
-	Map<QueryModelNode, CardinalityVisitor.NodeDescriptor> ds = new HashMap<QueryModelNode, CardinalityVisitor.NodeDescriptor>();
-	
-	public class EstimatorVisitor extends CardinalityVisitor
-	{
-		@Override
-		public void meet(StatementPattern stmt) {
-			List<StatementSource> stmtSrces = queryInfo.getSourceSelection().getStmtToSources().get(stmt);
-			current.card = Cardinality.getTriplePatternCardinality(stmt, stmtSrces);
-			current.sel = current.card/(double)Cardinality.getTotalTripleCount(stmtSrces);
+		List<TopKSourceStatementPattern> topksrcs = new ArrayList<TopKSourceStatementPattern>();
+		
+		TupleExpr currentNode;
+		
+		TupleExpr getNode() {
+			return currentNode;
 		}
 		
-		@Override
-		public void meet(Union union) {
-			union.getLeftArg().visit(this);
-			NodeDescriptor temp = current;
-			reset();
-			union.getRightArg().visit(this);
-			if (temp.card == Long.MAX_VALUE || current.card == Long.MAX_VALUE) {
-				current.card = Long.MAX_VALUE;
-			} else {
-				current.card += temp.card;
-			}
-			current.sel = Math.min(current.sel, temp.sel);
+		public void meet(StatementSourcePattern stmt) {
+			TopKSourceStatementPattern nd = new TopKSourceStatementPattern(stmt, queryInfo);
+			currentNode = nd;
+			current.card = nd.getCardinality(0);
+			topksrcs.add(nd);
 		}
 		
-		public void meet(NJoin nj)  {
-			throw new Error("NJoins must be removed");
+		public void meet(ExclusiveGroup eg) {
+			super.meet(eg);
+			currentNode = eg;
+			log.info("meet ExclusiveGroup: " + eg);
 		}
 		
 		@Override
 		protected void meetNode(QueryModelNode node) {
-			if (node instanceof StatementPattern) {
-				meet((StatementPattern)node);
-			} else if (node instanceof Filter) {
-				meet((Filter)node);
-			} else if (node instanceof Union) {
-				meet((Union)node);
+			if (node instanceof StatementSourcePattern) {
+				meet((StatementSourcePattern)node);
 			} else if (node instanceof ExclusiveGroup) {
 				meet((ExclusiveGroup)node);
-			} else if (node instanceof NJoin) {
-				meet((NJoin)node);
 			} else {
-				super.meetNode(node);
+				throw new RuntimeException(node + "is not expected");
 			}
 		}
 	}
-	
-	public class CardPair {
-		public TupleExpr expr;
-		public CardinalityVisitor.NodeDescriptor nd;
-		
-		public CardPair(TupleExpr te, CardinalityVisitor.NodeDescriptor nd) {
-			this.expr = te;
-			this.nd = nd;
-		}
-
-		@Override
-		public String toString() {
-			return String.format("CardPair [expr=%s, card=%s, sel=%s", expr, nd.card, nd.sel);
-		}
-	}
-	
-	public JoinOrderOptimizer(QueryInfo queryInfo) {
-		super(queryInfo);
-	}
-	
-	/*
-	@Override
-	public void checkExclusiveGroup(List<ExclusiveStatement> exclusiveGroupStatements) {
-		CardinalityVisitor cvis = new CardinalityVisitor();
-		List<CardPair> cardPairs = new ArrayList<CardPair>();
-		List<ExclusiveStatement> copy = new ArrayList<ExclusiveStatement>(exclusiveGroupStatements);
-		for (ExclusiveStatement es : copy) {
-			es.visit(cvis);
-			cardPairs.add(new CardPair(es, cvis.getCardinality()));
-			cvis.reset();
-			if ("http://www.w3.org/2002/07/owl#sameAs".equals(es.getPredicateVar().getValue().toString())) {
-				exclusiveGroupStatements.remove(es);
-			}
-		}
-		// sort arguments according their cards
-		cardPairs.sort((cpl, cpr) -> cpl.card.compareTo(cpr.card));
-		
-		for (CardPair cp : cardPairs) {
-			log.trace(cp);
-		}
-	}
-	*/
 	
 	@Override
 	public void optimizeJoinOrder(NJoin node, List<TupleExpr> joinArgs) {
-		EstimatorVisitor cvis = new EstimatorVisitor();
+		// check for limit clause
+		boolean sliceWasFound = false;
+		for (QueryModelNode pnd = node.getParentNode(); pnd != null; pnd = pnd.getParentNode()) {
+			if (pnd instanceof Slice) {
+				sliceWasFound = true;
+				break;
+			}
+		}
+		if (!sliceWasFound) {
+			super.optimizeJoinOrder(node, joinArgs);
+			return;
+		}
+		
+		log.info("using Top-K");
+		
+		TopKEstimatorVisitor cvis = new TopKEstimatorVisitor();
 		List<CardPair> cardPairs = new ArrayList<CardPair>();
-
+		
 		// pin selectors
 		boolean useHashJoin = false;
-		boolean useBindJoin = false;
+		boolean useBindJoin = true;
 		
-		// find card for arguments
 		for (TupleExpr te : joinArgs) {
 			te.visit(cvis);
-			cardPairs.add(new CardPair(te, cvis.getDescriptor()));
+			cardPairs.add(new CardPair(cvis.getNode(), cvis.getDescriptor()));
 			cvis.reset();
 		}
 		
@@ -159,7 +116,7 @@ public class JoinOrderOptimizer extends StatementGroupOptimizer {
 			Collection<String> commonvars = null;
 			for (int i = 0, n = cardPairs.size(); i < n; ++i) {
 				TupleExpr arg = cardPairs.get(i).expr;
-				commonvars = CardinalityVisitor.getCommonVars(joinVars, arg);
+				commonvars = TopKEstimatorVisitor.getCommonVars(joinVars, arg);
 				if (commonvars == null || commonvars.isEmpty()) continue;
 				rightIndex = i;
 				break;
@@ -176,7 +133,7 @@ public class JoinOrderOptimizer extends StatementGroupOptimizer {
 			long resultCard;
 			double sel = 1;
 			
-			if (CardinalityVisitor.ESTIMATION_TYPE == 0) {
+			if (TopKEstimatorVisitor.ESTIMATION_TYPE == 0) {
 				if (commonvars != null && !commonvars.isEmpty()) {
 					resultCard = (long)Math.ceil((Math.min(leftArg.nd.card, rightArg.nd.card) / 1));
 				} else {
@@ -199,7 +156,10 @@ public class JoinOrderOptimizer extends StatementGroupOptimizer {
 				log.debug(String.format("join card: %s, hash cost: %s, bind cost: %s", resultCard, hashCost, bindCost));
 			}
 			
+			
 			NJoin newNode;
+			newNode = new HashJoin(leftArg.expr, rightArg.expr, queryInfo);
+			/*
 			if (useHashJoin || (!useBindJoin && hashCost < bindCost)) {
 				newNode = new HashJoin(leftArg.expr, rightArg.expr, queryInfo);
 				//useHashJoin = true; // pin
@@ -207,8 +167,11 @@ public class JoinOrderOptimizer extends StatementGroupOptimizer {
 				newNode = new BindJoin(leftArg.expr, rightArg.expr, queryInfo);
 				//useBindJoin = true; // pin
 			}
+			*/
 			leftArg.expr = newNode;
 		}
-		node.replaceWith(leftArg.expr);
+		
+		JoinRestarter head = new JoinRestarter(leftArg.expr, cvis.topksrcs, this.queryInfo);
+		node.replaceWith(head);
 	}
 }

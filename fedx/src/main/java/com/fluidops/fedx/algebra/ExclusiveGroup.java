@@ -231,4 +231,9 @@ public class ExclusiveGroup extends AbstractQueryModelNode implements StatementT
 	public void visit(FedXExprVisitor v) {
 		v.meet(this);
 	}
+
+	@Override
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(List<BindingSet> bindings) {
+		throw new Error("Not implemented: ExclusiveGroup.evaluate(List<BindingSet>)");
+	}
 }

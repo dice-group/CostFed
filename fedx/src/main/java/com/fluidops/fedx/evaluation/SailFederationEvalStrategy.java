@@ -22,6 +22,7 @@ import info.aduna.iteration.EmptyIteration;
 
 import java.util.List;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
@@ -43,6 +44,7 @@ import com.fluidops.fedx.evaluation.iterator.FilteringIteration;
 import com.fluidops.fedx.evaluation.iterator.GroupedCheckConversionIteration;
 import com.fluidops.fedx.evaluation.iterator.IndependentJoingroupBindingsIteration;
 import com.fluidops.fedx.evaluation.iterator.IndependentJoingroupBindingsIteration3;
+import com.fluidops.fedx.evaluation.iterator.QueueIteration;
 import com.fluidops.fedx.evaluation.join.ControlledWorkerJoin;
 import com.fluidops.fedx.structures.QueryInfo;
 import com.fluidops.fedx.util.QueryAlgebraUtil;
@@ -187,7 +189,11 @@ public class SailFederationEvalStrategy extends FederationEvalStrategy {
 		// other option (which might be faster for sesame native stores): join over the statements
 		// TODO implement this and evaluate if it is faster ..
 
+	}
+
+
+	@Override
+	public void evaluate(QueueIteration<BindingSet> qit, TupleExpr expr, List<BindingSet> bindings) {
+		throw new NotImplementedException("evaluate");
 	}	
-		
-	
 }

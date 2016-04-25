@@ -41,10 +41,12 @@ public class QueryEvaluation {
 		String repfile = args.length > 1 ? args[1] : null;
 		
 		String host = "localhost";
+		//String host = "ws24348.avicomp.com";
+		//String host = "192.168.0.145";
 		//String queries = "S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 C1 C2 C3 C4 C6 C7 C8 C9 C10"; //"C1 C3 C5 C6 C7 C8 C9 C10 L1 L2 L3 L4 L5 L6 L7 L8";
 		//String queries = "S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 C1 C2 C3 C6 C7 C8 C9 C10";
-		String queries = "S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 C1 C2 C3 C4 C6 C7 C8 C9 C10";
-		//String queries = "S13";
+		//String queries = "S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 C1 C2 C3 C4 C6 C7 C8 C9 C10";
+		String queries = "S1L";
 		
 		List<String> endpoints = Arrays.asList(
 			 "http://" + host + ":8890/sparql",
@@ -64,7 +66,7 @@ public class QueryEvaluation {
 	//*/
 		);
 		
-		Map<String, List<List<Object>>> reports = multyEvaluate(queries, 16, cfgName, endpoints);
+		Map<String, List<List<Object>>> reports = multyEvaluate(queries, 1, cfgName, endpoints);
 	
 		for (Map.Entry<String, List<List<Object>>> e : reports.entrySet())
 		{
