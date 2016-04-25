@@ -17,6 +17,7 @@ import org.openrdf.query.algebra.TupleExpr;
 
 import com.fluidops.fedx.Config;
 import com.fluidops.fedx.algebra.ExclusiveGroup;
+import com.fluidops.fedx.algebra.ExclusiveStatement;
 import com.fluidops.fedx.algebra.NJoin;
 import com.fluidops.fedx.algebra.StatementSourcePattern;
 import com.fluidops.fedx.optimizer.OptimizerUtil;
@@ -52,12 +53,19 @@ public class TopKJoinOrderOptimizer extends JoinOrderOptimizer {
 			log.info("meet ExclusiveGroup: " + eg);
 		}
 		
+		public void meet(ExclusiveStatement eg) {
+			super.meet(eg);
+			currentNode = eg;
+		}
+		
 		@Override
 		protected void meetNode(QueryModelNode node) {
 			if (node instanceof StatementSourcePattern) {
 				meet((StatementSourcePattern)node);
 			} else if (node instanceof ExclusiveGroup) {
 				meet((ExclusiveGroup)node);
+			} else if (node instanceof ExclusiveStatement) {
+				meet((ExclusiveStatement)node);
 			} else {
 				throw new RuntimeException(node + "is not expected");
 			}
@@ -158,7 +166,7 @@ public class TopKJoinOrderOptimizer extends JoinOrderOptimizer {
 			
 			
 			NJoin newNode;
-			newNode = new HashJoin(leftArg.expr, rightArg.expr, queryInfo);
+			newNode = new BindJoin(leftArg.expr, rightArg.expr, queryInfo);
 			/*
 			if (useHashJoin || (!useBindJoin && hashCost < bindCost)) {
 				newNode = new HashJoin(leftArg.expr, rightArg.expr, queryInfo);
