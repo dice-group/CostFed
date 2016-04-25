@@ -50,7 +50,7 @@ public class TopKJoinOrderOptimizer extends JoinOrderOptimizer {
 		public void meet(ExclusiveGroup eg) {
 			super.meet(eg);
 			currentNode = eg;
-			log.info("meet ExclusiveGroup: " + eg);
+			//log.info("meet ExclusiveGroup: " + eg);
 		}
 		
 		public void meet(ExclusiveStatement eg) {
@@ -94,7 +94,7 @@ public class TopKJoinOrderOptimizer extends JoinOrderOptimizer {
 		
 		// pin selectors
 		boolean useHashJoin = false;
-		boolean useBindJoin = true;
+		boolean useBindJoin = false;
 		
 		for (TupleExpr te : joinArgs) {
 			te.visit(cvis);
@@ -166,8 +166,8 @@ public class TopKJoinOrderOptimizer extends JoinOrderOptimizer {
 			
 			
 			NJoin newNode;
-			newNode = new BindJoin(leftArg.expr, rightArg.expr, queryInfo);
-			/*
+			//newNode = new BindJoin(leftArg.expr, rightArg.expr, queryInfo);
+			///*
 			if (useHashJoin || (!useBindJoin && hashCost < bindCost)) {
 				newNode = new HashJoin(leftArg.expr, rightArg.expr, queryInfo);
 				//useHashJoin = true; // pin
@@ -175,7 +175,7 @@ public class TopKJoinOrderOptimizer extends JoinOrderOptimizer {
 				newNode = new BindJoin(leftArg.expr, rightArg.expr, queryInfo);
 				//useBindJoin = true; // pin
 			}
-			*/
+			//*/
 			leftArg.expr = newNode;
 		}
 		

@@ -112,9 +112,10 @@ public class RestarterIteration<E> extends LookAheadIteration<E, QueryEvaluation
 					long modL = r.getCachedBindingCount(); // |L|/B
 					cost = rCost * modL;
 					// additional results min(|L|, curEntry.card)
-					CVisitor cv = new CVisitor();
-					bj.getLeftArg().visit(cv);
-					additionalResults = Math.min(cv.getCardinality(), curEntry.card);
+					additionalResults = Math.min((long)(modL * nBindingsCfg), curEntry.card);
+					//CVisitor cv = new CVisitor();
+					//bj.getLeftArg().visit(cv);
+					//additionalResults = Math.min(modL * nBindingsCfg /*cv.getCardinality()*/, curEntry.card);
 					return;
 				}
 			}
@@ -125,14 +126,35 @@ public class RestarterIteration<E> extends LookAheadIteration<E, QueryEvaluation
 			additionalResults = Math.min(additionalResults, cv.getCardinality());
 		}
 		
+		public void meet(HashJoin bj)  {
+			TupleExpr rightArg = bj.getRightArg();
+			if (rightArg instanceof TopKSourceStatementPattern) {
+				TopKSourceStatementPattern r = (TopKSourceStatementPattern)rightArg;
+				if (r.hasEntry(curEntry)) {
+					cost = rCost + curEntry.card * tCost;
+					CVisitor cv = new CVisitor();
+					bj.getLeftArg().visit(cv);
+					additionalResults = Math.min(cv.getCardinality(), curEntry.card); // todo: get card from internal table of Hashjoin
+					return;
+				}
+			}
+			meetNode(bj.getLeftArg());
+			// cost += additionalResults * jcost
+			CVisitor cv = new CVisitor();
+			rightArg.visit(cv);
+			additionalResults = Math.min(additionalResults, cv.getCardinality()); // todo: get card from internal table of Hashjoin
+		}
+		
 		@Override
 		protected void meetNode(QueryModelNode node) {
 			if (node instanceof BindJoin) {
 				meet((BindJoin)node);
+			} else if (node instanceof HashJoin) {
+				meet((HashJoin)node);
 			} else if (node instanceof TopKSourceStatementPattern) {
 				meet((TopKSourceStatementPattern)node);
 			} else {
-				throw new Error("Not implemented");
+				throw new Error("CostVisitor for " + node + " is not implemented");
 			}
 		}
 	}

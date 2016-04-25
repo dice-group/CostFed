@@ -20,12 +20,12 @@ import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import com.fluidops.fedx.evaluation.concurrent.Async;
 import com.fluidops.fedx.evaluation.concurrent.ControlledWorkerScheduler;
 import com.fluidops.fedx.evaluation.iterator.QueueIterator;
+import com.fluidops.fedx.evaluation.iterator.RestartableLookAheadIteration;
 import com.fluidops.fedx.structures.QueryInfo;
 
 import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.LookAheadIteration;
 
-public class HashJoinImpl extends LookAheadIteration<BindingSet, QueryEvaluationException> {
+public class HashJoinImpl extends RestartableLookAheadIteration<BindingSet> {
 	public static Logger log = Logger.getLogger(HashJoinImpl.class);
 	
 	/* Constants */
