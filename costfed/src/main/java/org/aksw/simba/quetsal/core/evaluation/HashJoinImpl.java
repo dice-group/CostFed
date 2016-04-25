@@ -131,14 +131,6 @@ public class HashJoinImpl extends RestartableLookAheadIteration<BindingSet> {
 			resultQueue.onAddIterator();
 		}
 		
-		@Override
-		public void run() {
-			QueryInfo.setPriority(1);
-			super.run();
-		}
-		
-
-		
 		Collection<KeyAndValue> buff = new ArrayList<KeyAndValue>();
 		
 		@Override
