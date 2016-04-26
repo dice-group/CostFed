@@ -10,6 +10,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.AbstractQueryModelNode;
 import org.openrdf.query.algebra.QueryModelVisitor;
+import org.openrdf.query.algebra.StatementPattern;
 
 import com.fluidops.fedx.algebra.LocalVarsNode;
 import com.fluidops.fedx.algebra.StatementSource;
@@ -119,16 +120,9 @@ public class TopKSourceStatementPattern extends StatementSourcePattern {
 	}
 	
 	@Override
-	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor) throws X {
-		if (localVars.size() > 0) {
-			LocalVarsNode.visit(visitor, localVars);
-		}
+	protected <X extends Exception> void visitSources(QueryModelVisitor<X> visitor)  throws X {
 		for (Entry s : srcEntries) {
 			s.visit(visitor);
-		}
-		
-		if (filterExpr != null) {
-			filterExpr.visit(visitor);
 		}
 	}
 	
@@ -192,25 +186,4 @@ public class TopKSourceStatementPattern extends StatementSourcePattern {
 		}
 		return iteration;
 	}
-	
-	/*
-	@Override
-	public Set<String> getBindingNames() {
-		return args.get(0).getBindingNames();
-	}
-
-	@Override
-	public Set<String> getAssuredBindingNames() {
-		return args.get(0).getAssuredBindingNames();
-	}
-
-	@Override
-	public void visit(FedXExprVisitor v) {
-		throw new NotImplementedException("visit");
-	}
-	
-	public boolean hasFreeVarsFor(BindingSet binding) {
-		return ((StatementSourcePattern)getArg(0)).hasFreeVarsFor(binding);
-	}
-	*/
 }

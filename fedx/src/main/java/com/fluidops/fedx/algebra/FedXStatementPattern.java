@@ -75,15 +75,20 @@ public abstract class FedXStatementPattern extends StatementPattern implements S
 		statementSources.add(statementSource);		
 	}
 	
+	protected <X extends Exception> void visitSources(QueryModelVisitor<X> visitor)  throws X {
+		for (StatementSource s : sort(getStatementSources())) {
+			s.visit(visitor);
+		}
+	}
+	
 	@Override
 	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor) throws X {
 		super.visitChildren(visitor);
 		if (localVars.size() > 0) {
 			LocalVarsNode.visit(visitor, localVars);
 		}
-		for (StatementSource s : sort(getStatementSources())) {
-			s.visit(visitor);
-		}
+		
+		visitSources(visitor);
 		
 		if (filterExpr != null) {
 			filterExpr.visit(visitor);
