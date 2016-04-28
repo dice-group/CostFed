@@ -66,6 +66,8 @@ public class ExclusiveGroup extends AbstractQueryModelNode implements StatementT
 		this.id = NodeFactory.getNextId();
 		this.queryInfo = queryInfo;
 		ownedEndpoint = EndpointManager.getEndpointManager().getEndpoint(owner.getEndpointID());
+		queryInfo.numSources.addAndGet(-ownedNodes.size() + 1);
+		queryInfo.totalSources.addAndGet(-ownedNodes.size() + 1);
 	}
 	
 	/**

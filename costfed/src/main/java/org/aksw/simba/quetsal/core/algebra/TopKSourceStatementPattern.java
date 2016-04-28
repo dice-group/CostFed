@@ -69,6 +69,8 @@ public class TopKSourceStatementPattern extends StatementSourcePattern {
 		for (int i = 1; i < srcEntries.size(); ++i) {
 			srcEntries.get(i).order = Integer.MAX_VALUE;
 		}
+		queryInfo.numSources.incrementAndGet();
+		queryInfo.totalSources.addAndGet(srcEntries.size());
 	}
 
 	public List<Entry> getEntries() {
@@ -90,7 +92,7 @@ public class TopKSourceStatementPattern extends StatementSourcePattern {
 		long result = 0;
 		for (int i = 0; i < srcEntries.size(); ++i) {
 			int order = srcEntries.get(i).order;
-			if (order > getQueryInfo().progress) break;
+			if (order > getQueryInfo().progress) continue;
 			result += srcEntries.get(i).card;
 		}
 		return result;
@@ -156,7 +158,7 @@ public class TopKSourceStatementPattern extends StatementSourcePattern {
 	}
 	
 	@Override
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BindingSet binding) {
+	public synchronized CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BindingSet binding) {
 		replayCache();
 		if (binding != null) {
 			bindingCache.get(bindingCache.size() - 1).add(Arrays.asList(binding));
@@ -172,7 +174,7 @@ public class TopKSourceStatementPattern extends StatementSourcePattern {
 	}
 	
 	@Override
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(List<BindingSet> bindings) {
+	public synchronized CloseableIteration<BindingSet, QueryEvaluationException> evaluate(List<BindingSet> bindings) {
 		replayCache();
 		if (bindings != null) {
 			bindingCache.get(bindingCache.size() - 1).add(bindings);

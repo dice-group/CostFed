@@ -48,6 +48,8 @@ public class ExclusiveStatement extends FedXStatementPattern {
 	public ExclusiveStatement(StatementPattern node, StatementSource owner, QueryInfo queryInfo) {
 		super(node, queryInfo);
 		addStatementSource(owner);
+		queryInfo.numSources.incrementAndGet();
+		queryInfo.totalSources.incrementAndGet();
 	}	
 
 	public StatementSource getOwner() {
@@ -56,6 +58,7 @@ public class ExclusiveStatement extends FedXStatementPattern {
 
 	@Override
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BindingSet bindings) {
+		if (bindings == null) return new EmptyIteration<BindingSet, QueryEvaluationException>();
 		
 		Endpoint ownedEndpoint = EndpointManager.getEndpointManager().getEndpoint(getOwner().getEndpointID());
 		RepositoryConnection ownedConnection = ownedEndpoint.getConn();

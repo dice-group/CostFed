@@ -20,6 +20,7 @@ import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import com.fluidops.fedx.evaluation.concurrent.Async;
 import com.fluidops.fedx.evaluation.concurrent.ControlledWorkerScheduler;
 import com.fluidops.fedx.evaluation.iterator.QueueIterator;
+import com.fluidops.fedx.evaluation.iterator.RestartableCloseableIteration;
 import com.fluidops.fedx.evaluation.iterator.RestartableLookAheadIteration;
 import com.fluidops.fedx.structures.QueryInfo;
 
@@ -66,7 +67,6 @@ public class HashJoinImpl extends RestartableLookAheadIteration<BindingSet> {
 		resultTables = new ArrayList<Map<Object, Collection<BindingSet>>>();
 		resultTables.add(new HashMap<Object, Collection<BindingSet>>());
 		resultTables.add(new HashMap<Object, Collection<BindingSet>>());
-		runCount.set(resultTables.size());
 	}
 
 	public void addChildIterator(CloseableIteration<BindingSet, QueryEvaluationException> it) {
@@ -129,6 +129,7 @@ public class HashJoinImpl extends RestartableLookAheadIteration<BindingSet> {
 			});
 			this.idx = idx;
 			resultQueue.onAddIterator();
+			runCount.incrementAndGet();
 		}
 		
 		Collection<KeyAndValue> buff = new ArrayList<KeyAndValue>();
@@ -139,7 +140,7 @@ public class HashJoinImpl extends RestartableLookAheadIteration<BindingSet> {
 			int putRecs = 0;
 			
 			while (res.hasNext() && !isClosed()) {
-				if (runCount.get() > 1) {
+				if (true || runCount.get() > 1) {
 					buff.clear();
 					for (int i = 0; i < 100 && res.hasNext(); ++i) {
 						BindingSet r = res.next();
@@ -170,7 +171,7 @@ public class HashJoinImpl extends RestartableLookAheadIteration<BindingSet> {
 						}
 					}
 				} else {
-					resultTables.get(idx).clear(); // free unnecessary table
+					//resultTables.get(idx).clear(); // free unnecessary table
 					Map<Object, Collection<BindingSet>> coll = resultTables.get(1 - idx);
 					for (int i = 0; i < 100 && res.hasNext(); ++i) {
 						BindingSet r = res.next();
@@ -188,7 +189,7 @@ public class HashJoinImpl extends RestartableLookAheadIteration<BindingSet> {
 			}
 			resultQueue.onRemoveIterator();
 			runCount.decrementAndGet();
-			log.info("idx: " + idx + ", got records: " + gotRecs + ", put records: " + putRecs + ", closed: " + isClosed());
+			log.info("hash: " + HashJoinImpl.this.hashCode() + ", idx: " + idx + ", got records: " + gotRecs + ", put records: " + putRecs + ", closed: " + isClosed());
 			res.close();
 		}
 
@@ -223,5 +224,16 @@ public class HashJoinImpl extends RestartableLookAheadIteration<BindingSet> {
 			iter.close();
 		}
 		super.handleClose();
+	}
+	
+	@Override
+	public void handleRestart() {
+		resultQueue.restart();
+		for (int idx = 0; idx < childIters.size(); ++idx) {
+			if (childIters.get(idx) instanceof RestartableCloseableIteration) {
+				((RestartableCloseableIteration<BindingSet>)childIters.get(idx)).restart();
+				scheduler.schedule(new HashJoinTask(idx));
+			}
+		}
 	}
 }

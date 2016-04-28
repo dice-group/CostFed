@@ -200,6 +200,8 @@ public class JoinOrderOptimizer extends StatementGroupOptimizer {
 			}
 			
 			NJoin newNode;
+			//newNode = new HashJoin(leftArg.expr, rightArg.expr, queryInfo);
+			///*
 			if (useHashJoin || (!useBindJoin && hashCost < bindCost)) {
 				newNode = new HashJoin(leftArg.expr, rightArg.expr, queryInfo);
 				//useHashJoin = true; // pin
@@ -207,6 +209,7 @@ public class JoinOrderOptimizer extends StatementGroupOptimizer {
 				newNode = new BindJoin(leftArg.expr, rightArg.expr, queryInfo);
 				//useBindJoin = true; // pin
 			}
+			//*/
 			leftArg.expr = newNode;
 		}
 		node.replaceWith(leftArg.expr);

@@ -107,11 +107,11 @@ public class BindJoinImpl extends RestartableLookAheadIteration<BindingSet> {
 	
 	@Override
 	public void handleRestart() {
+		iteration.restart();
 		if (leftIter instanceof RestartableCloseableIteration) {
-			iteration.restart();
 			((RestartableCloseableIteration<BindingSet>) leftIter).restart();
-			scheduler.schedule(new AsyncBindingTask());
 		}
+		scheduler.schedule(new AsyncBindingTask());
 	}
 	
 	public class AsyncBindingTask extends Async<Void> {

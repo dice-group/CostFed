@@ -101,7 +101,7 @@ public class RestarterIteration<E> extends LookAheadIteration<E, QueryEvaluation
 				throw new Error("logic error");
 			}
 			additionalResults = curEntry.card;
-			cost = rCost + sp.getCardinality() * tCost;
+			cost = rCost;// + sp.getCardinality() * tCost;
 		}
 		
 		public void meet(BindJoin bj)  {
@@ -131,7 +131,7 @@ public class RestarterIteration<E> extends LookAheadIteration<E, QueryEvaluation
 			if (rightArg instanceof TopKSourceStatementPattern) {
 				TopKSourceStatementPattern r = (TopKSourceStatementPattern)rightArg;
 				if (r.hasEntry(curEntry)) {
-					cost = rCost + curEntry.card * tCost;
+					cost = rCost;// + curEntry.card * tCost;
 					CVisitor cv = new CVisitor();
 					bj.getLeftArg().visit(cv);
 					additionalResults = Math.min(cv.getCardinality(), curEntry.card); // todo: get card from internal table of Hashjoin
@@ -194,7 +194,15 @@ public class RestarterIteration<E> extends LookAheadIteration<E, QueryEvaluation
 			entries.get(maxRatioV).order = jr.getQueryInfo().progress;
 			log.info("got results: " + resultCount + ", Tree part: \n" + jr);
 			arg.restart();
+			jr.getQueryInfo().numSources.incrementAndGet();
 		}
 		return null;
+	}
+	
+	@Override
+	public void handleClose() {
+		if (arg != null) {
+			arg.close();
+		}
 	}
 }

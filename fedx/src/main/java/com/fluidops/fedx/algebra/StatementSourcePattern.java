@@ -64,8 +64,9 @@ public class StatementSourcePattern extends FedXStatementPattern {
 	}
 	
 	protected CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BindingSet bindings, List<StatementSource> sources) {
+		if (bindings == null) return new EmptyIteration<BindingSet, QueryEvaluationException>();
+		
 		try {
-			
 			Boolean isEvaluated = false;	// is filter evaluated in prepared query
 			String preparedQuery = null;	// used for some triple sources
 			WorkerUnionBase<BindingSet> union = FederationManager.getInstance().createWorkerUnion(queryInfo);

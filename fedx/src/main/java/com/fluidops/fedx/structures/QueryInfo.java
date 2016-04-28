@@ -48,6 +48,8 @@ public class QueryInfo {
 	private SourceSelection sourceSelection;
 	
 	public int progress = 0;
+	public AtomicInteger numSources = new AtomicInteger(0);
+	public AtomicInteger totalSources = new AtomicInteger(0);
 	
 	// for async task priorities
 	static ThreadLocal<Integer> priority = new ThreadLocal<Integer>() { @Override protected Integer initialValue() { return 0; } };
