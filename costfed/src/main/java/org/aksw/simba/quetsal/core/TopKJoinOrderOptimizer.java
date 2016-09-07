@@ -167,7 +167,8 @@ public class TopKJoinOrderOptimizer extends JoinOrderOptimizer {
 			
 			NJoin newNode;
 			//newNode = new BindJoin(leftArg.expr, rightArg.expr, queryInfo);
-			///*
+			newNode = new HashJoin(leftArg.expr, rightArg.expr, queryInfo);
+			/*
 			if (useHashJoin || (!useBindJoin && hashCost < bindCost)) {
 				newNode = new HashJoin(leftArg.expr, rightArg.expr, queryInfo);
 				//useHashJoin = true; // pin

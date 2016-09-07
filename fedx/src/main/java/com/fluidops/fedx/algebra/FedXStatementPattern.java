@@ -243,13 +243,9 @@ public abstract class FedXStatementPattern extends StatementPattern implements S
 		CloseableIteration<BindingSet, QueryEvaluationException> result = strategy.evaluateAtStatementSources(preparedQuery, sources, getQueryInfo());
 		
 		if (hasFreeVars) {
-			return new BufferedCloseableIterator<BindingSet, QueryEvaluationException>(
-				new BoundJoinConversionIteration(result, bindings)
-			);
+			return new BoundJoinConversionIteration(result, bindings);
 		} else {
-			return new BufferedCloseableIterator<BindingSet, QueryEvaluationException>(
-				new GroupedCheckConversionIteration(result, bindings)
-			);
+			return new GroupedCheckConversionIteration(result, bindings);
 		}
 	}
 }

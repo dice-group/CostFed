@@ -16,12 +16,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.aksw.simba.quetsal.datastructues.Pair;
 import org.aksw.simba.quetsal.datastructues.Trie;
+import org.aksw.simba.quetsal.datastructues.Trie2;
 import org.aksw.simba.quetsal.datastructues.TrieNode;
+import org.aksw.simba.quetsal.datastructues.Tuple3;
 import org.aksw.simba.quetsal.synopsis.ArrayCollection;
 import org.aksw.simba.quetsal.synopsis.Collection;
 import org.aksw.simba.quetsal.synopsis.MIPsynopsis;
 import org.apache.log4j.Logger;
+import org.openrdf.model.IRI;
+import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
@@ -41,6 +46,9 @@ public class TBSSSummariesGenerator {
 	static Logger log = Logger.getLogger(TBSSSummariesGenerator.class);
 	
 	public BufferedWriter bwr;
+	
+	AtomicInteger bnode = new AtomicInteger(0);
+	
 	//public double distinctSbj;
 	//public long trplCount ;
 	
@@ -62,7 +70,7 @@ public class TBSSSummariesGenerator {
 		//String host = "192.168.0.145";
 		//String host = "ws24348.avicomp.com";
 		String host = "localhost";
-		///*
+		/*
 		List<String> endpoints = Arrays.asList(
 			 "http://" + host + ":8890/sparql",
 			 "http://" + host + ":8891/sparql",
@@ -80,8 +88,34 @@ public class TBSSSummariesGenerator {
 			 , "http://" + host + ":8899/sparql"
 		);
 //*/
+		List<String> endpoints = Arrays.asList(
+			 "http://" + host + ":8895/sparql"
+			 //,
+			 //"http://" + host + ":8891/sparql"
+			 //,
+				///*
+			 //"http://" + host + ":8892/sparql",
+			 //"http://" + host + ":8893/sparql"
+			 //,
+			 //"http://" + host + ":8894/sparql"
+
+			 //,
+			 //"http://" + host + ":8895/sparql"
+			 //,
+			 //"http://" + host + ":8896/sparql"
+			 //,
+			 //*/
+			 //"http://" + host + ":8897/sparql"
+			 //,
+			 ///*
+			 //"http://" + host + ":8898/sparql"
+			 //,
+			 //"http://" + host + ":8899/sparql"
+			 //*/
+		);
+		
 		//List<String> endpoints = Arrays.asList("http://" + host + ":8890/sparql", "http://" + host + ":8890/sparql");
-		String outputFile = "summaries/sum-localhost.n3";
+		String outputFile = "summaries/sumX-localhost5.n3";
 	//	String namedGraph = "http://aksw.org/fedbench/";  //can be null. in that case all graph will be considered 
 		String namedGraph = null;
 		TBSSSummariesGenerator generator = new TBSSSummariesGenerator(outputFile);
@@ -174,7 +208,9 @@ public class TBSSSummariesGenerator {
 		StringBuilder sb = new StringBuilder();
 		
 		List<String> lstPred = getPredicates(endpoint, graph);
+		log.info("total distinct subjects: "+ totalSbj + " for endpoint: " + endpoint);
 		log.info("total distinct predicates: "+ lstPred.size() + " for endpoint: " + endpoint);
+		log.info("total distinct objects: "+ totalObj + " for endpoint: " + endpoint);
 		
 		sb.append("#---------------------"+endpoint+" Summaries-------------------------------\n");
 		sb.append("[] a ds:Service ;\n");
@@ -182,26 +218,46 @@ public class TBSSSummariesGenerator {
 		for (int i = 0; i < lstPred.size(); i++)
 		{
 			log.info((i+1)+" in progress: " + lstPred.get(i) + ", endpoint: " + endpoint);
-			sb.append("     ds:capability\n");
-			sb.append("         [\n");
-			sb.append("           ds:predicate  <" + lstPred.get(i) + "> ;");
-			long distinctSbj = writeSbjPrefixes(lstPred.get(i), endpoint, graph, branchLimit, sb);
-			long tripleCount = getTripleCount(lstPred.get(i), endpoint);
-			if (distinctSbj == 0) {
-				distinctSbj = tripleCount;
+			StringBuilder tsb = new StringBuilder();
+			try {
+				tsb.append("     ds:capability\n");
+				tsb.append("         [\n");
+				tsb.append("           ds:predicate  <" + lstPred.get(i) + "> ;");
+				//long distinctSbj =
+				
+				// sbjs, objs, total
+				Tuple3<Long, Long, Long> stat = writePrefixes(lstPred.get(i), endpoint, graph, tsb);
+				
+				long distinctSbj = stat.getValue0();
+				long distinctObj = stat.getValue1();
+				long tripleCount = stat.getValue2();
+				
+				long tripleCount2 = getTripleCount(lstPred.get(i), endpoint);
+//				if (distinctSbj == 0) {
+//					distinctSbj = tripleCount;
+//				}
+//				if (distinctObj == 0) {
+//					distinctObj = tripleCount;
+//				}
+				tsb.append("           ds:distinctSbjs " + distinctSbj + " ;\n");
+				//tsb.append("\n           ds:avgSbjSelectivity  " + (1 / (double)distinctSbj) + " ;");
+				
+				//writeObjPrefixes(lstPred.get(i), endpoint, graph, branchLimit, tsb);
+				//double distinctObj = getObj(lstPred.get(i), endpoint);
+				tsb.append("           ds:distinctObjs  " + distinctObj + " ;\n");
+				//tsb.append("\n           ds:avgObjSelectivity  " + (1 / (double)distinctObj) + " ;\n");
+				
+				tsb.append("           ds:triples    " + tripleCount + " ;\n");
+				tsb.append("         ] ;\n");
+				sb.append(tsb.toString());
+				totalTrpl += tripleCount;
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-			sb.append("\n           ds:avgSbjSelectivity  " + (1 / (double)distinctSbj) + " ;");
-			
-			writeObjPrefixes(lstPred.get(i), endpoint, graph, branchLimit, sb);
-			double distinctObj = getObj(lstPred.get(i), endpoint);
-			sb.append("\n           ds:avgObjSelectivity  " + (1 / distinctObj) + " ;\n");
-
-			sb.append("           ds:triples    " + tripleCount + " ;\n");
-			sb.append("         ] ;\n");
 			
 			//totalSbj += distinctSbj;
 			//totalObj += (long)distinctObj ;
-			totalTrpl += tripleCount;
+			
 		}
 		
 
@@ -428,6 +484,74 @@ public class TBSSSummariesGenerator {
 		return uris;
 	}
 	
+	public Tuple3<Long, Long, Long> writePrefixes(String predicate, String endpoint, String graph, StringBuilder sb) throws IOException {
+		SPARQLRepository repo = new SPARQLRepository(endpoint);
+		repo.initialize();
+		
+		StringBuilder qb = new StringBuilder();
+		qb.append("SELECT ?s ?o");
+		if (null != graph) {
+			qb.append(" FROM <");
+			qb.append(graph);
+			qb.append(">");
+		}
+		qb.append(" WHERE { ?s <");
+		qb.append(predicate);
+		//qb.append("> ?o. FILTER (isURI(?s)) }");
+		qb.append("> ?o. }");
+		
+		if (predicate.equals("http://www.openlinksw.com/schemas/virtrdf#qmf01blankOfShortTmpl")) {
+			int p = 0;
+		}
+		long rsCount = 0;
+		long uniqueSbj = 0;
+		long uniqueObj = 0;
+		Trie2.Node rootSbj = Trie2.initializeTrie();
+		Trie2.Node rootObj = Trie2.initializeTrie();
+		RepositoryConnection conn = repo.getConnection();
+		try {
+			TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, qb.toString()); 
+			TupleQueryResult res = query.evaluate();
+			
+			while (res.hasNext()) 
+			{
+				BindingSet bs = res.next();
+				Value curSbj = bs.getValue("s");
+				if (curSbj instanceof IRI) {
+					if (Trie2.insertWord(rootSbj, curSbj.toString())) {
+						++uniqueSbj;
+					}
+				}
+				Value curObj = bs.getValue("o");
+				if (curObj instanceof IRI) {
+					if (Trie2.insertWord(rootObj, curObj.toString())) {
+						++uniqueObj;
+					}
+				}
+				++rsCount;
+			}
+		} finally {
+			conn.close();
+			repo.shutDown();
+		}
+		
+		sb.append("\n           ds:topSbjs [\n");
+		List<Pair<String, Long>> topsbjs = Trie2.findMostHittable(rootSbj, 5);
+		for (Pair<String, Long> p : topsbjs) {
+			sb.append("             _:").append(bnode.getAndIncrement()).append(" ds:subject <").append(p.getFirst()).append(">; ds:card ").append(p.getSecond()).append(" .\n");
+		}
+		sb.append("           ];\n           ds:topObjs [\n");
+		List<Pair<String, Long>> topobjs = Trie2.findMostHittable(rootObj, 5);
+		for (Pair<String, Long> p : topobjs) {
+			sb.append("             _:").append(bnode.getAndIncrement()).append(" ds:object <").append(p.getFirst()).append(">; ds:card ").append(p.getSecond()).append(" .\n");
+		}
+		sb.append("           ];\n");
+		log.info("subject: " + topsbjs);
+		log.info("object: " + topobjs);
+		
+		return new Tuple3<Long, Long, Long>(uniqueSbj, uniqueObj, rsCount);
+	}
+	
 	/**
 	 * Write all the distinct subject prefixes  for triples with predicate p. 
 	 * @param predicate  Predicate
@@ -445,6 +569,7 @@ public class TBSSSummariesGenerator {
 		SPARQLRepository repo = new SPARQLRepository(endpoint);
 		repo.initialize();
 
+		Trie2.Node root = Trie2.initializeTrie();
 		RepositoryConnection conn = repo.getConnection();
 		try {
 			TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, strQuery); 
@@ -454,6 +579,9 @@ public class TBSSSummariesGenerator {
 			{
 				String curSbj = res.next().getValue("s").toString();
 				rsCount++;
+				
+				Trie2.insertWord(root, curSbj);
+				
 				//System.out.println(curSbj);
 				String[] sbjPrts = curSbj.split("/");
 				if ((sbjPrts.length > 2))

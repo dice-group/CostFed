@@ -2,6 +2,7 @@ package org.aksw.simba.quetsal.core;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -40,6 +41,7 @@ public class JoinOrderOptimizer extends StatementGroupOptimizer {
 		public void meet(StatementPattern stmt) {
 			List<StatementSource> stmtSrces = queryInfo.getSourceSelection().getStmtToSources().get(stmt);
 			current.card = Cardinality.getTriplePatternCardinality(stmt, stmtSrces);
+			assert(current.card != 0);
 			current.sel = current.card/(double)Cardinality.getTotalTripleCount(stmtSrces);
 		}
 		
@@ -138,7 +140,23 @@ public class JoinOrderOptimizer extends StatementGroupOptimizer {
 		}
 		
 		// sort arguments according their cards
-		cardPairs.sort((cpl, cpr) -> Long.compare(cpl.nd.card, cpr.nd.card));
+		cardPairs.sort(new Comparator<CardPair>() {
+			@Override
+			public int compare(CardPair cpl, CardPair cpr) {
+				if (cpl.expr instanceof ExclusiveGroup) {
+					if (cpr.expr instanceof ExclusiveGroup) {
+						return Long.compare(cpl.nd.card, cpr.nd.card);		
+					} else {
+						return -1;
+					}
+				} else if (cpr.expr instanceof ExclusiveGroup) {
+					return 1;
+				} else {
+					return Long.compare(cpl.nd.card, cpr.nd.card);
+				}
+			}
+		});
+
 		
 		if (log.isTraceEnabled()) {
 			log.trace(cardPairs.get(0));
@@ -200,8 +218,9 @@ public class JoinOrderOptimizer extends StatementGroupOptimizer {
 			}
 			
 			NJoin newNode;
-			//newNode = new HashJoin(leftArg.expr, rightArg.expr, queryInfo);
-			///*
+			newNode = new HashJoin(leftArg.expr, rightArg.expr, queryInfo);
+			//newNode = new BindJoin(leftArg.expr, rightArg.expr, queryInfo);
+			/*
 			if (useHashJoin || (!useBindJoin && hashCost < bindCost)) {
 				newNode = new HashJoin(leftArg.expr, rightArg.expr, queryInfo);
 				//useHashJoin = true; // pin

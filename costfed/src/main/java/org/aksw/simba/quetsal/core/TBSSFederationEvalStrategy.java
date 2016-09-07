@@ -89,9 +89,9 @@ public class TBSSFederationEvalStrategy extends SparqlFederationEvalStrategy {
 	
 	CloseableIteration<BindingSet, QueryEvaluationException> evaluateHashJoin(HashJoin join, BindingSet bindings)
 	{
-		return new HashJoinImpl(FederationManager.getInstance().getScheduler(),
-			join.getLeftArg().getBindingNames(), evaluate(join.getLeftArg(), bindings),
-			join.getRightArg().getBindingNames(), evaluate(join.getRightArg(), bindings),
+		return new HashJoinImpl(FederationManager.getInstance().getScheduler(),	this,
+			join.getLeftArg().getBindingNames(), join.getLeftArg(),
+			join.getRightArg().getBindingNames(), join.getRightArg(),
 			bindings, join.getQueryInfo());
 	}
 	

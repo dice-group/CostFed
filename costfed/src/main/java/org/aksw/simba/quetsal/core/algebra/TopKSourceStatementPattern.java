@@ -62,6 +62,7 @@ public class TopKSourceStatementPattern extends StatementSourcePattern {
 		super(arg, queryInfo);
 		for (StatementSource src : arg.getStatementSources()) {
 			long card = Cardinality.getTriplePatternCardinality(arg, Arrays.asList(src));
+			assert(card != 0);
 			srcEntries.add(new Entry(card,	src));
 		}
 		srcEntries.sort((cpl, cpr) -> -Long.compare(cpl.card, cpr.card)); // desc order

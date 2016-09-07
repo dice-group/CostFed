@@ -1,0 +1,2107 @@
+@prefix ds:<http://aksw.org/quetsal/> .
+#---------------------http://localhost:8895/sparql Summaries-------------------------------
+[] a ds:Service ;
+     ds:url   <http://localhost:8895/sparql> ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ;
+           ds:topSbjs [
+             _:0 ds:subject <http://bio2rdf.org/ec:1.1.1.1>; ds:card 105 .
+             _:1 ds:subject <http://bio2rdf.org/ec:1.1.1.2>; ds:card 104 .
+             _:2 ds:subject <http://bio2rdf.org/ec:2.4.1.1>; ds:card 104 .
+             _:3 ds:subject <http://bio2rdf.org/ec:2.3.1.1>; ds:card 97 .
+             _:4 ds:subject <http://bio2rdf.org/ec:2.1.1.1>; ds:card 71 .
+           ];
+           ds:topObjs [
+             _:5 ds:object <http://bio2rdf.org/ns/kegg#Compound>; ds:card 14071 .
+             _:6 ds:object <http://bio2rdf.org/ns/kegg#Drug>; ds:card 8117 .
+             _:7 ds:object <http://bio2rdf.org/ns/kegg#Reaction>; ds:card 7827 .
+             _:8 ds:object <http://bio2rdf.org/ns/kegg#Enzyme>; ds:card 4245 .
+             _:9 ds:object <http://www.openlinksw.com/schemas/virtrdf#array-of-QuadMapFormat>; ds:card 126 .
+           ];
+           ds:distinctSbjs 34581 ;
+           ds:distinctObjs  22 ;
+           ds:triples    34604 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#version> ;
+           ds:topSbjs [
+             _:10 ds:subject <http://www.openlinksw.com/sparql/virtrdf-data-formats.ttl>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 1 ;
+           ds:distinctObjs  0 ;
+           ds:triples    1 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#loadAs> ;
+           ds:topSbjs [
+             _:11 ds:subject <http://www.openlinksw.com/schemas/virtrdf#isSpecialPredicate>; ds:card 1 .
+             _:12 ds:subject <http://www.openlinksw.com/schemas/virtrdf#isEndpointOfService>; ds:card 1 .
+             _:13 ds:subject <http://www.openlinksw.com/schemas/virtrdf#isSubclassOf>; ds:card 1 .
+             _:14 ds:subject <http://www.openlinksw.com/schemas/virtrdf#isGcResistantType>; ds:card 1 .
+             _:15 ds:subject <http://www.openlinksw.com/schemas/virtrdf#dialect>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:16 ds:object <http://www.openlinksw.com/schemas/virtrdf#jsoTriple>; ds:card 7 .
+           ];
+           ds:distinctSbjs 7 ;
+           ds:distinctObjs  1 ;
+           ds:triples    7 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#item> ;
+           ds:topSbjs [
+             _:17 ds:subject <http://www.openlinksw.com/sparql/virtrdf-data-formats.ttl>; ds:card 130 .
+             _:18 ds:subject <http://www.openlinksw.com/schemas/virtrdf#loadAs>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:19 ds:object <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 16 .
+             _:20 ds:object <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 16 .
+             _:21 ds:object <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 16 .
+             _:22 ds:object <http://www.openlinksw.com/virtrdf-data-formats#sql-numeric>; ds:card 10 .
+             _:23 ds:object <http://www.openlinksw.com/virtrdf-data-formats#sql-integer>; ds:card 10 .
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  131 ;
+           ds:triples    131 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#isSpecialPredicate> ;
+           ds:topSbjs [
+             _:24 ds:subject <bif:xpath_contains>; ds:card 1 .
+             _:25 ds:subject <bif:spatial_contains>; ds:card 1 .
+             _:26 ds:subject <bif:xquery_contains>; ds:card 1 .
+             _:27 ds:subject <bif:xcontains>; ds:card 1 .
+             _:28 ds:subject <bif:contains>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:29 ds:object <bif:xpath_contains>; ds:card 1 .
+             _:30 ds:object <bif:spatial_contains>; ds:card 1 .
+             _:31 ds:object <bif:xquery_contains>; ds:card 1 .
+             _:32 ds:object <bif:xcontains>; ds:card 1 .
+             _:33 ds:object <bif:contains>; ds:card 1 .
+           ];
+           ds:distinctSbjs 5 ;
+           ds:distinctObjs  5 ;
+           ds:triples    5 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#isGcResistantType> ;
+           ds:topSbjs [
+             _:34 ds:subject <http://www.openlinksw.com/schemas/virtrdf#QuadMapFormat>; ds:card 1 .
+             _:35 ds:subject <http://www.openlinksw.com/schemas/virtrdf#QuadStorage>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  0 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfName> ;
+           ds:topSbjs [
+             _:36 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 16 .
+             _:37 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 16 .
+             _:38 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 16 .
+             _:39 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-numeric>; ds:card 10 .
+             _:40 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-integer>; ds:card 10 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 126 ;
+           ds:distinctObjs  0 ;
+           ds:triples    126 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfShortTmpl> ;
+           ds:topSbjs [
+             _:41 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 8 .
+             _:42 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 4 .
+             _:43 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 2 .
+             _:44 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-literal>; ds:card 2 .
+             _:45 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#multipart-literal>; ds:card 2 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 31 ;
+           ds:distinctObjs  0 ;
+           ds:triples    31 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfLongTmpl> ;
+           ds:topSbjs [
+             _:46 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 10 .
+             _:47 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 4 .
+             _:48 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 4 .
+             _:49 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-literal>; ds:card 3 .
+             _:50 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#multipart-literal>; ds:card 3 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 45 ;
+           ds:distinctObjs  0 ;
+           ds:triples    45 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfSqlvalTmpl> ;
+           ds:topSbjs [
+             _:51 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 10 .
+             _:52 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-longnvarchar>; ds:card 4 .
+             _:53 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 4 .
+             _:54 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-longvarchar>; ds:card 4 .
+             _:55 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 4 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 53 ;
+           ds:distinctObjs  0 ;
+           ds:triples    53 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfBoolTmpl> ;
+           ds:topSbjs [
+             _:56 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 8 .
+             _:57 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 4 .
+             _:58 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 2 .
+             _:59 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-literal>; ds:card 2 .
+             _:60 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#multipart-literal>; ds:card 2 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 31 ;
+           ds:distinctObjs  0 ;
+           ds:triples    31 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfIsrefOfShortTmpl> ;
+           ds:topSbjs [
+             _:61 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 8 .
+             _:62 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 4 .
+             _:63 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 2 .
+             _:64 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-literal>; ds:card 2 .
+             _:65 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#multipart-literal>; ds:card 2 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 31 ;
+           ds:distinctObjs  0 ;
+           ds:triples    31 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfIsuriOfShortTmpl> ;
+           ds:topSbjs [
+             _:66 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 8 .
+             _:67 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 4 .
+             _:68 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 2 .
+             _:69 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-literal>; ds:card 2 .
+             _:70 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#multipart-literal>; ds:card 2 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 31 ;
+           ds:distinctObjs  0 ;
+           ds:triples    31 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfIsblankOfShortTmpl> ;
+           ds:topSbjs [
+             _:71 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 8 .
+             _:72 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 4 .
+             _:73 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 2 .
+             _:74 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-literal>; ds:card 2 .
+             _:75 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#multipart-literal>; ds:card 2 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 31 ;
+           ds:distinctObjs  0 ;
+           ds:triples    31 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfIslitOfShortTmpl> ;
+           ds:topSbjs [
+             _:76 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 8 .
+             _:77 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 4 .
+             _:78 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 2 .
+             _:79 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-literal>; ds:card 2 .
+             _:80 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#multipart-literal>; ds:card 2 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 31 ;
+           ds:distinctObjs  0 ;
+           ds:triples    31 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmf01uriOfShortTmpl> ;
+           ds:topSbjs [
+             _:81 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sinv-iid>; ds:card 1 .
+             _:82 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#default-iid>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  0 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmf01blankOfShortTmpl> ;
+           ds:topSbjs [
+             _:83 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sinv-iid>; ds:card 1 .
+             _:84 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#default-iid>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  0 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfLongOfShortTmpl> ;
+           ds:topSbjs [
+             _:85 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 10 .
+             _:86 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 4 .
+             _:87 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 4 .
+             _:88 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-literal>; ds:card 3 .
+             _:89 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#multipart-literal>; ds:card 3 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 45 ;
+           ds:distinctObjs  0 ;
+           ds:triples    45 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfSqlvalOfShortTmpl> ;
+           ds:topSbjs [
+             _:90 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 10 .
+             _:91 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-longnvarchar>; ds:card 4 .
+             _:92 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 4 .
+             _:93 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-longvarchar>; ds:card 4 .
+             _:94 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 4 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 53 ;
+           ds:distinctObjs  0 ;
+           ds:triples    53 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfDatatypeOfShortTmpl> ;
+           ds:topSbjs [
+             _:95 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 8 .
+             _:96 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 4 .
+             _:97 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 2 .
+             _:98 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-literal>; ds:card 2 .
+             _:99 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#multipart-literal>; ds:card 2 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 31 ;
+           ds:distinctObjs  0 ;
+           ds:triples    31 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfLanguageOfShortTmpl> ;
+           ds:topSbjs [
+             _:100 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 8 .
+             _:101 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 4 .
+             _:102 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 2 .
+             _:103 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-literal>; ds:card 2 .
+             _:104 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#multipart-literal>; ds:card 2 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 31 ;
+           ds:distinctObjs  0 ;
+           ds:triples    31 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfBoolOfShortTmpl> ;
+           ds:topSbjs [
+             _:105 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 8 .
+             _:106 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-longvarchar>; ds:card 4 .
+             _:107 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 4 .
+             _:108 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-longnvarchar>; ds:card 4 .
+             _:109 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 2 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 39 ;
+           ds:distinctObjs  0 ;
+           ds:triples    39 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfIidOfShortTmpl> ;
+           ds:topSbjs [
+             _:110 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-longnvarchar>; ds:card 4 .
+             _:111 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-numeric>; ds:card 4 .
+             _:112 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-longvarchar>; ds:card 4 .
+             _:113 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-integer>; ds:card 4 .
+             _:114 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-time>; ds:card 3 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 57 ;
+           ds:distinctObjs  0 ;
+           ds:triples    57 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfUriOfShortTmpl> ;
+           ds:topSbjs [
+             _:115 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 10 .
+             _:116 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 4 .
+             _:117 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 4 .
+             _:118 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-literal>; ds:card 3 .
+             _:119 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#multipart-literal>; ds:card 3 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 45 ;
+           ds:distinctObjs  0 ;
+           ds:triples    45 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfStrsqlvalOfShortTmpl> ;
+           ds:topSbjs [
+             _:120 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 10 .
+             _:121 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-longnvarchar>; ds:card 4 .
+             _:122 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 4 .
+             _:123 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-longvarchar>; ds:card 4 .
+             _:124 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 4 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 53 ;
+           ds:distinctObjs  0 ;
+           ds:triples    53 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfShortOfTypedsqlvalTmpl> ;
+           ds:topSbjs [
+             _:125 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 8 .
+             _:126 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 4 .
+             _:127 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 2 .
+             _:128 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-literal>; ds:card 2 .
+             _:129 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#multipart-literal>; ds:card 2 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 31 ;
+           ds:distinctObjs  0 ;
+           ds:triples    31 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfShortOfSqlvalTmpl> ;
+           ds:topSbjs [
+             _:130 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 8 .
+             _:131 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 4 .
+             _:132 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 2 .
+             _:133 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-literal>; ds:card 2 .
+             _:134 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#multipart-literal>; ds:card 2 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 31 ;
+           ds:distinctObjs  0 ;
+           ds:triples    31 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfShortOfLongTmpl> ;
+           ds:topSbjs [
+             _:135 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 8 .
+             _:136 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 4 .
+             _:137 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 2 .
+             _:138 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-literal>; ds:card 2 .
+             _:139 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#multipart-literal>; ds:card 2 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 31 ;
+           ds:distinctObjs  0 ;
+           ds:triples    31 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfShortOfUriTmpl> ;
+           ds:topSbjs [
+             _:140 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 8 .
+             _:141 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 4 .
+             _:142 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 2 .
+             _:143 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-literal>; ds:card 2 .
+             _:144 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#multipart-literal>; ds:card 2 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 31 ;
+           ds:distinctObjs  0 ;
+           ds:triples    31 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfIsBijection> ;
+           ds:topSbjs [
+             _:145 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 10 .
+             _:146 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 8 .
+             _:147 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-numeric>; ds:card 6 .
+             _:148 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-integer>; ds:card 6 .
+             _:149 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-datetime>; ds:card 5 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 65 ;
+           ds:distinctObjs  0 ;
+           ds:triples    65 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfMapsOnlyNullToNull> ;
+           ds:topSbjs [
+             _:150 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 6 .
+             _:151 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-longnvarchar>; ds:card 4 .
+             _:152 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 4 .
+             _:153 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-longvarchar>; ds:card 4 .
+             _:154 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 4 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 40 ;
+           ds:distinctObjs  0 ;
+           ds:triples    40 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfIsStable> ;
+           ds:topSbjs [
+             _:155 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 10 .
+             _:156 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 8 .
+             _:157 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-numeric>; ds:card 6 .
+             _:158 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-integer>; ds:card 6 .
+             _:159 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-datetime>; ds:card 5 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 65 ;
+           ds:distinctObjs  0 ;
+           ds:triples    65 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfIsSubformatOfLong> ;
+           ds:topSbjs [
+             _:160 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 2 .
+             _:161 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-numeric>; ds:card 1 .
+             _:162 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-datetime>; ds:card 1 .
+             _:163 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-doubleprecision>; ds:card 1 .
+             _:164 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sinv-iid>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 8 ;
+           ds:distinctObjs  0 ;
+           ds:triples    8 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfIsSubformatOfLongWhenRef> ;
+           ds:topSbjs [
+             _:165 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sinv>; ds:card 1 .
+             _:166 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sinv-iid>; ds:card 1 .
+             _:167 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#default-iid>; ds:card 1 .
+             _:168 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#default>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 4 ;
+           ds:distinctObjs  0 ;
+           ds:triples    4 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfCmpFuncName> ;
+           ds:topSbjs [
+             _:169 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 10 .
+             _:170 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 8 .
+             _:171 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-numeric>; ds:card 6 .
+             _:172 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-integer>; ds:card 6 .
+             _:173 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-datetime>; ds:card 5 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 57 ;
+           ds:distinctObjs  0 ;
+           ds:triples    57 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfTypeminTmpl> ;
+           ds:topSbjs [
+             _:174 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 10 .
+             _:175 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 8 .
+             _:176 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-numeric>; ds:card 6 .
+             _:177 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-integer>; ds:card 6 .
+             _:178 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-datetime>; ds:card 5 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 57 ;
+           ds:distinctObjs  0 ;
+           ds:triples    57 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfTypemaxTmpl> ;
+           ds:topSbjs [
+             _:179 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 10 .
+             _:180 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 8 .
+             _:181 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-numeric>; ds:card 6 .
+             _:182 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-integer>; ds:card 6 .
+             _:183 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-datetime>; ds:card 5 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 57 ;
+           ds:distinctObjs  0 ;
+           ds:triples    57 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfColumnCount> ;
+           ds:topSbjs [
+             _:184 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 8 .
+             _:185 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 4 .
+             _:186 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 2 .
+             _:187 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-literal>; ds:card 2 .
+             _:188 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#multipart-literal>; ds:card 2 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 31 ;
+           ds:distinctObjs  0 ;
+           ds:triples    31 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfOkForAnySqlvalue> ;
+           ds:topSbjs [
+             _:189 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 8 .
+             _:190 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 4 .
+             _:191 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 2 .
+             _:192 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-literal>; ds:card 2 .
+             _:193 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#multipart-literal>; ds:card 2 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 31 ;
+           ds:distinctObjs  0 ;
+           ds:triples    31 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfValRange-rvrRestrictions> ;
+           ds:topSbjs [
+             _:194 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 40 .
+             _:195 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 31 .
+             _:196 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-numeric>; ds:card 26 .
+             _:197 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-integer>; ds:card 26 .
+             _:198 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-datetime>; ds:card 20 .
+           ];
+           ds:topObjs [
+             _:199 ds:object <http://www.openlinksw.com/schemas/virtrdf#SPART_VARR_IS_LIT>; ds:card 72 .
+             _:200 ds:object <http://www.openlinksw.com/schemas/virtrdf#SPART_VARR_NOT_NULL>; ds:card 49 .
+             _:201 ds:object <http://www.openlinksw.com/schemas/virtrdf#SPART_VARR_IS_REF>; ds:card 34 .
+             _:202 ds:object <http://www.openlinksw.com/schemas/virtrdf#SPART_VARR_IS_IRI>; ds:card 30 .
+             _:203 ds:object <http://www.openlinksw.com/schemas/virtrdf#SPART_VARR_IRI_CALC>; ds:card 19 .
+           ];
+           ds:distinctSbjs 108 ;
+           ds:distinctObjs  8 ;
+           ds:triples    232 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfUriIdOffset> ;
+           ds:topSbjs [
+             _:204 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 10 .
+             _:205 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 8 .
+             _:206 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-numeric>; ds:card 6 .
+             _:207 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-integer>; ds:card 6 .
+             _:208 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-datetime>; ds:card 5 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 57 ;
+           ds:distinctObjs  0 ;
+           ds:triples    57 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfSuperFormats> ;
+           ds:topSbjs [
+             _:209 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 16 .
+             _:210 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 16 .
+             _:211 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 16 .
+             _:212 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-numeric>; ds:card 10 .
+             _:213 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-integer>; ds:card 10 .
+           ];
+           ds:topObjs [
+             _:214 ds:object <http://www.openlinksw.com/virtrdf-data-formats#multipart-uri-SuperFormats>; ds:card 1 .
+             _:215 ds:object <http://www.openlinksw.com/virtrdf-data-formats#multipart-literal-nullable-SuperFormats>; ds:card 1 .
+             _:216 ds:object <http://www.openlinksw.com/virtrdf-data-formats#multipart-literal-fn-nullable-SuperFormats>; ds:card 1 .
+             _:217 ds:object <http://www.openlinksw.com/virtrdf-data-formats#multipart-uri-nullable-SuperFormats>; ds:card 1 .
+             _:218 ds:object <http://www.openlinksw.com/virtrdf-data-formats#multipart-uri-fn-nullable-SuperFormats>; ds:card 1 .
+           ];
+           ds:distinctSbjs 126 ;
+           ds:distinctObjs  126 ;
+           ds:triples    126 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/1999/02/22-rdf-syntax-ns#_1> ;
+           ds:topSbjs [
+             _:219 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-O-cols>; ds:card 1 .
+             _:220 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-P-cols>; ds:card 1 .
+             _:221 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-G-cols>; ds:card 1 .
+             _:222 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-S-cols>; ds:card 1 .
+             _:223 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-atables>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:224 ds:object <http://www.openlinksw.com/virtrdf-data-formats#default-nullable>; ds:card 7 .
+             _:225 ds:object <http://www.openlinksw.com/virtrdf-data-formats#sinv-iid-nullable>; ds:card 2 .
+             _:226 ds:object <http://www.openlinksw.com/virtrdf-data-formats#default-iid-nullable>; ds:card 2 .
+             _:227 ds:object <http://www.openlinksw.com/virtrdf-data-formats#sinv-nullable>; ds:card 2 .
+             _:228 ds:object <http://www.openlinksw.com/virtrdf-data-formats#sql-datetime-nullable>; ds:card 2 .
+           ];
+           ds:distinctSbjs 74 ;
+           ds:distinctObjs  64 ;
+           ds:triples    74 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/1999/02/22-rdf-syntax-ns#_2> ;
+           ds:topSbjs [
+             _:229 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date-SuperFormats>; ds:card 1 .
+             _:230 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-doubleprecision-SuperFormats>; ds:card 1 .
+             _:231 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-datetime-SuperFormats>; ds:card 1 .
+             _:232 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date-nullable-SuperFormats>; ds:card 1 .
+             _:233 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-integer-SuperFormats>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:234 ds:object <http://www.openlinksw.com/virtrdf-data-formats#default>; ds:card 9 .
+             _:235 ds:object <http://www.openlinksw.com/virtrdf-data-formats#default-nullable>; ds:card 7 .
+             _:236 ds:object <http://www.openlinksw.com/virtrdf-data-formats#sinv>; ds:card 3 .
+             _:237 ds:object <http://www.openlinksw.com/virtrdf-data-formats#sinv-nullable>; ds:card 1 .
+             _:238 ds:object <http://www.openlinksw.com/virtrdf-data-formats#default-iid>; ds:card 1 .
+           ];
+           ds:distinctSbjs 13 ;
+           ds:distinctObjs  7 ;
+           ds:triples    13 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/1999/02/22-rdf-syntax-ns#_3> ;
+           ds:topSbjs [
+             _:239 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-datetime-SuperFormats>; ds:card 1 .
+             _:240 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-numeric-SuperFormats>; ds:card 1 .
+             _:241 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-doubleprecision-SuperFormats>; ds:card 1 .
+             _:242 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date-SuperFormats>; ds:card 1 .
+             _:243 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-integer-SuperFormats>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:244 ds:object <http://www.openlinksw.com/virtrdf-data-formats#default-iid-nullable>; ds:card 1 .
+             _:245 ds:object <http://www.openlinksw.com/virtrdf-data-formats#sinv-nullable>; ds:card 1 .
+             _:246 ds:object <http://www.openlinksw.com/virtrdf-data-formats#sql-datetime-nullable>; ds:card 1 .
+             _:247 ds:object <http://www.openlinksw.com/virtrdf-data-formats#default-nullable>; ds:card 1 .
+             _:248 ds:object <http://www.openlinksw.com/virtrdf-data-formats#default>; ds:card 1 .
+           ];
+           ds:distinctSbjs 10 ;
+           ds:distinctObjs  6 ;
+           ds:triples    10 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#inheritFrom> ;
+           ds:topSbjs [
+             _:249 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-longvarchar>; ds:card 8 .
+             _:250 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-longnvarchar>; ds:card 8 .
+             _:251 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-doubleprecision-literal>; ds:card 4 .
+             _:252 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date-literal>; ds:card 4 .
+             _:253 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-integer-uri>; ds:card 4 .
+           ];
+           ds:topObjs [
+             _:254 ds:object <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 46 .
+             _:255 ds:object <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-literal>; ds:card 24 .
+             _:256 ds:object <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-literal-fn>; ds:card 15 .
+             _:257 ds:object <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-uri>; ds:card 14 .
+             _:258 ds:object <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-uri-fn>; ds:card 9 .
+           ];
+           ds:distinctSbjs 95 ;
+           ds:distinctObjs  53 ;
+           ds:triples    95 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#noInherit> ;
+           ds:topSbjs [
+             _:259 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-doubleprecision-literal>; ds:card 4 .
+             _:260 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date-literal>; ds:card 4 .
+             _:261 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-integer-uri>; ds:card 4 .
+             _:262 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-time-literal>; ds:card 4 .
+             _:263 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-datetime-literal>; ds:card 4 .
+           ];
+           ds:topObjs [
+             _:264 ds:object <http://www.openlinksw.com/schemas/virtrdf#qmfValRange-rvrRestrictions>; ds:card 79 .
+             _:265 ds:object <http://www.openlinksw.com/schemas/virtrdf#qmfSubFormatForRefs>; ds:card 1 .
+           ];
+           ds:distinctSbjs 79 ;
+           ds:distinctObjs  2 ;
+           ds:triples    80 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/1999/02/22-rdf-syntax-ns#_4> ;
+           ds:topSbjs [
+             _:266 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#default-iid-nonblank-SuperFormats>; ds:card 1 .
+             _:267 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sinv-iid-nonblank-SuperFormats>; ds:card 1 .
+             _:268 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date-SuperFormats>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:269 ds:object <http://www.openlinksw.com/virtrdf-data-formats#default>; ds:card 2 .
+             _:270 ds:object <http://www.openlinksw.com/virtrdf-data-formats#sinv>; ds:card 1 .
+             _:271 ds:object <http://www.openlinksw.com/virtrdf-data-formats#default-nullable>; ds:card 1 .
+           ];
+           ds:distinctSbjs 3 ;
+           ds:distinctObjs  3 ;
+           ds:triples    3 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/1999/02/22-rdf-syntax-ns#_5> ;
+           ds:topSbjs [
+             _:272 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#default-iid-nonblank-SuperFormats>; ds:card 1 .
+             _:273 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sinv-iid-nonblank-SuperFormats>; ds:card 1 .
+             _:274 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date-SuperFormats>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:275 ds:object <http://www.openlinksw.com/virtrdf-data-formats#sinv-nullable>; ds:card 1 .
+             _:276 ds:object <http://www.openlinksw.com/virtrdf-data-formats#default-nullable>; ds:card 1 .
+             _:277 ds:object <http://www.openlinksw.com/virtrdf-data-formats#default>; ds:card 1 .
+           ];
+           ds:distinctSbjs 3 ;
+           ds:distinctObjs  3 ;
+           ds:triples    3 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfExistingShortOfTypedsqlvalTmpl> ;
+           ds:topSbjs [
+             _:278 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sinv>; ds:card 1 .
+             _:279 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#default>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  0 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfExistingShortOfSqlvalTmpl> ;
+           ds:topSbjs [
+             _:280 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sinv>; ds:card 1 .
+             _:281 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#default>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  0 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfExistingShortOfLongTmpl> ;
+           ds:topSbjs [
+             _:282 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sinv>; ds:card 1 .
+             _:283 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#default>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  0 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfExistingShortOfUriTmpl> ;
+           ds:topSbjs [
+             _:284 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sinv>; ds:card 1 .
+             _:285 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#default>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  0 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfIsSubformatOfLongWhenEqToSql> ;
+           ds:topSbjs [
+             _:286 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sinv>; ds:card 1 .
+             _:287 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#default>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  0 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfWrapDistinct> ;
+           ds:topSbjs [
+             _:288 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sinv>; ds:card 1 .
+             _:289 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#default>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  0 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfSubFormatForRefs> ;
+           ds:topSbjs [
+             _:290 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#default>; ds:card 2 .
+             _:291 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#default-nullable>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:292 ds:object <http://www.openlinksw.com/virtrdf-data-formats#default-iid>; ds:card 2 .
+             _:293 ds:object <http://www.openlinksw.com/virtrdf-data-formats#default-iid-nullable>; ds:card 1 .
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  2 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfIsnumericOfShortTmpl> ;
+           ds:topSbjs [
+             _:294 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 6 .
+             _:295 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 2 .
+             _:296 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#zeropart-uri>; ds:card 2 .
+             _:297 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-uri>; ds:card 2 .
+             _:298 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#multipart-uri>; ds:card 2 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 19 ;
+           ds:distinctObjs  0 ;
+           ds:triples    19 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfShortOfNiceSqlvalTmpl> ;
+           ds:topSbjs [
+             _:299 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 3 .
+             _:300 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 3 .
+             _:301 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-lang>; ds:card 1 .
+             _:302 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar-fixedlang-x-any>; ds:card 1 .
+             _:303 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar-lang>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 6 ;
+           ds:distinctObjs  0 ;
+           ds:triples    6 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfDtpOfNiceSqlval> ;
+           ds:topSbjs [
+             _:304 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 3 .
+             _:305 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar>; ds:card 3 .
+             _:306 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-lang>; ds:card 1 .
+             _:307 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar-fixedlang-x-any>; ds:card 1 .
+             _:308 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar-lang>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 6 ;
+           ds:distinctObjs  0 ;
+           ds:triples    6 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfHasCheapSqlval> ;
+           ds:topSbjs [
+             _:309 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar>; ds:card 6 .
+             _:310 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 2 .
+             _:311 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-uri>; ds:card 2 .
+             _:312 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#multipart-literal>; ds:card 2 .
+             _:313 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#multipart-uri>; ds:card 2 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 22 ;
+           ds:distinctObjs  0 ;
+           ds:triples    22 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfDatatypeTmpl> ;
+           ds:topSbjs [
+             _:314 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-dt>; ds:card 1 .
+             _:315 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar-dt>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  0 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfLanguageTmpl> ;
+           ds:topSbjs [
+             _:316 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar-lang>; ds:card 1 .
+             _:317 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-nvarchar-fixedlang-x-any>; ds:card 1 .
+             _:318 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-fixedlang-x-any>; ds:card 1 .
+             _:319 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-lang>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 4 ;
+           ds:distinctObjs  0 ;
+           ds:triples    4 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfValRange-rvrDatatype> ;
+           ds:topSbjs [
+             _:320 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date>; ds:card 2 .
+             _:321 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-numeric>; ds:card 1 .
+             _:322 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-datetime>; ds:card 1 .
+             _:323 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-doubleprecision>; ds:card 1 .
+             _:324 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-longvarbinary>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 7 ;
+           ds:distinctObjs  0 ;
+           ds:triples    7 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfCustomString1> ;
+           ds:topSbjs [
+             _:325 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-doubleprecision-literal>; ds:card 3 .
+             _:326 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-date-literal>; ds:card 3 .
+             _:327 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-integer-literal>; ds:card 3 .
+             _:328 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-time-literal>; ds:card 3 .
+             _:329 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-datetime-literal>; ds:card 3 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 30 ;
+           ds:distinctObjs  0 ;
+           ds:triples    30 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmfValRange-rvrLanguage> ;
+           ds:topSbjs [
+             _:330 ds:subject <http://www.openlinksw.com/virtrdf-data-formats#sql-varchar-literal>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 1 ;
+           ds:distinctObjs  0 ;
+           ds:triples    1 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmGraphMap> ;
+           ds:topSbjs [
+             _:331 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap>; ds:card 1 .
+             _:332 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:333 ds:object <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-G>; ds:card 1 .
+             _:334 ds:object <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap-G>; ds:card 1 .
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  2 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmSubjectMap> ;
+           ds:topSbjs [
+             _:335 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap>; ds:card 1 .
+             _:336 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:337 ds:object <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap-S>; ds:card 1 .
+             _:338 ds:object <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-S>; ds:card 1 .
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  2 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmPredicateMap> ;
+           ds:topSbjs [
+             _:339 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap>; ds:card 1 .
+             _:340 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:341 ds:object <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap-P>; ds:card 1 .
+             _:342 ds:object <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-P>; ds:card 1 .
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  2 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmObjectMap> ;
+           ds:topSbjs [
+             _:343 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap>; ds:card 1 .
+             _:344 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:345 ds:object <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap-O>; ds:card 1 .
+             _:346 ds:object <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-O>; ds:card 1 .
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  2 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmTableName> ;
+           ds:topSbjs [
+             _:347 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap>; ds:card 1 .
+             _:348 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  0 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmMatchingFlags> ;
+           ds:topSbjs [
+             _:349 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap>; ds:card 1 .
+             _:350 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:351 ds:object <http://www.openlinksw.com/schemas/virtrdf#SPART_QM_OK_FOR_ANY_QUAD>; ds:card 2 .
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  1 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmvTableName> ;
+           ds:topSbjs [
+             _:352 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-G>; ds:card 1 .
+             _:353 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap-P>; ds:card 1 .
+             _:354 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-O>; ds:card 1 .
+             _:355 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-S>; ds:card 1 .
+             _:356 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-P>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 8 ;
+           ds:distinctObjs  0 ;
+           ds:triples    8 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmvATables> ;
+           ds:topSbjs [
+             _:357 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-G>; ds:card 1 .
+             _:358 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap-P>; ds:card 1 .
+             _:359 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-O>; ds:card 1 .
+             _:360 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-S>; ds:card 1 .
+             _:361 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-P>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:362 ds:object <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-atables>; ds:card 4 .
+             _:363 ds:object <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap-atables>; ds:card 4 .
+           ];
+           ds:distinctSbjs 8 ;
+           ds:distinctObjs  2 ;
+           ds:triples    8 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmvColumns> ;
+           ds:topSbjs [
+             _:364 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-G>; ds:card 1 .
+             _:365 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap-P>; ds:card 1 .
+             _:366 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-O>; ds:card 1 .
+             _:367 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-S>; ds:card 1 .
+             _:368 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-P>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:369 ds:object <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-G-cols>; ds:card 1 .
+             _:370 ds:object <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap-S-cols>; ds:card 1 .
+             _:371 ds:object <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-P-cols>; ds:card 1 .
+             _:372 ds:object <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-O-cols>; ds:card 1 .
+             _:373 ds:object <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-S-cols>; ds:card 1 .
+           ];
+           ds:distinctSbjs 8 ;
+           ds:distinctObjs  8 ;
+           ds:triples    8 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmvFormat> ;
+           ds:topSbjs [
+             _:374 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-G>; ds:card 1 .
+             _:375 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap-P>; ds:card 1 .
+             _:376 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-O>; ds:card 1 .
+             _:377 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-S>; ds:card 1 .
+             _:378 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-P>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:379 ds:object <http://www.openlinksw.com/virtrdf-data-formats#default-iid-nonblank>; ds:card 4 .
+             _:380 ds:object <http://www.openlinksw.com/virtrdf-data-formats#default-iid>; ds:card 1 .
+             _:381 ds:object <http://www.openlinksw.com/virtrdf-data-formats#default>; ds:card 1 .
+           ];
+           ds:distinctSbjs 8 ;
+           ds:distinctObjs  3 ;
+           ds:triples    8 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmvColumnsFormKey> ;
+           ds:topSbjs [
+             _:382 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-G>; ds:card 1 .
+             _:383 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap-P>; ds:card 1 .
+             _:384 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-O>; ds:card 1 .
+             _:385 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-S>; ds:card 1 .
+             _:386 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-P>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 8 ;
+           ds:distinctObjs  0 ;
+           ds:triples    8 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmvcAlias> ;
+           ds:topSbjs [
+             _:387 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-S-col-S>; ds:card 1 .
+             _:388 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap-P-col-P>; ds:card 1 .
+             _:389 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-G-col-G>; ds:card 1 .
+             _:390 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-O-col-O>; ds:card 1 .
+             _:391 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-P-col-P>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 8 ;
+           ds:distinctObjs  0 ;
+           ds:triples    8 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmvcColumnName> ;
+           ds:topSbjs [
+             _:392 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-S-col-S>; ds:card 1 .
+             _:393 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap-P-col-P>; ds:card 1 .
+             _:394 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-G-col-G>; ds:card 1 .
+             _:395 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-O-col-O>; ds:card 1 .
+             _:396 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-P-col-P>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 8 ;
+           ds:distinctObjs  0 ;
+           ds:triples    8 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmvFText> ;
+           ds:topSbjs [
+             _:397 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap-O>; ds:card 1 .
+             _:398 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-O>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:399 ds:object <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-ft>; ds:card 1 .
+             _:400 ds:object <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap-ft>; ds:card 1 .
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  2 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmvGeo> ;
+           ds:topSbjs [
+             _:401 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap-O>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:402 ds:object <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap-geo>; ds:card 1 .
+           ];
+           ds:distinctSbjs 1 ;
+           ds:distinctObjs  1 ;
+           ds:triples    1 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmvaAlias> ;
+           ds:topSbjs [
+             _:403 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap-pquad>; ds:card 1 .
+             _:404 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-pquad>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  0 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmvaTableName> ;
+           ds:topSbjs [
+             _:405 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap-pquad>; ds:card 1 .
+             _:406 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-pquad>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  0 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmvftColumnName> ;
+           ds:topSbjs [
+             _:407 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap-ft>; ds:card 1 .
+             _:408 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap-geo>; ds:card 1 .
+             _:409 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-ft>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 3 ;
+           ds:distinctObjs  0 ;
+           ds:triples    3 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmvftXmlIndex> ;
+           ds:topSbjs [
+             _:410 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-ft>; ds:card 1 .
+             _:411 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap-ft>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  0 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmvftAlias> ;
+           ds:topSbjs [
+             _:412 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-ft>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 1 ;
+           ds:distinctObjs  0 ;
+           ds:triples    1 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmvftConds> ;
+           ds:topSbjs [
+             _:413 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-ft>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:414 ds:object <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-ft-conds>; ds:card 1 .
+           ];
+           ds:distinctSbjs 1 ;
+           ds:distinctObjs  1 ;
+           ds:triples    1 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qmvftTableName> ;
+           ds:topSbjs [
+             _:415 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap-ft>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 1 ;
+           ds:distinctObjs  0 ;
+           ds:triples    1 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qsUserMaps> ;
+           ds:topSbjs [
+             _:416 ds:subject <http://www.openlinksw.com/schemas/virtrdf#SyncToQuads>; ds:card 1 .
+             _:417 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadStorage>; ds:card 1 .
+             _:418 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceStorage>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:419 ds:object <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceStorage-UserMaps>; ds:card 1 .
+             _:420 ds:object <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadStorage-UserMaps>; ds:card 1 .
+             _:421 ds:object <http://www.openlinksw.com/schemas/virtrdf#SyncToQuads-UserMaps>; ds:card 1 .
+           ];
+           ds:distinctSbjs 3 ;
+           ds:distinctObjs  3 ;
+           ds:triples    3 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qsDefaultMap> ;
+           ds:topSbjs [
+             _:422 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadStorage>; ds:card 1 .
+             _:423 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceStorage>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:424 ds:object <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceMap>; ds:card 1 .
+             _:425 ds:object <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadMap>; ds:card 1 .
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  2 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/virtrdf#qsMatchingFlags> ;
+           ds:topSbjs [
+             _:426 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultQuadStorage>; ds:card 1 .
+             _:427 ds:subject <http://www.openlinksw.com/schemas/virtrdf#DefaultServiceStorage>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:428 ds:object <http://www.openlinksw.com/schemas/virtrdf#SPART_QS_NO_IMPLICIT_USER_QM>; ds:card 2 .
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  1 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://purl.org/dc/terms/created> ;
+           ds:topSbjs [
+             _:429 ds:subject <http://localhost:8890/DAV//VAD/>; ds:card 736 .
+             _:430 ds:subject <http://localhost:8890/DAV//VAD/conductor/>; ds:card 735 .
+             _:431 ds:subject <http://localhost:8890/DAV//VAD/conductor/toolkit/>; ds:card 224 .
+             _:432 ds:subject <http://localhost:8890/DAV//VAD/conductor/toolkit/images/>; ds:card 119 .
+             _:433 ds:subject <http://localhost:8890/DAV//VAD/conductor/images/>; ds:card 104 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 738 ;
+           ds:distinctObjs  0 ;
+           ds:triples    738 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://purl.org/dc/terms/modified> ;
+           ds:topSbjs [
+             _:434 ds:subject <http://localhost:8890/DAV//VAD/>; ds:card 736 .
+             _:435 ds:subject <http://localhost:8890/DAV//VAD/conductor/>; ds:card 735 .
+             _:436 ds:subject <http://localhost:8890/DAV//VAD/conductor/toolkit/>; ds:card 224 .
+             _:437 ds:subject <http://localhost:8890/DAV//VAD/conductor/toolkit/images/>; ds:card 119 .
+             _:438 ds:subject <http://localhost:8890/DAV//VAD/conductor/images/>; ds:card 104 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 738 ;
+           ds:distinctObjs  0 ;
+           ds:triples    738 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.openlinksw.com/schemas/DAV#ownerUser> ;
+           ds:topSbjs [
+             _:439 ds:subject <http://localhost:8890/DAV//VAD/>; ds:card 736 .
+             _:440 ds:subject <http://localhost:8890/DAV//VAD/conductor/>; ds:card 735 .
+             _:441 ds:subject <http://localhost:8890/DAV//VAD/conductor/toolkit/>; ds:card 224 .
+             _:442 ds:subject <http://localhost:8890/DAV//VAD/conductor/toolkit/images/>; ds:card 119 .
+             _:443 ds:subject <http://localhost:8890/DAV//VAD/conductor/images/>; ds:card 104 .
+           ];
+           ds:topObjs [
+             _:444 ds:object <mailto:somebody@example.domain>; ds:card 738 .
+           ];
+           ds:distinctSbjs 738 ;
+           ds:distinctObjs  1 ;
+           ds:triples    738 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://purl.org/dc/terms/extent> ;
+           ds:topSbjs [
+             _:445 ds:subject <http://localhost:8890/DAV//VAD/conductor/xslt_res.vsp>; ds:card 2 .
+             _:446 ds:subject <http://localhost:8890/DAV//VAD/conductor/view.vsp>; ds:card 2 .
+             _:447 ds:subject <http://localhost:8890/DAV//VAD/conductor/adm_navigation_bar.vspx>; ds:card 1 .
+             _:448 ds:subject <http://localhost:8890/DAV//VAD/conductor/accounts_page.vspx>; ds:card 1 .
+             _:449 ds:subject <http://localhost:8890/DAV//VAD/conductor/adm_login.vspx>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 725 ;
+           ds:distinctObjs  0 ;
+           ds:triples    725 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/2000/01/rdf-schema#label> ;
+           ds:topSbjs [
+             _:450 ds:subject <http://bio2rdf.org/ec:1.1.1.1>; ds:card 105 .
+             _:451 ds:subject <http://bio2rdf.org/ec:1.1.1.2>; ds:card 104 .
+             _:452 ds:subject <http://bio2rdf.org/ec:2.4.1.1>; ds:card 104 .
+             _:453 ds:subject <http://bio2rdf.org/ec:2.3.1.1>; ds:card 97 .
+             _:454 ds:subject <http://bio2rdf.org/ec:2.1.1.1>; ds:card 71 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 34169 ;
+           ds:distinctObjs  0 ;
+           ds:triples    34186 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> ;
+           ds:topSbjs [
+           ];
+           ds:topObjs [
+             _:455 ds:object <http://www.w3.org/2002/07/owl#Nothing>; ds:card 1 .
+           ];
+           ds:distinctSbjs 0 ;
+           ds:distinctObjs  1 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/2002/07/owl#complementOf> ;
+           ds:topSbjs [
+             _:456 ds:subject <http://www.w3.org/2002/07/owl#Nothing>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:457 ds:object <http://www.w3.org/2002/07/owl#Nothing>; ds:card 1 .
+             _:458 ds:object <http://www.w3.org/2002/07/owl#Thing>; ds:card 1 .
+           ];
+           ds:distinctSbjs 1 ;
+           ds:distinctObjs  2 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> ;
+           ds:topSbjs [
+           ];
+           ds:topObjs [
+             _:459 ds:object <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>; ds:card 1 .
+           ];
+           ds:distinctSbjs 0 ;
+           ds:distinctObjs  1 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/2002/07/owl#unionOf> ;
+           ds:topSbjs [
+             _:460 ds:subject <http://www.w3.org/2002/07/owl#Thing>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 1 ;
+           ds:distinctObjs  0 ;
+           ds:triples    1 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/2000/01/rdf-schema#domain> ;
+           ds:topSbjs [
+             _:461 ds:subject <http://www.w3.org/2002/07/owl#complementOf>; ds:card 1 .
+             _:462 ds:subject <http://www.w3.org/2002/07/owl#someValuesFrom>; ds:card 1 .
+             _:463 ds:subject <http://www.w3.org/2002/07/owl#sameAs>; ds:card 1 .
+             _:464 ds:subject <http://www.w3.org/2002/07/owl#cardinality>; ds:card 1 .
+             _:465 ds:subject <http://www.w3.org/2002/07/owl#priorVersion>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:466 ds:object <http://www.w3.org/2002/07/owl#Restriction>; ds:card 7 .
+             _:467 ds:object <http://www.w3.org/2002/07/owl#Class>; ds:card 5 .
+             _:468 ds:object <http://www.w3.org/2002/07/owl#Ontology>; ds:card 4 .
+             _:469 ds:object <http://www.w3.org/2002/07/owl#Thing>; ds:card 2 .
+             _:470 ds:object <http://www.w3.org/2002/07/owl#AllDifferent>; ds:card 1 .
+           ];
+           ds:distinctSbjs 21 ;
+           ds:distinctObjs  7 ;
+           ds:triples    21 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/2000/01/rdf-schema#range> ;
+           ds:topSbjs [
+             _:471 ds:subject <http://www.w3.org/2002/07/owl#complementOf>; ds:card 1 .
+             _:472 ds:subject <http://www.w3.org/2002/07/owl#someValuesFrom>; ds:card 1 .
+             _:473 ds:subject <http://www.w3.org/2002/07/owl#sameAs>; ds:card 1 .
+             _:474 ds:subject <http://www.w3.org/2002/07/owl#cardinality>; ds:card 1 .
+             _:475 ds:subject <http://www.w3.org/2002/07/owl#priorVersion>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:476 ds:object <http://www.w3.org/1999/02/22-rdf-syntax-ns#List>; ds:card 4 .
+             _:477 ds:object <http://www.w3.org/2002/07/owl#Ontology>; ds:card 4 .
+             _:478 ds:object <http://www.w3.org/2002/07/owl#Class>; ds:card 3 .
+             _:479 ds:object <http://www.w3.org/2001/XMLSchema#nonNegativeInteger>; ds:card 3 .
+             _:480 ds:object <http://www.w3.org/2002/07/owl#Thing>; ds:card 2 .
+           ];
+           ds:distinctSbjs 20 ;
+           ds:distinctObjs  8 ;
+           ds:triples    20 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/2002/07/owl#imports> ;
+           ds:topSbjs [
+             _:481 ds:subject <http://www.w3.org/2002/07/owl>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:482 ds:object <http://www.w3.org/2000/01/rdf-schema>; ds:card 1 .
+           ];
+           ds:distinctSbjs 1 ;
+           ds:distinctObjs  1 ;
+           ds:triples    1 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> ;
+           ds:topSbjs [
+             _:483 ds:subject <http://www.w3.org/2002/07/owl>; ds:card 3 .
+           ];
+           ds:topObjs [
+             _:484 ds:object <http://www.w3.org/TR/2004/REC-owl-features-20040210/>; ds:card 1 .
+             _:485 ds:object <http://www.w3.org/TR/2004/REC-owl-semantics-20040210/>; ds:card 1 .
+             _:486 ds:object <http://www.w3.org/TR/2004/REC-owl-test-20040210/>; ds:card 1 .
+           ];
+           ds:distinctSbjs 1 ;
+           ds:distinctObjs  3 ;
+           ds:triples    3 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/2000/01/rdf-schema#comment> ;
+           ds:topSbjs [
+             _:487 ds:subject <http://bio2rdf.org/ec:1.1.1.2>; ds:card 92 .
+             _:488 ds:subject <http://bio2rdf.org/ec:2.4.1.1>; ds:card 87 .
+             _:489 ds:subject <http://bio2rdf.org/ec:2.3.1.1>; ds:card 83 .
+             _:490 ds:subject <http://bio2rdf.org/ec:3.2.1.1>; ds:card 60 .
+             _:491 ds:subject <http://bio2rdf.org/ec:1.1.1.1>; ds:card 55 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 5471 ;
+           ds:distinctObjs  0 ;
+           ds:triples    5480 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/2002/07/owl#versionInfo> ;
+           ds:topSbjs [
+             _:492 ds:subject <http://www.w3.org/2002/07/owl>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 1 ;
+           ds:distinctObjs  0 ;
+           ds:triples    1 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/2002/07/owl#priorVersion> ;
+           ds:topSbjs [
+             _:493 ds:subject <http://www.w3.org/2002/07/owl>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:494 ds:object <http://www.daml.org/2001/03/daml+oil>; ds:card 1 .
+           ];
+           ds:distinctSbjs 1 ;
+           ds:distinctObjs  1 ;
+           ds:triples    1 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/2000/01/rdf-schema#subClassOf> ;
+           ds:topSbjs [
+             _:495 ds:subject <http://www.w3.org/2002/07/owl#DeprecatedClass>; ds:card 1 .
+             _:496 ds:subject <http://www.w3.org/2002/07/owl#DatatypeProperty>; ds:card 1 .
+             _:497 ds:subject <http://www.w3.org/2002/07/owl#DeprecatedProperty>; ds:card 1 .
+             _:498 ds:subject <http://www.w3.org/2002/07/owl#InverseFunctionalProperty>; ds:card 1 .
+             _:499 ds:subject <http://www.w3.org/2002/07/owl#Restriction>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:500 ds:object <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property>; ds:card 6 .
+             _:501 ds:object <http://www.w3.org/2002/07/owl#ObjectProperty>; ds:card 3 .
+             _:502 ds:object <http://www.w3.org/2000/01/rdf-schema#Class>; ds:card 2 .
+             _:503 ds:object <http://www.w3.org/2002/07/owl#Class>; ds:card 1 .
+           ];
+           ds:distinctSbjs 12 ;
+           ds:distinctObjs  4 ;
+           ds:triples    12 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/2000/01/rdf-schema#subPropertyOf> ;
+           ds:topSbjs [
+             _:504 ds:subject <http://www.w3.org/2002/07/owl#equivalentProperty>; ds:card 1 .
+             _:505 ds:subject <http://www.w3.org/2002/07/owl#equivalentClass>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:506 ds:object <http://www.w3.org/2000/01/rdf-schema#subClassOf>; ds:card 1 .
+             _:507 ds:object <http://www.w3.org/2000/01/rdf-schema#subPropertyOf>; ds:card 1 .
+           ];
+           ds:distinctSbjs 2 ;
+           ds:distinctObjs  2 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/2002/07/owl#sameAs> ;
+           ds:topSbjs [
+             _:508 ds:subject <http://bio2rdf.org/rn:R00004>; ds:card 1 .
+             _:509 ds:subject <http://bio2rdf.org/rn:R00006>; ds:card 1 .
+             _:510 ds:subject <http://bio2rdf.org/rn:R00005>; ds:card 1 .
+             _:511 ds:subject <http://bio2rdf.org/rn:R00002>; ds:card 1 .
+             _:512 ds:subject <http://bio2rdf.org/rn:R00001>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:513 ds:object <http://bio2rdf.org/rn:R00004>; ds:card 1 .
+             _:514 ds:object <http://bio2rdf.org/rn:R00006>; ds:card 1 .
+             _:515 ds:object <http://bio2rdf.org/rn:R00005>; ds:card 1 .
+             _:516 ds:object <http://bio2rdf.org/rn:R00002>; ds:card 1 .
+             _:517 ds:object <http://bio2rdf.org/rn:R00001>; ds:card 1 .
+           ];
+           ds:distinctSbjs 30015 ;
+           ds:distinctObjs  30015 ;
+           ds:triples    30015 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/ns/sparql-service-description#endpoint> ;
+           ds:topSbjs [
+             _:518 ds:subject <http://localhost:8890/sparql>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:519 ds:object <http://localhost:8890/sparql>; ds:card 1 .
+           ];
+           ds:distinctSbjs 1 ;
+           ds:distinctObjs  1 ;
+           ds:triples    1 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/ns/sparql-service-description#feature> ;
+           ds:topSbjs [
+             _:520 ds:subject <http://localhost:8890/sparql>; ds:card 2 .
+           ];
+           ds:topObjs [
+             _:521 ds:object <http://www.w3.org/ns/sparql-service-description#DereferencesURIs>; ds:card 1 .
+             _:522 ds:object <http://www.w3.org/ns/sparql-service-description#UnionDefaultGraph>; ds:card 1 .
+           ];
+           ds:distinctSbjs 1 ;
+           ds:distinctObjs  2 ;
+           ds:triples    2 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/ns/sparql-service-description#resultFormat> ;
+           ds:topSbjs [
+             _:523 ds:subject <http://localhost:8890/sparql>; ds:card 8 .
+           ];
+           ds:topObjs [
+             _:524 ds:object <http://www.w3.org/ns/formats/RDF_XML>; ds:card 1 .
+             _:525 ds:object <http://www.w3.org/ns/formats/SPARQL_Results_CSV>; ds:card 1 .
+             _:526 ds:object <http://www.w3.org/ns/formats/SPARQL_Results_XML>; ds:card 1 .
+             _:527 ds:object <http://www.w3.org/ns/formats/RDFa>; ds:card 1 .
+             _:528 ds:object <http://www.w3.org/ns/formats/Turtle>; ds:card 1 .
+           ];
+           ds:distinctSbjs 1 ;
+           ds:distinctObjs  8 ;
+           ds:triples    8 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/ns/sparql-service-description#supportedLanguage> ;
+           ds:topSbjs [
+             _:529 ds:subject <http://localhost:8890/sparql>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:530 ds:object <http://www.w3.org/ns/sparql-service-description#SPARQL10Query>; ds:card 1 .
+           ];
+           ds:distinctSbjs 1 ;
+           ds:distinctObjs  1 ;
+           ds:triples    1 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://www.w3.org/ns/sparql-service-description#url> ;
+           ds:topSbjs [
+             _:531 ds:subject <http://localhost:8890/sparql>; ds:card 1 .
+           ];
+           ds:topObjs [
+             _:532 ds:object <http://localhost:8890/sparql>; ds:card 1 .
+           ];
+           ds:distinctSbjs 1 ;
+           ds:distinctObjs  1 ;
+           ds:triples    1 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://purl.org/dc/elements/1.1/identifier> ;
+           ds:topSbjs [
+             _:533 ds:subject <http://bio2rdf.org/ec:1.1.1.1>; ds:card 105 .
+             _:534 ds:subject <http://bio2rdf.org/ec:1.1.1.2>; ds:card 104 .
+             _:535 ds:subject <http://bio2rdf.org/ec:2.4.1.1>; ds:card 104 .
+             _:536 ds:subject <http://bio2rdf.org/ec:2.3.1.1>; ds:card 97 .
+             _:537 ds:subject <http://bio2rdf.org/ec:2.1.1.1>; ds:card 71 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 34243 ;
+           ds:distinctObjs  0 ;
+           ds:triples    34260 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://purl.org/dc/elements/1.1/title> ;
+           ds:topSbjs [
+             _:538 ds:subject <http://bio2rdf.org/ec:1.1.1.1>; ds:card 105 .
+             _:539 ds:subject <http://bio2rdf.org/ec:1.1.1.2>; ds:card 104 .
+             _:540 ds:subject <http://bio2rdf.org/ec:2.4.1.1>; ds:card 104 .
+             _:541 ds:subject <http://bio2rdf.org/ec:2.3.1.1>; ds:card 97 .
+             _:542 ds:subject <http://bio2rdf.org/ec:2.1.1.1>; ds:card 71 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 34129 ;
+           ds:distinctObjs  0 ;
+           ds:triples    34146 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://bio2rdf.org/ns/bio2rdf#synonym> ;
+           ds:topSbjs [
+             _:543 ds:subject <http://bio2rdf.org/ec:1.1.1.1>; ds:card 338 .
+             _:544 ds:subject <http://bio2rdf.org/ec:2.7.10.1>; ds:card 206 .
+             _:545 ds:subject <http://bio2rdf.org/ec:2.7.10.2>; ds:card 93 .
+             _:546 ds:subject <http://bio2rdf.org/ec:2.7.7.1>; ds:card 67 .
+             _:547 ds:subject <http://bio2rdf.org/ec:3.2.1.4>; ds:card 65 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 19181 ;
+           ds:distinctObjs  0 ;
+           ds:triples    43709 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://bio2rdf.org/ns/bio2rdf#formula> ;
+           ds:topSbjs [
+             _:548 ds:subject <http://bio2rdf.org/cpd:C00003>; ds:card 1 .
+             _:549 ds:subject <http://bio2rdf.org/cpd:C00005>; ds:card 1 .
+             _:550 ds:subject <http://bio2rdf.org/cpd:C00004>; ds:card 1 .
+             _:551 ds:subject <http://bio2rdf.org/cpd:C00002>; ds:card 1 .
+             _:552 ds:subject <http://bio2rdf.org/cpd:C00001>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 20108 ;
+           ds:distinctObjs  0 ;
+           ds:triples    20108 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://bio2rdf.org/ns/bio2rdf#mass> ;
+           ds:topSbjs [
+             _:553 ds:subject <http://bio2rdf.org/cpd:C00003>; ds:card 1 .
+             _:554 ds:subject <http://bio2rdf.org/cpd:C00005>; ds:card 1 .
+             _:555 ds:subject <http://bio2rdf.org/cpd:C00004>; ds:card 1 .
+             _:556 ds:subject <http://bio2rdf.org/cpd:C00002>; ds:card 1 .
+             _:557 ds:subject <http://bio2rdf.org/cpd:C00001>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 18507 ;
+           ds:distinctObjs  0 ;
+           ds:triples    18507 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://bio2rdf.org/ns/bio2rdf#url> ;
+           ds:topSbjs [
+             _:558 ds:subject <http://bio2rdf.org/ec:1.1.1.1>; ds:card 105 .
+             _:559 ds:subject <http://bio2rdf.org/ec:1.1.1.2>; ds:card 104 .
+             _:560 ds:subject <http://bio2rdf.org/ec:2.4.1.1>; ds:card 104 .
+             _:561 ds:subject <http://bio2rdf.org/ec:2.3.1.1>; ds:card 97 .
+             _:562 ds:subject <http://bio2rdf.org/ec:2.1.1.1>; ds:card 71 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 34243 ;
+           ds:distinctObjs  0 ;
+           ds:triples    34260 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://bio2rdf.org/ns/bio2rdf#urlImage> ;
+           ds:topSbjs [
+             _:563 ds:subject <http://bio2rdf.org/rn:R00004>; ds:card 1 .
+             _:564 ds:subject <http://bio2rdf.org/rn:R00006>; ds:card 1 .
+             _:565 ds:subject <http://bio2rdf.org/rn:R00005>; ds:card 1 .
+             _:566 ds:subject <http://bio2rdf.org/rn:R00002>; ds:card 1 .
+             _:567 ds:subject <http://bio2rdf.org/rn:R00001>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 30015 ;
+           ds:distinctObjs  0 ;
+           ds:triples    30015 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://bio2rdf.org/ns/bio2rdf#xRef> ;
+           ds:topSbjs [
+             _:568 ds:subject <http://bio2rdf.org/dr:D00292>; ds:card 23 .
+             _:569 ds:subject <http://bio2rdf.org/dr:D00975>; ds:card 20 .
+             _:570 ds:subject <http://bio2rdf.org/dr:D01510>; ds:card 20 .
+             _:571 ds:subject <http://bio2rdf.org/dr:D00972>; ds:card 20 .
+             _:572 ds:subject <http://bio2rdf.org/dr:D00244>; ds:card 19 .
+           ];
+           ds:topObjs [
+             _:573 ds:object <http://bio2rdf.org/pubchem:4720>; ds:card 3538 .
+             _:574 ds:object <http://bio2rdf.org/therapeuticCategory:DBLINKS>; ds:card 2668 .
+             _:575 ds:object <http://bio2rdf.org/therapeuticCategory:code:>; ds:card 1343 .
+             _:576 ds:object <http://bio2rdf.org/therapeuticCategory:ATC>; ds:card 1343 .
+             _:577 ds:object <http://bio2rdf.org/pubchem:5109>; ds:card 1011 .
+           ];
+           ds:distinctSbjs 22122 ;
+           ds:distinctObjs  60856 ;
+           ds:triples    73196 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://bio2rdf.org/ns/bio2rdf#isA> ;
+           ds:topSbjs [
+             _:578 ds:subject <http://bio2rdf.org/ec:1.1.1.1>; ds:card 315 .
+             _:579 ds:subject <http://bio2rdf.org/ec:1.1.1.2>; ds:card 312 .
+             _:580 ds:subject <http://bio2rdf.org/ec:2.4.1.1>; ds:card 312 .
+             _:581 ds:subject <http://bio2rdf.org/ec:2.3.1.1>; ds:card 291 .
+             _:582 ds:subject <http://bio2rdf.org/ec:3.2.1.1>; ds:card 276 .
+           ];
+           ds:topObjs [
+             _:583 ds:object <http://bio2rdf.org/ec:Transferases;>; ds:card 1205 .
+             _:584 ds:object <http://bio2rdf.org/ec:Oxidoreductases;>; ds:card 1171 .
+             _:585 ds:object <http://bio2rdf.org/ec:Hydrolases;>; ds:card 1149 .
+             _:586 ds:object <http://bio2rdf.org/ec:With NAD+ or NADP+ as acceptor>; ds:card 531 .
+             _:587 ds:object <http://bio2rdf.org/ec:Lyases;>; ds:card 390 .
+           ];
+           ds:distinctSbjs 4228 ;
+           ds:distinctObjs  311 ;
+           ds:triples    13781 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://bio2rdf.org/ns/kegg#systematicName> ;
+           ds:topSbjs [
+             _:588 ds:subject <http://bio2rdf.org/ec:1.1.1.1>; ds:card 105 .
+             _:589 ds:subject <http://bio2rdf.org/ec:1.1.1.2>; ds:card 104 .
+             _:590 ds:subject <http://bio2rdf.org/ec:2.4.1.1>; ds:card 104 .
+             _:591 ds:subject <http://bio2rdf.org/ec:2.3.1.1>; ds:card 96 .
+             _:592 ds:subject <http://bio2rdf.org/ec:2.1.1.1>; ds:card 71 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 3704 ;
+           ds:distinctObjs  0 ;
+           ds:triples    3721 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://bio2rdf.org/ns/kegg#xCofactor> ;
+           ds:topSbjs [
+             _:593 ds:subject <http://bio2rdf.org/ec:1.14.11.1>; ds:card 15 .
+             _:594 ds:subject <http://bio2rdf.org/ec:1.13.11.1>; ds:card 13 .
+             _:595 ds:subject <http://bio2rdf.org/ec:1.14.13.1>; ds:card 11 .
+             _:596 ds:subject <http://bio2rdf.org/ec:2.6.1.4>; ds:card 9 .
+             _:597 ds:subject <http://bio2rdf.org/ec:1.14.13.2>; ds:card 9 .
+           ];
+           ds:topObjs [
+             _:598 ds:object <http://bio2rdf.org/cpd:C00016>; ds:card 141 .
+             _:599 ds:object <http://bio2rdf.org/cpd:C00018>; ds:card 111 .
+             _:600 ds:object <http://bio2rdf.org/cpd:C00023>; ds:card 102 .
+             _:601 ds:object <http://bio2rdf.org/cpd:C00038>; ds:card 74 .
+             _:602 ds:object <http://bio2rdf.org/cpd:C00034>; ds:card 43 .
+           ];
+           ds:distinctSbjs 631 ;
+           ds:distinctObjs  86 ;
+           ds:triples    895 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://bio2rdf.org/ns/kegg#xGene> ;
+           ds:topSbjs [
+             _:603 ds:subject <http://bio2rdf.org/ec:3.6.3.14>; ds:card 10204 .
+             _:604 ds:subject <http://bio2rdf.org/ec:1.6.5.3>; ds:card 9815 .
+             _:605 ds:subject <http://bio2rdf.org/ec:1.1.1.1>; ds:card 9310 .
+             _:606 ds:subject <http://bio2rdf.org/ec:2.7.7.7>; ds:card 9084 .
+             _:607 ds:subject <http://bio2rdf.org/ec:2.7.13.3>; ds:card 7369 .
+           ];
+           ds:topObjs [
+             _:608 ds:object <http://bio2rdf.org/kegg_gene:atc:AGR_C_3>; ds:card 126 .
+             _:609 ds:object <http://bio2rdf.org/kegg_gene:hsa:51>; ds:card 123 .
+             _:610 ds:object <http://bio2rdf.org/kegg_gene:hsa:26>; ds:card 43 .
+             _:611 ds:object <http://bio2rdf.org/kegg_gene:sth:STH9>; ds:card 22 .
+             _:612 ds:object <http://bio2rdf.org/kegg_gene:hsa:34>; ds:card 21 .
+           ];
+           ds:distinctSbjs 2071 ;
+           ds:distinctObjs  589708 ;
+           ds:triples    609037 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://bio2rdf.org/ns/kegg#xProduct> ;
+           ds:topSbjs [
+             _:613 ds:subject <http://bio2rdf.org/ec:1.1.1.2>; ds:card 328 .
+             _:614 ds:subject <http://bio2rdf.org/ec:1.1.1.1>; ds:card 327 .
+             _:615 ds:subject <http://bio2rdf.org/ec:2.3.1.1>; ds:card 199 .
+             _:616 ds:subject <http://bio2rdf.org/ec:2.4.1.1>; ds:card 153 .
+             _:617 ds:subject <http://bio2rdf.org/ec:2.1.1.1>; ds:card 144 .
+           ];
+           ds:topObjs [
+             _:618 ds:object <http://bio2rdf.org/cpd:c00080>; ds:card 1042 .
+             _:619 ds:object <http://bio2rdf.org/cpd:c00001>; ds:card 940 .
+             _:620 ds:object <http://bio2rdf.org/cpd:C00080>; ds:card 555 .
+             _:621 ds:object <http://bio2rdf.org/cpd:c00004>; ds:card 529 .
+             _:622 ds:object <http://bio2rdf.org/cpd:c00005>; ds:card 418 .
+           ];
+           ds:distinctSbjs 11443 ;
+           ds:distinctObjs  8115 ;
+           ds:triples    25635 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://bio2rdf.org/ns/kegg#xSubstrate> ;
+           ds:topSbjs [
+             _:623 ds:subject <http://bio2rdf.org/ec:1.1.1.1>; ds:card 223 .
+             _:624 ds:subject <http://bio2rdf.org/ec:1.1.1.2>; ds:card 222 .
+             _:625 ds:subject <http://bio2rdf.org/ec:2.3.1.1>; ds:card 197 .
+             _:626 ds:subject <http://bio2rdf.org/ec:2.4.1.1>; ds:card 158 .
+             _:627 ds:subject <http://bio2rdf.org/ec:2.1.1.1>; ds:card 149 .
+           ];
+           ds:topObjs [
+             _:628 ds:object <http://bio2rdf.org/cpd:c00001>; ds:card 1651 .
+             _:629 ds:object <http://bio2rdf.org/cpd:c00007>; ds:card 987 .
+             _:630 ds:object <http://bio2rdf.org/cpd:C00001>; ds:card 926 .
+             _:631 ds:object <http://bio2rdf.org/cpd:c00080>; ds:card 642 .
+             _:632 ds:object <http://bio2rdf.org/cpd:c00003>; ds:card 536 .
+           ];
+           ds:distinctSbjs 11433 ;
+           ds:distinctObjs  7114 ;
+           ds:triples    24575 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://bio2rdf.org/ns/kegg#equation> ;
+           ds:topSbjs [
+             _:633 ds:subject <http://bio2rdf.org/rn:R00004>; ds:card 1 .
+             _:634 ds:subject <http://bio2rdf.org/rn:R00006>; ds:card 1 .
+             _:635 ds:subject <http://bio2rdf.org/rn:R00005>; ds:card 1 .
+             _:636 ds:subject <http://bio2rdf.org/rn:R00002>; ds:card 1 .
+             _:637 ds:subject <http://bio2rdf.org/rn:R00001>; ds:card 1 .
+           ];
+           ds:topObjs [
+           ];
+           ds:distinctSbjs 7827 ;
+           ds:distinctObjs  0 ;
+           ds:triples    7827 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://bio2rdf.org/ns/kegg#xEnzyme> ;
+           ds:topSbjs [
+             _:638 ds:subject <http://bio2rdf.org/rn:R00086>; ds:card 50 .
+             _:639 ds:subject <http://bio2rdf.org/rn:R06137>; ds:card 15 .
+             _:640 ds:subject <http://bio2rdf.org/rn:R06134>; ds:card 13 .
+             _:641 ds:subject <http://bio2rdf.org/rn:R00162>; ds:card 12 .
+             _:642 ds:subject <http://bio2rdf.org/rn:R00146>; ds:card 10 .
+           ];
+           ds:topObjs [
+             _:643 ds:object <http://bio2rdf.org/ec:2.7.1.1>; ds:card 89 .
+             _:644 ds:object <http://bio2rdf.org/ec:1.14.14.1>; ds:card 87 .
+             _:645 ds:object <http://bio2rdf.org/ec:2.3.1.8>; ds:card 71 .
+             _:646 ds:object <http://bio2rdf.org/ec:1.14.13.->; ds:card 69 .
+             _:647 ds:object <http://bio2rdf.org/ec:2.4.1.->; ds:card 60 .
+           ];
+           ds:distinctSbjs 6523 ;
+           ds:distinctObjs  3505 ;
+           ds:triples    7226 ;
+         ] ;
+     ds:capability
+         [
+           ds:predicate  <http://bio2rdf.org/ns/kegg#xPathway> ;
+           ds:topSbjs [
+             _:648 ds:subject <http://bio2rdf.org/rn:R02601>; ds:card 9 .
+             _:649 ds:subject <http://bio2rdf.org/rn:R00750>; ds:card 9 .
+             _:650 ds:subject <http://bio2rdf.org/rn:R00238>; ds:card 9 .
+             _:651 ds:subject <http://bio2rdf.org/rn:R01196>; ds:card 5 .
+             _:652 ds:subject <http://bio2rdf.org/rn:R00342>; ds:card 5 .
+           ];
+           ds:topObjs [
+             _:653 ds:object <http://bio2rdf.org/path:rn00230>; ds:card 145 .
+             _:654 ds:object <http://bio2rdf.org/path:rn00860>; ds:card 114 .
+             _:655 ds:object <http://bio2rdf.org/path:rn00240>; ds:card 113 .
+             _:656 ds:object <http://bio2rdf.org/path:rn00906>; ds:card 111 .
+             _:657 ds:object <http://bio2rdf.org/path:rn00350>; ds:card 110 .
+           ];
+           ds:distinctSbjs 5470 ;
+           ds:distinctObjs  149 ;
+           ds:triples    6032 ;
+         ] ;
+     ds:totalSbj 35354 ; 
+     ds:totalObj 691978 ; 
+     ds:totalTriples 1096582 ; 
+             .

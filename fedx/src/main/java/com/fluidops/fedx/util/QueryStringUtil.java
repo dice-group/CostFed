@@ -145,7 +145,7 @@ public class QueryStringUtil {
 		String s = constructStatement(stmt, varNames, bindings);
 		
 		// project only relevant variables, i.e. do not bind local variables
-		varNames = project(stmt, varNames);
+		//varNames = project(stmt, varNames);
 		
 		StringBuilder res = new StringBuilder();
 		

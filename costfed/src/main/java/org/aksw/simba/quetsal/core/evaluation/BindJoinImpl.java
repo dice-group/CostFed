@@ -33,6 +33,9 @@ public class BindJoinImpl extends RestartableLookAheadIteration<BindingSet> {
 	protected final BindingSet ebindings;					// the bindings
 	final QueryInfo queryInfo;
 	
+	int leftCount = 0;
+	int rightCount = 0;
+	
 	protected CloseableIteration<BindingSet, QueryEvaluationException> leftIter;
 	
 	private QueueIteration<BindingSet> iteration = new QueueIteration<BindingSet>();
@@ -82,6 +85,7 @@ public class BindJoinImpl extends RestartableLookAheadIteration<BindingSet> {
 			while (!isClosed() && bindings.size() < nBindingsCfg && leftIter.hasNext()) {
 				BindingSet b = leftIter.next();
 				bindings.add(b);
+				leftCount++;
 			}
 			if (isClosed() || bindings.isEmpty()) break;
 			strategy.evaluate(iteration, rightArg, bindings);
@@ -95,6 +99,7 @@ public class BindJoinImpl extends RestartableLookAheadIteration<BindingSet> {
 	@Override
 	protected BindingSet getNextElement() {
 		if (iteration.hasNext()) {
+			rightCount++;
 			return iteration.next();
 		}
 		return null;
@@ -102,6 +107,7 @@ public class BindJoinImpl extends RestartableLookAheadIteration<BindingSet> {
 
 	@Override
 	public void handleClose() {
+		log.info("on close: left=" + leftCount + ", right = " + rightCount);
 		iteration.close();
 	}
 	

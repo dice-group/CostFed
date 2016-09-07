@@ -199,9 +199,10 @@ public class Trie {
 				if(path.get(node).parent.children.size()<=branchLimit)
 				{
 					curPath = curPath.concat(Character.toString(path.get(node).letter));
-					//System.out.println(path.get(node).letter+"  Parent:"+path.get(node).parent.letter+" Prent Branches: "+path.get(node).parent.children.size());
+					//System.out.println(path.get(node).letter+"  Parent:"+path.get(node).parent.letter+" Parent Branches: "+path.get(node).parent.children.size());
+				} else {
+					curPath += "";
 				}
-
 			}
 			// System.out.println("\n\n");
 			if(!paths.contains(curPath))
