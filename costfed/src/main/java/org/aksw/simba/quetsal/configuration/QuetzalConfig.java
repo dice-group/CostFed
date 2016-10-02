@@ -30,7 +30,7 @@ public class QuetzalConfig {
 	public static ArrayList<String> commonPredicates = new ArrayList<String>(); // list of common predicates. Note we use this in ASK_dominent Source selection Algorithm
 	public static double commonPredThreshold;  //A threshold value for a predicate ( in % of total data sources) to be considered in common predicate list
 	
-	public static QuetzalSummary summary;
+	public static Summary summary;
 	//public static SailRepository repo;
 	
 	public static enum Mode {
@@ -154,8 +154,9 @@ public class QuetzalConfig {
 	public static void loadFedSummaries(String theFedSummaries) throws IOException {
 		File curfile = new File ("summaries/memorystore.data");
 		curfile.delete();
-		File fileDir = new File("summaries/");
-		sumRepository = new SailRepository( new MemoryStore(fileDir) );
+		//File fileDir = new File("summaries/");
+		//sumRepository = new SailRepository( new MemoryStore(fileDir) ); // why persistent storage?
+		sumRepository = new SailRepository( new MemoryStore() );
 		sumRepository.initialize();
 		
 		File file = new File(theFedSummaries);
@@ -163,6 +164,7 @@ public class QuetzalConfig {
 		con = sumRepository.getConnection();
 		con.add(file, "aksw.org.simba", RDFFormat.N3);
 		
-		summary = new QuetzalSummary(con);
+		//summary = new QuetzalSummary(con);
+		summary = new CostFedSummary(con);
 	}
 }

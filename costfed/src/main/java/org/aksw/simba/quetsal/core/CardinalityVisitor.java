@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.openrdf.query.algebra.Filter;
+import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 
@@ -19,9 +20,66 @@ public class CardinalityVisitor extends AbstractQueryModelVisitor<RuntimeExcepti
 {
 	protected static int ESTIMATION_TYPE = 0;
 	
-	public class NodeDescriptor {
+	public static class NodeDescriptor {
 		public long card = Long.MAX_VALUE;
 		public double sel = 0;
+		public double mvobjkoef = 1.0;
+		public double mvsbjkoef = 1.0;
+	}
+	
+	public static class CardPair {
+		public TupleExpr expr;
+		public NodeDescriptor nd;
+		
+		public CardPair(TupleExpr te, NodeDescriptor nd) {
+			this.expr = te;
+			this.nd = nd;
+		}
+
+		@Override
+		public String toString() {
+			return String.format("CardPair [expr=%s, card=%s, mvs=%s, mvo=%s", expr, nd.card, nd.mvsbjkoef, nd.mvobjkoef);
+		}
+	}
+	
+	public static NodeDescriptor getJoinCardinality(Collection<String> commonvars, CardPair left, CardPair right)
+	{
+		CardinalityVisitor.NodeDescriptor result = new CardinalityVisitor.NodeDescriptor();
+		if (CardinalityVisitor.ESTIMATION_TYPE == 0) {
+			if (commonvars != null && !commonvars.isEmpty()) {
+				result.card = (long)Math.ceil((Math.min(left.nd.card, right.nd.card) / 2));
+				
+				// multivalue fixes
+				if (left.expr instanceof StatementPattern) {
+					StatementPattern leftsp = (StatementPattern)left.expr;
+					if (commonvars.contains(leftsp.getSubjectVar().getName())) {
+						result.card *= left.nd.mvobjkoef;
+					}
+					if (commonvars.contains(leftsp.getObjectVar().getName())) {
+						result.card *= left.nd.mvsbjkoef;
+					}
+				}
+				if (right.expr instanceof StatementPattern) {
+					StatementPattern rightsp = (StatementPattern)right.expr;
+					if (commonvars.contains(rightsp.getSubjectVar().getName())) {
+						result.card *= right.nd.mvobjkoef;
+					}
+					if (commonvars.contains(rightsp.getObjectVar().getName())) {
+						result.card *= right.nd.mvsbjkoef;
+					}
+				}
+				
+			} else {
+				result.card = (long)Math.ceil(left.nd.card * right.nd.card);
+			}
+		} else {
+			result.sel = 1;
+			if (commonvars != null && !commonvars.isEmpty()) {
+				result.sel *= Math.min(left.nd.sel, right.nd.sel);
+			}
+			result.card = (long)Math.ceil(left.nd.card * right.nd.card * result.sel);
+		}
+		return result;
 	}
 	
 	NodeDescriptor current = new NodeDescriptor();
@@ -100,17 +158,10 @@ public class CardinalityVisitor extends AbstractQueryModelVisitor<RuntimeExcepti
 			
 			if (ESTIMATION_TYPE == 0) {
 				if (commonvars != null && !commonvars.isEmpty()) {
-					leftCard = (long)Math.ceil((Math.min(leftCard, rightCard) / 2));
+					leftCard = (long)Math.ceil((Math.min(leftCard, rightCard))/2);
 				} else {
 					leftCard = (long)Math.ceil(leftCard * rightCard);
 				}
-			} else if (ESTIMATION_TYPE == 1) {
-				double rightSelectivity = rightCard/(double)total;
-				if (commonvars != null && !commonvars.isEmpty()) {
-					sel = leftSelectivity * rightSelectivity;
-				}
-				leftCard = (long)Math.ceil(leftCard * rightCard * sel);
-				leftSelectivity = sel;
 			} else {
 				double rightSelectivity = rightCard/(double)total;
 				if (commonvars != null && !commonvars.isEmpty()) {

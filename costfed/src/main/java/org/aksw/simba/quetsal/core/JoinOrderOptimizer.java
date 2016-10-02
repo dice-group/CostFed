@@ -43,6 +43,8 @@ public class JoinOrderOptimizer extends StatementGroupOptimizer {
 			current.card = Cardinality.getTriplePatternCardinality(stmt, stmtSrces);
 			assert(current.card != 0);
 			current.sel = current.card/(double)Cardinality.getTotalTripleCount(stmtSrces);
+			current.mvsbjkoef = Cardinality.getTriplePatternSubjectMVKoef(stmt, stmtSrces);
+			current.mvobjkoef = Cardinality.getTriplePatternObjectMVKoef(stmt, stmtSrces);
 		}
 		
 		@Override
@@ -81,20 +83,7 @@ public class JoinOrderOptimizer extends StatementGroupOptimizer {
 		}
 	}
 	
-	public class CardPair {
-		public TupleExpr expr;
-		public CardinalityVisitor.NodeDescriptor nd;
-		
-		public CardPair(TupleExpr te, CardinalityVisitor.NodeDescriptor nd) {
-			this.expr = te;
-			this.nd = nd;
-		}
 
-		@Override
-		public String toString() {
-			return String.format("CardPair [expr=%s, card=%s, sel=%s", expr, nd.card, nd.sel);
-		}
-	}
 	
 	public JoinOrderOptimizer(QueryInfo queryInfo) {
 		super(queryInfo);
@@ -126,7 +115,7 @@ public class JoinOrderOptimizer extends StatementGroupOptimizer {
 	@Override
 	public void optimizeJoinOrder(NJoin node, List<TupleExpr> joinArgs) {
 		EstimatorVisitor cvis = new EstimatorVisitor();
-		List<CardPair> cardPairs = new ArrayList<CardPair>();
+		List<CardinalityVisitor.CardPair> cardPairs = new ArrayList<CardinalityVisitor.CardPair>();
 
 		// pin selectors
 		boolean useHashJoin = false;
@@ -135,14 +124,15 @@ public class JoinOrderOptimizer extends StatementGroupOptimizer {
 		// find card for arguments
 		for (TupleExpr te : joinArgs) {
 			te.visit(cvis);
-			cardPairs.add(new CardPair(te, cvis.getDescriptor()));
+			cardPairs.add(new CardinalityVisitor.CardPair(te, cvis.getDescriptor()));
 			cvis.reset();
 		}
 		
 		// sort arguments according their cards
-		cardPairs.sort(new Comparator<CardPair>() {
+		cardPairs.sort(new Comparator<CardinalityVisitor.CardPair>() {
 			@Override
-			public int compare(CardPair cpl, CardPair cpr) {
+			public int compare(CardinalityVisitor.CardPair cpl, CardinalityVisitor.CardPair cpr) {
+				/*
 				if (cpl.expr instanceof ExclusiveGroup) {
 					if (cpr.expr instanceof ExclusiveGroup) {
 						return Long.compare(cpl.nd.card, cpr.nd.card);		
@@ -154,6 +144,8 @@ public class JoinOrderOptimizer extends StatementGroupOptimizer {
 				} else {
 					return Long.compare(cpl.nd.card, cpr.nd.card);
 				}
+				*/
+				return Long.compare(cpl.nd.card, cpr.nd.card);
 			}
 		});
 
@@ -164,7 +156,7 @@ public class JoinOrderOptimizer extends StatementGroupOptimizer {
 		//long minCard = cardPairs.get(0).nd.card;
 		//long maxCard = cardPairs.get(cardPairs.size() - 1).nd.card;
 		
-		CardPair leftArg = cardPairs.get(0);
+		CardinalityVisitor.CardPair leftArg = cardPairs.get(0);
 		//result.add(cardPairs.get(0).expr);
 		cardPairs.remove(0); // I expect it isn't too expensive, list is not very long (to do: try linked list)
 		
@@ -183,7 +175,7 @@ public class JoinOrderOptimizer extends StatementGroupOptimizer {
 				break;
 			}
 			
-			CardPair rightArg = cardPairs.get(rightIndex);
+			CardinalityVisitor.CardPair rightArg = cardPairs.get(rightIndex);
 			cardPairs.remove(rightIndex);
 			joinVars.addAll(OptimizerUtil.getFreeVars(rightArg.expr));
 			
@@ -191,37 +183,20 @@ public class JoinOrderOptimizer extends StatementGroupOptimizer {
 				log.trace(rightArg);
 			}
 			
-			long resultCard;
-			double sel = 1;
-			
-			if (CardinalityVisitor.ESTIMATION_TYPE == 0) {
-				if (commonvars != null && !commonvars.isEmpty()) {
-					resultCard = (long)Math.ceil((Math.min(leftArg.nd.card, rightArg.nd.card) / 1));
-				} else {
-					resultCard = (long)Math.ceil(leftArg.nd.card * rightArg.nd.card);
-				}
-			} else {
-				if (commonvars != null && !commonvars.isEmpty()) {
-					sel *= Math.min(leftArg.nd.sel, rightArg.nd.sel);
-				}
-				resultCard = (long)Math.ceil(leftArg.nd.card * rightArg.nd.card * sel);
-			}
-			
+			CardinalityVisitor.NodeDescriptor rd = CardinalityVisitor.getJoinCardinality(commonvars, leftArg, rightArg);
+
 			double hashCost = rightArg.nd.card * C_TRANSFER_TUPLE + 2 * C_TRANSFER_QUERY;
-			double bindCost = leftArg.nd.card / Config.getConfig().getBoundJoinBlockSize() * C_TRANSFER_QUERY + resultCard * C_TRANSFER_TUPLE;
+			double bindCost = leftArg.nd.card / Config.getConfig().getBoundJoinBlockSize() * C_TRANSFER_QUERY + rd.card * C_TRANSFER_TUPLE;
 			
-			leftArg.nd.card = resultCard;
-			leftArg.nd.sel = sel;
-					
 			if (log.isTraceEnabled()) {
-				log.debug(String.format("join card: %s, hash cost: %s, bind cost: %s", resultCard, hashCost, bindCost));
+				log.debug(String.format("join card: %s, hash cost: %s, bind cost: %s", rd.card, hashCost, bindCost));
 			}
 			
 			NJoin newNode;
-			newNode = new HashJoin(leftArg.expr, rightArg.expr, queryInfo);
+			//newNode = new HashJoin(leftArg.expr, rightArg.expr, queryInfo);
 			//newNode = new BindJoin(leftArg.expr, rightArg.expr, queryInfo);
-			/*
-			if (useHashJoin || (!useBindJoin && hashCost < bindCost)) {
+			///*
+			if (useHashJoin || (!useBindJoin && hashCost < bindCost && leftArg.nd.card < 1000000 && rightArg.nd.card < 1000000 )) {
 				newNode = new HashJoin(leftArg.expr, rightArg.expr, queryInfo);
 				//useHashJoin = true; // pin
 			} else {
@@ -230,6 +205,7 @@ public class JoinOrderOptimizer extends StatementGroupOptimizer {
 			}
 			//*/
 			leftArg.expr = newNode;
+			leftArg.nd = rd;
 		}
 		node.replaceWith(leftArg.expr);
 	}

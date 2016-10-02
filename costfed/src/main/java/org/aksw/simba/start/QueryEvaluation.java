@@ -24,7 +24,15 @@ import com.fluidops.fedx.structures.QueryInfo;
 
 public class QueryEvaluation {
 	protected static final Logger log = Logger.getLogger(QueryEvaluation.class);
-
+	static {
+		try {
+			ClassLoader.getSystemClassLoader().loadClass("org.slf4j.LoggerFactory"). getMethod("getLogger", ClassLoader.getSystemClassLoader().loadClass("java.lang.String")).
+			 invoke(null,"ROOT");
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+	}
+	
 	QueryProvider qp;
 
 	public QueryEvaluation() throws Exception {
@@ -44,11 +52,23 @@ public class QueryEvaluation {
 		//String host = "ws24348.avicomp.com";
 		//String host = "192.168.0.145";
 		//String queries = "S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 C1 C2 C3 C4 C6 C7 C8 C9 C10"; //"C1 C3 C5 C6 C7 C8 C9 C10 L1 L2 L3 L4 L5 L6 L7 L8";
-		//String queries = "S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 C1 C2 C3 C6 C7 C8 C9 C10";
+		String queries = "S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 C1 C2 C3 C6 C7 C8 C9 C10";
 		//String queries = "S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 C1 C2 C3 C4 C6 C7 C8 C9 C10";
-		String queries = "L1";
-		/*	
-		List<String> endpoints = Arrays.asList(
+		//String queries = "";
+		
+		List<String> endpointsMin = Arrays.asList(
+			 "http://" + host + ":8890/sparql",
+			 "http://" + host + ":8891/sparql",
+			 "http://" + host + ":8892/sparql",
+			 "http://" + host + ":8893/sparql",
+			 "http://" + host + ":8894/sparql",
+			 "http://" + host + ":8895/sparql",
+			 "http://" + host + ":8896/sparql",
+			 "http://" + host + ":8897/sparql",
+			 "http://" + host + ":8898/sparql"
+		);
+		
+		List<String> endpointsMax = Arrays.asList(
 			 "http://" + host + ":8890/sparql",
 			 "http://" + host + ":8891/sparql",
 			 "http://" + host + ":8892/sparql",
@@ -63,31 +83,31 @@ public class QueryEvaluation {
 			 , "http://" + host + ":8888/sparql"
 			 , "http://" + host + ":8889/sparql"
 			 , "http://" + host + ":8899/sparql"
-	
 		);
-		*/
-		
-		List<String> endpoints = Arrays.asList(
+			
+		List<String> endpointsTest = Arrays.asList(
 				   "http://" + host + ":8887/sparql"
 				 , "http://" + host + ":8888/sparql"
 				 , "http://" + host + ":8889/sparql"
 				 , "http://" + host + ":8899/sparql"	
 		);
-	/*
-		List<String> endpoints = Arrays.asList(
-				 "http://" + host + ":8890/sparql",
-				 "http://" + host + ":8891/sparql",
-				 "http://" + host + ":8892/sparql",
-				 "http://" + host + ":8893/sparql",
-				 "http://" + host + ":8894/sparql",
-				 "http://" + host + ":8895/sparql",
-				 "http://" + host + ":8896/sparql",
-				 "http://" + host + ":8897/sparql",
-				 "http://" + host + ":8898/sparql",
-				 "http://" + host + ":8899/sparql"
-			);
-		//*/
-		Map<String, List<List<Object>>> reports = multyEvaluate(queries, 1, cfgName, endpoints);
+	
+		List<String> endpointsMin2 = Arrays.asList(
+			 "http://" + host + ":8890/sparql",
+			 "http://" + host + ":8891/sparql",
+			 "http://" + host + ":8892/sparql",
+			 "http://" + host + ":8893/sparql",
+			 "http://" + host + ":8894/sparql",
+			 "http://" + host + ":8895/sparql",
+			 "http://" + host + ":8896/sparql",
+			 "http://" + host + ":8897/sparql",
+			 "http://" + host + ":8898/sparql",
+			 "http://" + host + ":8899/sparql"
+		);
+
+		List<String> endpoints = endpointsMin2;
+		
+		Map<String, List<List<Object>>> reports = multyEvaluate(queries, 16, cfgName, endpoints);
 	
 		for (Map.Entry<String, List<List<Object>>> e : reports.entrySet())
 		{

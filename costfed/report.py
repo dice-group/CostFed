@@ -5,11 +5,11 @@ import os
 import csv
 import math
 
-samplePrefixName="quetsal-"
+samplePrefixName="costfed-"
 sampleCount = 16
 
 for i in range(0, sampleCount, 1):
-	os.system("mvn exec:java -Dexec.mainClass=\"org.aksw.simba.start.QueryEvaluation\" -Dexec.args=\"quetsal.props results/" + samplePrefixName + "sample" + str(i) + ".csv\"")
+	os.system("mvn exec:java -Dexec.mainClass=\"org.aksw.simba.start.QueryEvaluation\" -Dexec.args=\"costfed.props results/" + samplePrefixName + "sample" + str(i) + ".csv\"")
 
 reportrows = []
 with open("results/" + samplePrefixName + "sample0.csv") as f:

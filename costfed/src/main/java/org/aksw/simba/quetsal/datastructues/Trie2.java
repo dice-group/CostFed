@@ -16,9 +16,9 @@ public class Trie2 {
 			
 		}
 		
-		private Node(String tname) {
-			unique = 1;
-			hits = 1;
+		private Node(String tname, long hits) {
+			this.unique = 1;
+			this.hits = hits;
 			children.put(tname, null);
 		}
 		
@@ -26,9 +26,19 @@ public class Trie2 {
 			children.put(k, v);
 		}
 		
-		public boolean insert(String word) {
+		public boolean insert(String head, String tail, long hs) {
+			hits += hs;
+			Node cn = children.get(head);
+			if (cn == null) {
+				cn = new Node();
+				children.put(head, cn);
+			}
+			return cn.insert(tail, hs);
+		}
+		
+		public boolean insert(String word, long hs) {
 			boolean result = false;
-			++hits;
+			hits += hs;
 			boolean childFound = false;
 			for (Map.Entry<String, Node> e : children.entrySet())
 			{
@@ -45,9 +55,9 @@ public class Trie2 {
 					Node curChild = e.getValue();
 					if (i == k.length()) {
 						if (!tail1.isEmpty()) {
-							result = curChild.insert(tail1);
+							result = curChild.insert(tail1, hs);
 						} else {
-							++curChild.hits;
+							curChild.hits += hs;
 						}
 					} else {
 						String commonPrefix = k.substring(0, i);
@@ -55,20 +65,18 @@ public class Trie2 {
 						
 						children.remove(k);
 						Node newChild = new Node();
-						newChild.hits = curChild.hits;
-						newChild.unique = curChild.unique;
+						newChild.hits = curChild.hits + hs;
+						newChild.unique = curChild.unique + 1;
 						children.put(commonPrefix, newChild);
 						newChild.insertPair(tail0, curChild);
-						newChild.insertPair(tail1, new Node(""));
-						++newChild.hits;
-						++newChild.unique;
+						newChild.insertPair(tail1, new Node("", hs));
 						result = true;
 					}
 					break;
 				}
 			}
 			if (!childFound) { // no common prefix => new root
-				insertPair(word, new Node(""));// terminator mark
+				insertPair(word, new Node("", hs));// terminator mark
 				result = true;
 			}
 			
@@ -106,48 +114,46 @@ public class Trie2 {
 			}
 		}
 		
-		public void gatherPrefixes(int max, String curPrefix, List<Tuple3<String, Long, Long>> result)
+		public void gatherPrefixes(int branchLimit, List<Tuple3<String, Long, Long>> result)
 		{
-			List<Tuple3<String, Long, Long>> tempResults = new ArrayList<Tuple3<String, Long, Long>>();
+			for (Map.Entry<String, Node> e : children.entrySet())
+			{
+				e.getValue().gatherPrefixes(branchLimit, e.getKey(), result);
+			}
+		}
+		
+		public void gatherPrefixes(int branchLimit, String curPrefix, List<Tuple3<String, Long, Long>> result)
+		{
+			int bcount = children.size();
+			if (children.containsKey("")) {
+				--bcount;
+			}
+			boolean stopFlag = bcount > branchLimit;
 			for (Map.Entry<String, Node> e : children.entrySet())
 			{
 				Node nd = e.getValue();
 				if (nd == null) { // terminator
-					tempResults.add(new Tuple3<String, Long, Long>(curPrefix, (long)1, hits));
+					result.add(new Tuple3<String, Long, Long>(curPrefix, (long)1, hits));
+				} else if (stopFlag) {
+					result.add(new Tuple3<String, Long, Long>(curPrefix + e.getKey(), nd.unique, nd.hits));
 				} else {
-					tempResults.add(new Tuple3<String, Long, Long>(curPrefix + e.getKey(), nd.unique, nd.hits));
+					nd.gatherPrefixes(branchLimit, curPrefix + e.getKey(), result);
 				}
 			}
 		}
-		
-		/*
-		public void findMostHittable(List<Map.Entry<String, Node>> path) {
-			Map.Entry<String, Node> maxentry = null;
-			int maxval = 0;
-			for (Map.Entry<String, Node> e : children.entrySet())
-			{
-				Node nd = e.getValue();
-				int val = (null != nd) ? e.getValue().hits : hits;
-				if (val > maxval) {
-					maxval = val;
-					maxentry = e;
-				}
-			}
-			if (maxentry != null && maxentry.getValue() != null) {
-				path.add(maxentry);
-				maxentry.getValue().findMostHittable(path);
-			}
-		}
-		*/
 	}
 	
 	public static Node initializeTrie() {
 		return new Node();
 	}
 	
-	public static boolean insertWord(Node root, String word) {
-		return root.insert(word);
+	public static boolean insertWord(Node root, String head, String tail, long hits) {
+		return root.insert(head, tail, hits);
 	}
+	
+	//public static boolean insertWord(Node root, String word) {
+	//	return root.insert(word);
+	//}
 	
 	public static List<Pair<String, Long>> findMostHittable(Node root, int num) {
 		List<Pair<String, Long>> result = new ArrayList<Pair<String, Long>>();
@@ -155,25 +161,9 @@ public class Trie2 {
 		return result;
 	}
 	
-	public static List<Tuple3<String, Long, Long>> gatherPrefixes(Node root, int max) {
+	public static List<Tuple3<String, Long, Long>> gatherPrefixes(Node root, int branchLimit) {
 		List<Tuple3<String, Long, Long>> result = new ArrayList<Tuple3<String, Long, Long>>();
-		root.gatherPrefixes(max, "", result);
+		root.gatherPrefixes(branchLimit, result);
 		return result;
 	}
-	
-	/*
-	public static Pair<String, Integer> findMostHittable(Node root) {
-		List<Map.Entry<String, Node>> path = new ArrayList<Map.Entry<String, Node>>();
-		return findMostHittable(root, path);
-	}
-	
-	public static Pair<String, Integer> findMostHittable(Node root, List<Map.Entry<String, Node>> path) {
-		root.findMostHittable(path);
-		StringBuilder sb = new StringBuilder();
-		for (Map.Entry<String, Node> e : path) {
-			sb.append(e.getKey());
-		}
-		return new Pair<String, Integer>(sb.toString(), path.get(path.size() - 1).getValue().hits);
-	}
-	*/
 }

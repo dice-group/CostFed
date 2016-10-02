@@ -90,7 +90,7 @@ public class TopKJoinOrderOptimizer extends JoinOrderOptimizer {
 		log.info("using Top-K");
 		
 		TopKEstimatorVisitor cvis = new TopKEstimatorVisitor();
-		List<CardPair> cardPairs = new ArrayList<CardPair>();
+		List<CardinalityVisitor.CardPair> cardPairs = new ArrayList<CardinalityVisitor.CardPair>();
 		
 		// pin selectors
 		boolean useHashJoin = false;
@@ -98,7 +98,7 @@ public class TopKJoinOrderOptimizer extends JoinOrderOptimizer {
 		
 		for (TupleExpr te : joinArgs) {
 			te.visit(cvis);
-			cardPairs.add(new CardPair(cvis.getNode(), cvis.getDescriptor()));
+			cardPairs.add(new CardinalityVisitor.CardPair(cvis.getNode(), cvis.getDescriptor()));
 			cvis.reset();
 		}
 		
@@ -111,7 +111,7 @@ public class TopKJoinOrderOptimizer extends JoinOrderOptimizer {
 		//long minCard = cardPairs.get(0).nd.card;
 		//long maxCard = cardPairs.get(cardPairs.size() - 1).nd.card;
 		
-		CardPair leftArg = cardPairs.get(0);
+		CardinalityVisitor.CardPair leftArg = cardPairs.get(0);
 		//result.add(cardPairs.get(0).expr);
 		cardPairs.remove(0); // I expect it isn't too expensive, list is not very long (to do: try linked list)
 		
@@ -130,7 +130,7 @@ public class TopKJoinOrderOptimizer extends JoinOrderOptimizer {
 				break;
 			}
 			
-			CardPair rightArg = cardPairs.get(rightIndex);
+			CardinalityVisitor.CardPair rightArg = cardPairs.get(rightIndex);
 			cardPairs.remove(rightIndex);
 			joinVars.addAll(OptimizerUtil.getFreeVars(rightArg.expr));
 			

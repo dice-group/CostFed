@@ -1,8 +1,11 @@
 package org.aksw.simba.quetsal.configuration;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -10,7 +13,10 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.aksw.simba.quetsal.core.Cardinality;
 import org.apache.log4j.Logger;
+import org.openrdf.model.IRI;
+import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
@@ -18,7 +24,9 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.repository.RepositoryConnection;
 
-public class QuetzalSummary {
+import com.fluidops.fedx.algebra.StatementSource;
+
+public class QuetzalSummary implements Summary {
 	static Logger log = Logger.getLogger(QuetzalSummary.class);
 	
 	static class KeyTuple implements Comparable<KeyTuple> {
@@ -229,21 +237,6 @@ public class QuetzalSummary {
 		}
 	}
 	
-
-	
-	/**
-	 * Quetzal Index lookup for rdf:type and its its corresponding values
-	 * @param p Predicate i.e. rdf:type
-	 * @param o Predicate value
-	 * @param stmt Statement Pattern
-	 */
-	public Set<String> lookupFedSumClass(StatementPattern stmt, String p, String o) {
-		assert (p.equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"));
-		KeyTuple k = new KeyTuple(p, o);
-		ValueTuple v = pobj.get(k);
-		return v == null ? null : v.urls;
-	}
-	
 	static Set<String> lookupIds(String p, String prefix, SortedMap<KeyTuple, ValueTuple> sm) {
 		KeyTuple k = new KeyTuple(p, prefix);
 		SortedMap<KeyTuple, ValueTuple> t = sm.tailMap(k);
@@ -256,20 +249,55 @@ public class QuetzalSummary {
 		return new HashSet<String>(); // empty map
 	}
 	
-	public Set<String> lookupFedSum(StatementPattern stmt, String sa, String p, String oa) {
+	String asUrlValue(Value v) {
+		return (v != null && v instanceof IRI) ? v.stringValue() : null;
+	}
+	
+	@Override
+	public Set<String> lookupSources(StatementPattern stmt) {
+		String s = asUrlValue(stmt.getSubjectVar().getValue());
+		String p = asUrlValue(stmt.getPredicateVar().getValue());
+		String o = asUrlValue(stmt.getObjectVar().getValue());
+		
+		return lookupSources(s, p, o);
+	}
+	
+	@Override
+	public Set<String> lookupSources(String sa, String p, String oa) {
 		if (sa == null && oa == null) {
-			assert(p != null);
-			ValueTuple v = purls.get(p);
-			return v == null ? null : v.urls;
+			Set<String> result = new HashSet<String>();
+			if (p == null) {
+				result.addAll(endpoints.values());
+			} else {
+				ValueTuple v = purls.get(p);
+				if (v != null) {
+					result.addAll(v.urls);
+				}
+			}
+			return result;
 		}
+		
 		if (sa == null) { // oa != null
-			return lookupIds(p, oa, pobj);
+			if (!"http://www.w3.org/1999/02/22-rdf-syntax-ns#type".equals(p)) {
+				return lookupIds(p, oa, pobj);
+			} else {
+				KeyTuple k = new KeyTuple(p, oa);
+				ValueTuple v = pobj.get(k);
+				return v == null ? new HashSet<String>() : v.urls;
+			}
 		}
 		if (oa == null) { // sa != null
 			return lookupIds(p, sa, psbj);
 		}
 		Set<String> sa_ids = lookupIds(p, sa, psbj);
-		Set<String> oa_ids = lookupIds(p, oa, pobj);
+		Set<String> oa_ids = null;
+		if (!"http://www.w3.org/1999/02/22-rdf-syntax-ns#type".equals(p)) {
+			oa_ids = lookupIds(p, oa, pobj);
+		} else {
+			KeyTuple k = new KeyTuple(p, oa);
+			ValueTuple v = pobj.get(k);
+			oa_ids = v == null ? new HashSet<String>() : v.urls;
+		}
 		
 		Set<String> min = sa_ids.size() < oa_ids.size() ? sa_ids : oa_ids;
 		Set<String> max = sa_ids.size() >= oa_ids.size() ? sa_ids : oa_ids;
@@ -284,7 +312,8 @@ public class QuetzalSummary {
 		return result;
 	}
 
-	public Set<String> lookupObjAuths(StatementPattern stmt, String eid) {
+	@Override
+	public Set<String> lookupObjPrefixes(StatementPattern stmt, String eid) {
 		String subject = null;
 		if (stmt.getSubjectVar().getValue() != null)
 		{
@@ -309,7 +338,8 @@ public class QuetzalSummary {
 		throw new Error("Not implemented yet");
 	}
 	
-	public Set<String> lookupSbjAuths(StatementPattern stmt, String eid) {
+	@Override
+	public Set<String> lookupSbjPrefixes(StatementPattern stmt, String eid) {
 		String subject = null;
 		if (stmt.getSubjectVar().getValue() != null)
 		{
@@ -364,5 +394,22 @@ public class QuetzalSummary {
 			return val.getObjsCut(object);
 		}
 		return val.objs;
+	}
+	
+	@Override
+	public long getTriplePatternCardinality(StatementPattern stmt, List<StatementSource> stmtSrces) {
+		return Cardinality.getTriplePatternCardinalityOriginal(stmt, stmtSrces);
+	}
+	
+	@Override
+	public double getTriplePatternObjectMVKoef(StatementPattern stmt, List<StatementSource> stmtSrces)
+	{
+		return 1;
+	}
+	
+	@Override
+	public double getTriplePatternSubjectMVKoef(StatementPattern stmt, List<StatementSource> stmtSrces)
+	{
+		return 1;
 	}
 }
