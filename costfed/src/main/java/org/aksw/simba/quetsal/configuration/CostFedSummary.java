@@ -705,7 +705,7 @@ public class CostFedSummary implements Summary {
 			totalObjects += c.objectCount;
 			totalTriples += c.tripleCount;
 		}
-		return totalObjects == 0 ? (double)1 : ((double)totalTriples)/totalObjects;
+		return ((double)totalTriples)/totalObjects;
 	}
 	
 	@Override

@@ -10,16 +10,19 @@ public class Trie2 {
 	public static class Node {
 		long hits = 0;
 		long unique = 0;
+		long terminatorHits = 0;
 		Map<String, Node> children = new HashMap<String, Node>();
 		
 		private Node() {
 			
 		}
 		
-		private Node(String tname, long hits) {
+		// node has termination
+		private Node(long hits) {
 			this.unique = 1;
 			this.hits = hits;
-			children.put(tname, null);
+			this.terminatorHits = hits;
+			//children.put(tname, null);
 		}
 		
 		private void insertPair(String k, Node v) {
@@ -40,11 +43,13 @@ public class Trie2 {
 			boolean result = false;
 			hits += hs;
 			boolean childFound = false;
+			if (children == null) {
+				childFound = false;
+			}
 			for (Map.Entry<String, Node> e : children.entrySet())
 			{
 				int i = 0;
 				String k = e.getKey();
-				if (k.isEmpty()) continue;
 				// find common part
 				for (; i < k.length() && i < word.length(); ++i) {
 					if (k.charAt(i) != word.charAt(i)) break;
@@ -58,6 +63,7 @@ public class Trie2 {
 							result = curChild.insert(tail1, hs);
 						} else {
 							curChild.hits += hs;
+							curChild.terminatorHits += hs;
 						}
 					} else {
 						String commonPrefix = k.substring(0, i);
@@ -69,14 +75,14 @@ public class Trie2 {
 						newChild.unique = curChild.unique + 1;
 						children.put(commonPrefix, newChild);
 						newChild.insertPair(tail0, curChild);
-						newChild.insertPair(tail1, new Node("", hs));
+						newChild.insertPair(tail1, new Node(hs));
 						result = true;
 					}
 					break;
 				}
 			}
 			if (!childFound) { // no common prefix => new root
-				insertPair(word, new Node("", hs));// terminator mark
+				insertPair(word, new Node(hs));// terminator mark
 				result = true;
 			}
 			
@@ -101,15 +107,14 @@ public class Trie2 {
 		
 		public void findMostHittable(String path, int maxsize, List<Pair<String, Long>> result)
 		{
+			if (terminatorHits > 0) {
+				updateList(path, terminatorHits, maxsize, result);
+			}
 			for (Map.Entry<String, Node> e : children.entrySet())
 			{
 				Node nd = e.getValue();
-				if (nd == null) { // terminator
-					updateList(path, hits, maxsize, result);
-				} else {
-					if (result.size() < maxsize || result.get(result.size() - 1).getSecond() < nd.hits) {
-						nd.findMostHittable(path + e.getKey(), maxsize, result);
-					}
+				if (result.size() < maxsize || result.get(result.size() - 1).getSecond() < nd.hits) {
+					nd.findMostHittable(path + e.getKey(), maxsize, result);
 				}
 			}
 		}
@@ -124,6 +129,9 @@ public class Trie2 {
 		
 		public void gatherPrefixes(int branchLimit, String curPrefix, List<Tuple3<String, Long, Long>> result)
 		{
+			if (terminatorHits > 0) {
+				result.add(new Tuple3<String, Long, Long>(curPrefix, (long)1, terminatorHits));
+			}
 			int bcount = children.size();
 			if (children.containsKey("")) {
 				--bcount;
@@ -132,9 +140,7 @@ public class Trie2 {
 			for (Map.Entry<String, Node> e : children.entrySet())
 			{
 				Node nd = e.getValue();
-				if (nd == null) { // terminator
-					result.add(new Tuple3<String, Long, Long>(curPrefix, (long)1, hits));
-				} else if (stopFlag) {
+				if (stopFlag) {
 					result.add(new Tuple3<String, Long, Long>(curPrefix + e.getKey(), nd.unique, nd.hits));
 				} else {
 					nd.gatherPrefixes(branchLimit, curPrefix + e.getKey(), result);

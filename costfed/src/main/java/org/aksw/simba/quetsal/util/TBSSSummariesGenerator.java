@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -24,11 +25,11 @@ import org.aksw.simba.quetsal.datastructues.Trie;
 import org.aksw.simba.quetsal.datastructues.Trie2;
 import org.aksw.simba.quetsal.datastructues.TrieNode;
 import org.aksw.simba.quetsal.datastructues.Tuple3;
+import org.aksw.simba.quetsal.datastructues.Tuple4;
 import org.aksw.simba.quetsal.synopsis.ArrayCollection;
 import org.aksw.simba.quetsal.synopsis.Collection;
 import org.aksw.simba.quetsal.synopsis.MIPsynopsis;
 import org.apache.http.client.HttpClient;
-import org.apache.http.impl.NoConnectionReuseStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.Logger;
 import org.openrdf.http.client.util.HttpClientBuilders;
@@ -44,7 +45,6 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sparql.SPARQLRepository;
 
-import com.fluidops.fedx.Config;
 import com.fluidops.fedx.FedXFactory;
 
 
@@ -96,8 +96,7 @@ public class TBSSSummariesGenerator {
 	 */
 	public TBSSSummariesGenerator(String location) throws IOException 
 	{
-		bwr = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(location), "UTF-8"));
-				//new FileWriter(new File(location))); //--name/location where the summaries file will be stored
+		bwr = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(location), "UTF-8")); //--name/location where the summaries file will be stored
 		bwr.append("@prefix ds:<http://aksw.org/quetsal/> .");
 		bwr.newLine();
 	}
@@ -109,12 +108,13 @@ public class TBSSSummariesGenerator {
 	
 	static boolean verifyIRI(String sval) {
 		try {
+			// exclude virtuoso specific data
 			if (sval.startsWith("http://www.openlinksw.com/schemas") || sval.startsWith("http://www.openlinksw.com/virtrd")) return false;
 			URL url = new URL(sval);
 			new URI(url.getProtocol(), url.getAuthority(), url.getPath(), url.getQuery(), url.getRef()).toURL().toString();
 			return url.getProtocol() != null && url.getAuthority() != null && !url.getAuthority().isEmpty();
 		} catch (Exception e) {
-			log.warn("skip IRI: " + sval + ", error: " + e.getMessage());
+			//log.warn("skip IRI: " + sval + ", error: " + e.getMessage());
 			return false;
 		}
 	}
@@ -152,9 +152,6 @@ public class TBSSSummariesGenerator {
 	
 	public static void main(String[] args) throws IOException, URISyntaxException
 	{
-		//java.net.URL url = new java.net.URL(test);
-		//new URI(url.getProtocol(), url.getAuthority(), url.getPath(), url.getQuery(), url.getRef()).toURL().toString();
-		//new java.net.URL(url).toURI()..toString();
 		//String host = "10.15.0.144";
 		//String host = "192.168.0.145";
 		//String host = "ws24348.avicomp.com";
@@ -267,6 +264,45 @@ public class TBSSSummariesGenerator {
 	}
 	
 	ExecutorService executorService;
+	List<Future<?>> tasks = new ArrayList<Future<?>>();
+	
+	Future<?> addTask(Runnable task) {
+		Future<?> future = null;
+		synchronized (executorService) {
+			future = executorService.submit(task);
+			tasks.add(future);
+		}
+		return future;
+	}
+	
+	<T> Future<T> addTask(Callable<T> task) {
+		Future<T> future = null;
+		synchronized (executorService) {
+			future = executorService.submit(task);
+			tasks.add(future);
+		}
+		return future;
+	}
+	
+	void waitForTasks() {
+		Future<?> future = null;
+		while (true) {
+			int index = -1;
+			synchronized (executorService) {
+				if (tasks.isEmpty()) return;
+				index = tasks.size() - 1;
+				future = tasks.get(index);
+			}
+			try {
+				future.get();
+			} catch (Exception e) {
+    			log.error(e);
+			}
+			synchronized (executorService) {
+				tasks.remove(index);
+			}
+		}
+	}
 	/**
 	 * Build Quetzal data summaries for the given list of SPARQL endpoints
 	 * @param endpoints List of SPARQL endpoints url
@@ -276,12 +312,11 @@ public class TBSSSummariesGenerator {
 	 */
 	public void generateSummaries(List<String> endpoints, String graph, int branchLimit) throws IOException
 	{
-		executorService = Executors.newFixedThreadPool(10);
-		List<Future<?>> flist = new ArrayList<Future<?>>();
+		executorService = Executors.newFixedThreadPool(16);
 		AtomicInteger dsnum = new AtomicInteger(0);
 		for (String endpoint : endpoints)
 		{
-			Future<?> future = executorService.submit(new Runnable() {
+			addTask(new Runnable() {
 			    public void run() {
 			    	try {
 				    	String sum = generateSummary(endpoint, graph, branchLimit, dsnum.incrementAndGet());
@@ -299,15 +334,8 @@ public class TBSSSummariesGenerator {
 			    	}
 			    }
 			});
-			flist.add(future);
 		}
-		for (Future<?> f : flist) {
-			try {
-				f.get();
-			} catch (Exception e) {
-    			log.error(e);
-			}
-		}
+		waitForTasks();
 		executorService.shutdown();
 		bwr.close();
 	}
@@ -330,24 +358,47 @@ public class TBSSSummariesGenerator {
 		sb.append("#---------------------"+endpoint+" Summaries-------------------------------\n");
 		sb.append("[] a ds:Service ;\n");
 		sb.append("     ds:url   <"+endpoint+"> ;\n");
+		
+		List<Future<Tuple4<String, Long, Long, Long>>> subtasks = new ArrayList<Future<Tuple4<String, Long, Long, Long>>>();
+		
 		for (int i = 0; i < lstPred.size(); i++)
 		{
-			log.info((i+1)+" from " + lstPred.size() + " in progress: " + lstPred.get(i) + ", endpoint: " + endpoint);
-			if (!verifyIRI(lstPred.get(i))) continue;
+			final String predicate = lstPred.get(i);
+			if (!verifyIRI(predicate)) {
+				subtasks.add(null);
+				continue;
+			}
+			
+			Future<Tuple4<String, Long, Long, Long>> statfuture = addTask(new Callable<Tuple4<String, Long, Long, Long>>() {
+				@Override
+				public Tuple4<String, Long, Long, Long> call() throws Exception {
+					return writePrefixes(predicate, endpoint, graph, branchLimit);
+				}
+			});
+			subtasks.add(statfuture);
+		}
+		
+		for (int i = 0; i < lstPred.size(); i++)
+		{
+			if (subtasks.get(i) == null) continue;
+			final String predicate = lstPred.get(i);
 			
 			StringBuilder tsb = new StringBuilder();
 			try {
 				tsb.append("     ds:capability\n");
 				tsb.append("         [\n");
-				tsb.append("           ds:predicate  <" + lstPred.get(i) + "> ;");
+				tsb.append("           ds:predicate  <" + predicate + "> ;");
 				//long distinctSbj =
 				
 				// sbjs, objs, total
-				Tuple3<Long, Long, Long> stat = writePrefixes(lstPred.get(i), endpoint, graph, branchLimit, tsb);
 				
-				long distinctSbj = stat.getValue0();
-				long distinctObj = stat.getValue1();
-				long tripleCount = stat.getValue2();
+				Tuple4<String, Long, Long, Long> stat = subtasks.get(i).get();
+				log.info((i+1)+" from " + lstPred.size() + " done: " + predicate + ", endpoint: " + endpoint);
+				
+				tsb.append(stat.getValue0());
+				long distinctSbj = stat.getValue1();
+				long distinctObj = stat.getValue2();
+				long tripleCount = stat.getValue3();
 				
 				//long tripleCount2 = getTripleCount(lstPred.get(i), endpoint);
 //				if (distinctSbj == 0) {
@@ -606,7 +657,9 @@ public class TBSSSummariesGenerator {
 	 * @param branchLimit Branching Limit for Trie
 	 * @throws IOException  IO Error
 	 */
-	public Tuple3<Long, Long, Long> writePrefixes(String predicate, String endpoint, String graph, int branchLimit, StringBuilder sb) throws IOException {
+	public Tuple4<String, Long, Long, Long> writePrefixes(String predicate, String endpoint, String graph, int branchLimit) throws IOException {
+		StringBuilder sb = new StringBuilder();
+		
 		long limit = 1000000;
 		boolean isTypePredicate = predicate.equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 
@@ -766,7 +819,7 @@ public class TBSSSummariesGenerator {
 		//log.info("subject: " + topsbjs);
 		//log.info("object: " + topobjs);
 		
-		return new Tuple3<Long, Long, Long>(uniqueSbj, uniqueObj, rsCount);
+		return new Tuple4<String, Long, Long, Long>(sb.toString(), uniqueSbj, uniqueObj, rsCount);
 	}
 	
 	///**
@@ -934,11 +987,17 @@ public class TBSSSummariesGenerator {
 	 * @return average cardinality
 	 */
 	long doSaleemAlgo(int min, int max, List<Pair<String, Long>> objects, List<Pair<String, Long>> top, List<String> middle) {
-		for (int i = 0; i < min && i < objects.size(); ++i) {
+		while (!objects.isEmpty() && objects.get(objects.size() - 1).getSecond() == 1) {
+			objects.remove(objects.size() - 1);
+		}
+			
+		if (min > objects.size()) min = objects.size();
+		
+		for (int i = 0; i < min; ++i) {
 			Pair<String, Long> obj = objects.get(i);
 			top.add(obj);
 		}
-		if (min >= objects.size()) return 0;
+		
 		int max2 = max < objects.size() ? max : objects.size();
 
 		// find first diff maximum

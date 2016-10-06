@@ -53,19 +53,19 @@ public class CardinalityVisitor extends AbstractQueryModelVisitor<RuntimeExcepti
 				if (left.expr instanceof StatementPattern) {
 					StatementPattern leftsp = (StatementPattern)left.expr;
 					if (commonvars.contains(leftsp.getSubjectVar().getName())) {
-						result.card *= left.nd.mvobjkoef;
+						result.card *= left.nd.mvsbjkoef;
 					}
 					if (commonvars.contains(leftsp.getObjectVar().getName())) {
-						result.card *= left.nd.mvsbjkoef;
+						result.card *= left.nd.mvobjkoef;
 					}
 				}
 				if (right.expr instanceof StatementPattern) {
 					StatementPattern rightsp = (StatementPattern)right.expr;
 					if (commonvars.contains(rightsp.getSubjectVar().getName())) {
-						result.card *= right.nd.mvobjkoef;
+						result.card *= right.nd.mvsbjkoef;
 					}
 					if (commonvars.contains(rightsp.getObjectVar().getName())) {
-						result.card *= right.nd.mvsbjkoef;
+						result.card *= right.nd.mvobjkoef;
 					}
 				}
 				
