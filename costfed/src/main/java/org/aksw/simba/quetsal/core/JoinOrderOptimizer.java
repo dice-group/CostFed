@@ -29,22 +29,16 @@ import com.fluidops.fedx.structures.QueryInfo;
 public class JoinOrderOptimizer extends StatementGroupOptimizer {
 	public static Logger log = Logger.getLogger(JoinOrderOptimizer.class);
 
-    protected static double C_TRANSFER_TUPLE = 0.02;
-    protected static double C_TRANSFER_QUERY = 50;
-        
-
+	protected static double C_HANDLE_TUPLE = 0.0025;
+    protected static double C_TRANSFER_TUPLE = 0.01;
+    protected static double C_TRANSFER_QUERY = 100;
+	
 	Map<QueryModelNode, CardinalityVisitor.NodeDescriptor> ds = new HashMap<QueryModelNode, CardinalityVisitor.NodeDescriptor>();
 	
 	public class EstimatorVisitor extends CardinalityVisitor
 	{
-		@Override
-		public void meet(StatementPattern stmt) {
-			List<StatementSource> stmtSrces = queryInfo.getSourceSelection().getStmtToSources().get(stmt);
-			current.card = Cardinality.getTriplePatternCardinality(stmt, stmtSrces);
-			assert(current.card != 0);
-			current.sel = current.card/(double)Cardinality.getTotalTripleCount(stmtSrces);
-			current.mvsbjkoef = Cardinality.getTriplePatternSubjectMVKoef(stmt, stmtSrces);
-			current.mvobjkoef = Cardinality.getTriplePatternObjectMVKoef(stmt, stmtSrces);
+		EstimatorVisitor() {
+			super(JoinOrderOptimizer.this.queryInfo);
 		}
 		
 		@Override
@@ -185,9 +179,15 @@ public class JoinOrderOptimizer extends StatementGroupOptimizer {
 			
 			CardinalityVisitor.NodeDescriptor rd = CardinalityVisitor.getJoinCardinality(commonvars, leftArg, rightArg);
 
-			double hashCost = rightArg.nd.card * C_TRANSFER_TUPLE + 2 * C_TRANSFER_QUERY;
-			double bindCost = leftArg.nd.card / Config.getConfig().getBoundJoinBlockSize() * C_TRANSFER_QUERY + rd.card * C_TRANSFER_TUPLE;
+			long threads = Config.getConfig().getWorkerThreads();
 			
+			double hashCost = rightArg.nd.card * C_TRANSFER_TUPLE + (2 + threads - 1)/threads * C_TRANSFER_QUERY + (rightArg.nd.card + rightArg.nd.card) * C_HANDLE_TUPLE;
+			
+			long bsize = Config.getConfig().getBoundJoinBlockSize();
+			
+			long numOfBindRequest = (leftArg.nd.card + bsize - 1) / bsize;
+			double bindCost = C_TRANSFER_QUERY + (numOfBindRequest + threads - 1) / threads * C_TRANSFER_QUERY + (leftArg.nd.card /*+ rd.card */) * C_TRANSFER_TUPLE;
+			//bindCost = numOfBindRequest * C_TRANSFER_QUERY + rd.card * C_TRANSFER_TUPLE;
 			if (log.isTraceEnabled()) {
 				log.debug(String.format("join card: %s, hash cost: %s, bind cost: %s", rd.card, hashCost, bindCost));
 			}

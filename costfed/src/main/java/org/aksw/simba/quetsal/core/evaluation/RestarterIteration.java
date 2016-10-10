@@ -21,6 +21,7 @@ import com.fluidops.fedx.Config;
 import com.fluidops.fedx.algebra.ExclusiveGroup;
 import com.fluidops.fedx.algebra.StatementSource;
 import com.fluidops.fedx.evaluation.iterator.RestartableCloseableIteration;
+import com.fluidops.fedx.structures.QueryInfo;
 
 import info.aduna.iteration.LookAheadIteration;
 
@@ -35,13 +36,20 @@ public class RestarterIteration<E> extends LookAheadIteration<E, QueryEvaluation
 	static double rCost = 50; // transfer query cost
 	static double tCost = 0.02; // transfer tuple cost
 	
-	public RestarterIteration(RestartableCloseableIteration<E> arg, JoinRestarter jr) {
+	final QueryInfo queryInfo;
+	
+	public RestarterIteration(QueryInfo queryInfo, RestartableCloseableIteration<E> arg, JoinRestarter jr) {
+		this.queryInfo = queryInfo;
 		this.arg = arg;
 		this.jr = jr;
 	}
 	
 	class CVisitor extends CardinalityVisitor
 	{
+		CVisitor() {
+			super(RestarterIteration.this.queryInfo);
+		}
+		
 		@Override
 		public void meet(StatementPattern stmt) {
 			List<StatementSource> stmtSrces = jr.getQueryInfo().getSourceSelection().getStmtToSources().get(stmt);

@@ -287,11 +287,9 @@ public class TBSSSummariesGenerator {
 	void waitForTasks() {
 		Future<?> future = null;
 		while (true) {
-			int index = -1;
 			synchronized (executorService) {
 				if (tasks.isEmpty()) return;
-				index = tasks.size() - 1;
-				future = tasks.get(index);
+				future = tasks.get(0);
 			}
 			try {
 				future.get();
@@ -299,7 +297,7 @@ public class TBSSSummariesGenerator {
     			log.error(e);
 			}
 			synchronized (executorService) {
-				tasks.remove(index);
+				tasks.remove(0);
 			}
 		}
 	}
@@ -343,8 +341,6 @@ public class TBSSSummariesGenerator {
 	public String generateSummary(String endpoint, String graph, int branchLimit, int dsnum) throws Exception
 	{
 		long totalTrpl = 0;
-		//long totalSbj = 0;
-		//long totalObj = 0;
 		long totalSbj = getDistinctSubjectCount(endpoint);
 		long totalObj = getDistinctObjectCount(endpoint);
 		

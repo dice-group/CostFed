@@ -27,6 +27,7 @@ import com.fluidops.fedx.evaluation.iterator.QueueIteration;
 import com.fluidops.fedx.evaluation.iterator.RestartableCloseableIteration;
 import com.fluidops.fedx.evaluation.join.ParallelBoundJoinTask;
 import com.fluidops.fedx.evaluation.join.ParallelCheckJoinTask;
+import com.fluidops.fedx.structures.QueryInfo;
 
 import info.aduna.iteration.CloseableIteration;
 
@@ -71,6 +72,7 @@ public class TBSSFederationEvalStrategy extends SparqlFederationEvalStrategy {
 	CloseableIteration<BindingSet, QueryEvaluationException> evaluateJoinRestarter(JoinRestarter jri, BindingSet bindings)
 	{
 		return new RestarterIteration<BindingSet>(
+			jri.getQueryInfo(),
 			(RestartableCloseableIteration<BindingSet>)evaluate(jri.getArg(0), bindings),
 			jri
 		);

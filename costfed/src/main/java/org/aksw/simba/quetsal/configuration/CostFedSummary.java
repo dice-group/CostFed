@@ -693,11 +693,11 @@ public class CostFedSummary implements Summary {
 		String s = boundSubject(stmt);
 		String p = boundPredicate(stmt);
 		String o = boundObject(stmt);
-		if (s != null || o != null) return 1.0;
 		if (p == null) {
 			// not implemented
 			return 1.0;
 		}
+		if (s != null || o != null) return 0.71;
 		long totalObjects = 0, totalTriples = 0;
 		for (StatementSource ss : stmtSrces)
 		{
@@ -715,11 +715,11 @@ public class CostFedSummary implements Summary {
 		String s = boundSubject(stmt);
 		String p = boundPredicate(stmt);
 		String o = boundObject(stmt);
-		if (s != null || o != null) return 1.0;
 		if (p == null) {
 			// not implemented
 			return 1.0;
 		}
+		if (s != null || o != null) return 0.71;
 		long totalSubjects = 0, totalTriples = 0;
 		for (StatementSource ss : stmtSrces)
 		{

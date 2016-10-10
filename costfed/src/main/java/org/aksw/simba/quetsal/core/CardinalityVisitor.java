@@ -15,10 +15,16 @@ import com.fluidops.fedx.algebra.ExclusiveGroup;
 import com.fluidops.fedx.algebra.ExclusiveStatement;
 import com.fluidops.fedx.algebra.StatementSource;
 import com.fluidops.fedx.optimizer.OptimizerUtil;
+import com.fluidops.fedx.structures.QueryInfo;
 
 public class CardinalityVisitor extends AbstractQueryModelVisitor<RuntimeException>
 {
 	protected static int ESTIMATION_TYPE = 0;
+	final QueryInfo queryInfo;
+	
+	public CardinalityVisitor(QueryInfo queryInfo) {
+		this.queryInfo = queryInfo;
+	}
 	
 	public static class NodeDescriptor {
 		public long card = Long.MAX_VALUE;
@@ -44,10 +50,10 @@ public class CardinalityVisitor extends AbstractQueryModelVisitor<RuntimeExcepti
 	
 	public static NodeDescriptor getJoinCardinality(Collection<String> commonvars, CardPair left, CardPair right)
 	{
-		CardinalityVisitor.NodeDescriptor result = new CardinalityVisitor.NodeDescriptor();
+		NodeDescriptor result = new NodeDescriptor();
 		if (CardinalityVisitor.ESTIMATION_TYPE == 0) {
 			if (commonvars != null && !commonvars.isEmpty()) {
-				result.card = (long)Math.ceil((Math.min(left.nd.card, right.nd.card) / 2));
+				result.card = (long)Math.ceil((Math.min(left.nd.card, right.nd.card)));
 				
 				// multivalue fixes
 				if (left.expr instanceof StatementPattern) {
@@ -68,7 +74,6 @@ public class CardinalityVisitor extends AbstractQueryModelVisitor<RuntimeExcepti
 						result.card *= right.nd.mvobjkoef;
 					}
 				}
-				
 			} else {
 				result.card = (long)Math.ceil(left.nd.card * right.nd.card);
 			}
@@ -115,6 +120,16 @@ public class CardinalityVisitor extends AbstractQueryModelVisitor<RuntimeExcepti
 	}
 	
 	@Override
+	public void meet(StatementPattern stmt) {
+		List<StatementSource> stmtSrces = queryInfo.getSourceSelection().getStmtToSources().get(stmt);
+		current.card = Cardinality.getTriplePatternCardinality(stmt, stmtSrces);
+		assert(current.card != 0);
+		current.sel = current.card/(double)Cardinality.getTotalTripleCount(stmtSrces);
+		current.mvsbjkoef = Cardinality.getTriplePatternSubjectMVKoef(stmt, stmtSrces);
+		current.mvobjkoef = Cardinality.getTriplePatternObjectMVKoef(stmt, stmtSrces);
+	}
+	
+	@Override
 	public void meet(Filter filter)  {
 		filter.getArg().visit(this);
 	}
@@ -123,7 +138,8 @@ public class CardinalityVisitor extends AbstractQueryModelVisitor<RuntimeExcepti
 		List<ExclusiveStatement> slst = new LinkedList<ExclusiveStatement>(eg.getStatements()); // make copy
 		List<StatementSource> stmtSrces = slst.get(0).getStatementSources();
 		assert (stmtSrces.size() == 1);
-		long total = Cardinality.getTotalTripleCount(stmtSrces);
+		
+		//long total = Cardinality.getTotalTripleCount(stmtSrces);
 		
 		ExclusiveStatement leftArg = slst.get(0);
 		slst.remove(0);
@@ -131,8 +147,11 @@ public class CardinalityVisitor extends AbstractQueryModelVisitor<RuntimeExcepti
 		Set<String> joinVars = new HashSet<String>();
 		joinVars.addAll(OptimizerUtil.getFreeVars(leftArg));
 		
-		long leftCard = Cardinality.getTriplePatternCardinality(leftArg, stmtSrces);
-		double leftSelectivity = leftCard/(double)total;
+		//long leftCard = Cardinality.getTriplePatternCardinality(leftArg, stmtSrces);
+		leftArg.visit(this);
+		CardPair left  = new CardPair(leftArg, getDescriptor());
+		reset();
+		//double leftSelectivity = leftCard/(double)total;
 		
 		// find possible join order
 		while (!slst.isEmpty()) {
@@ -150,28 +169,33 @@ public class CardinalityVisitor extends AbstractQueryModelVisitor<RuntimeExcepti
 				rightArg = slst.get(0);
 				slst.remove(0);
 			}
-			long rightCard = Cardinality.getTriplePatternCardinality(rightArg, stmtSrces);
+			rightArg.visit(this);
+			CardPair right = new CardPair(rightArg, getDescriptor());
+			reset();
+			//long rightCard = Cardinality.getTriplePatternCardinality(rightArg, stmtSrces);
 			
 			joinVars.addAll(OptimizerUtil.getFreeVars(rightArg));
 			
-			double sel = 1;
+			//double sel = 1;
 			
-			if (ESTIMATION_TYPE == 0) {
-				if (commonvars != null && !commonvars.isEmpty()) {
-					leftCard = (long)Math.ceil((Math.min(leftCard, rightCard))/2);
-				} else {
-					leftCard = (long)Math.ceil(leftCard * rightCard);
-				}
-			} else {
-				double rightSelectivity = rightCard/(double)total;
-				if (commonvars != null && !commonvars.isEmpty()) {
-					sel *= Math.min(leftSelectivity, rightSelectivity);
-				}
-				leftCard = (long)Math.ceil(leftCard * rightCard * sel);
-				leftSelectivity = sel;
-			}
+			left.nd = getJoinCardinality(commonvars, left, right);
+
+			//if (ESTIMATION_TYPE == 0) {
+				//if (commonvars != null && !commonvars.isEmpty()) {
+				//	leftCard = (long)Math.ceil((Math.min(leftCard, rightCard))/2);
+				//} else {
+				//	leftCard = (long)Math.ceil(leftCard * rightCard);
+				//}
+			//} else {
+			//	double rightSelectivity = rightCard/(double)total;
+			//	if (commonvars != null && !commonvars.isEmpty()) {
+			//		sel *= Math.min(leftSelectivity, rightSelectivity);
+			//	}
+			//	leftCard = (long)Math.ceil(leftCard * rightCard * sel);
+			//	leftSelectivity = sel;
+			//}
 		}
-		current.card = leftCard;
-		current.sel = leftSelectivity;
+		current = left.nd;
+		//current.sel = leftSelectivity;
 	}
 }
