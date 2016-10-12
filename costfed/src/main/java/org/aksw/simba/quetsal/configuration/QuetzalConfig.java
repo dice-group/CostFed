@@ -17,6 +17,7 @@ import org.openrdf.sail.memory.MemoryStore;
 import com.fluidops.fedx.Config;
 import com.fluidops.fedx.FedXFactory;
 import com.fluidops.fedx.exception.FedXException;
+
 /**
  * Quetzal configurations setup. Need to run one time in the start before query execution
  * @author Saleem
@@ -41,6 +42,10 @@ public class QuetzalConfig {
 	public static Mode mode; // Index_dominant , ASK_dominant. In first type of mode we  make use of sbj, obj authorities to find relevant sources for triple patterns with bound subject or objects e.g ?s  owl:sameAs  <http://dbpedia.org/resource/Barack_Obama>, we will perform index lookup for predicate owl:sameAs and objAuthority  <http://dbpedia.org> and all the qualifying sources will be added to the set of capable sources for that triple pattern.  
 	// In hybrid mode we make use of SPARQL ASK queries for bound subjects or objects of a common predicate such as owl:sameAs. If Predicate is not common then we use index sbj ,obj authorities parts as explained above
 
+	/**
+	 * Quetzal Configurations. Must call this method once before starting source selection.
+	 * mode can be either set to Index_dominant or ASK_dominant. See details in FedSum paper.
+	 */
 	public static void initialize()
 	{
 		try {
@@ -50,8 +55,9 @@ public class QuetzalConfig {
 			
 			//loadDataSources(); skip, must be initialized explicitly by user
 			
-			if (mode == Mode.ASK_DOMINANT)
+			if (mode == Mode.ASK_DOMINANT) {
 				loadCommonPredList();
+			}
 		} catch (IOException e) {
 			throw new FedXException(e);
 		}
@@ -63,29 +69,6 @@ public class QuetzalConfig {
 		con = null;
 		sumRepository.shutDown();
 		sumRepository = null;
-	}
-	
-	/**
-	 * Quetzal Configurations. Must call this method once before starting source selection.
-	 * mode can be either set to Index_dominant or ASK_dominant. See details in FedSum paper.
-	 * @param inputCommonPredThreshold Threshold value between common and normal predicates
-	 * @param inputMode  Source Selection mode i.e. Index_dominant or ASK_dominant
-	 * @param InputFedSummaries Summaries of all the available data sources
-	 * @throws Exception Errors
-	 */
-	@Deprecated
-	public static void initialize(String inputFedSummaries, Mode inputMode, double inputCommonPredThreshold) throws Exception 
-	{
-		Config.initialize();
-		mode = inputMode;  //{ASK_dominant, Index_dominant}
-		commonPredThreshold = inputCommonPredThreshold;  //considered a predicate as common predicate if it is present in 33% available data sources
-		//long startTime = System.currentTimeMillis();
-		loadFedSummaries(inputFedSummaries);
-		//System.out.println("Index Load Time: "+ (System.currentTimeMillis()-startTime));
-
-		loadDataSources();
-		if (mode == Mode.ASK_DOMINANT)
-			loadCommonPredList();
 	}
 	
 	/**
@@ -109,23 +92,25 @@ public class QuetzalConfig {
 	 */
 	public static void loadCommonPredList() {
 
-		String queryString = "Prefix ds:<http://aksw.org/fedsum/> "
+		String queryString = "Prefix ds:<http://aksw.org/quetsal/> "
 				+ "SELECT DISTINCT ?p "
 				+ " WHERE {?s ds:predicate ?p. }";
 
 		TupleQuery tupleQuery = con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
 		TupleQueryResult result = tupleQuery.evaluate();
-		ArrayList<String> FedSumPredicates = new  ArrayList<String>();
+		ArrayList<String> fedSumPredicates = new  ArrayList<String>();
 		while(result.hasNext())
 		{
-			FedSumPredicates.add(result.next().getValue("p").stringValue());
+			fedSumPredicates.add(result.next().getValue("p").stringValue());
 		}
 		//---check each distinct 
 
-		for (String predicate : FedSumPredicates)
+		int dscount = summary.lookupSources(null, null, null).size();
+		
+		for (String predicate : fedSumPredicates)
 		{
 			int count = 0;
-			queryString = "Prefix ds:<http://aksw.org/fedsum/> "
+			queryString = "Prefix ds:<http://aksw.org/quetsal/> "
 					+ "SELECT  Distinct ?url "
 					+ " WHERE {?s ds:url ?url. "
 					+ " 		?s ds:capability ?cap. "
@@ -138,7 +123,7 @@ public class QuetzalConfig {
 				result.next();
 				count++;
 			}
-			double threshold = (double) count/dataSources.size();
+			double threshold = (double) count/dscount;
 			if(threshold>=commonPredThreshold)
 				commonPredicates.add(predicate); 
 		}

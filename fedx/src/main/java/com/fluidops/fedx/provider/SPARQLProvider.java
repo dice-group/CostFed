@@ -50,7 +50,10 @@ public class SPARQLProvider implements EndpointProvider {
 			repo.setHttpClient(FedXFactory.httpClient);
 			repo.initialize();
 			
-			ProviderUtil.checkConnectionIfConfigured(repo);
+			long rtime = ProviderUtil.checkConnectionIfConfigured(repo);
+			if (rtime != 0) {
+				rtime = ProviderUtil.checkConnectionIfConfigured(repo); // measure again
+			}
 			
 			String location = repoInfo.getLocation();
 			EndpointClassification epc = EndpointClassification.Remote;
@@ -67,7 +70,7 @@ public class SPARQLProvider implements EndpointProvider {
 			EndpointConfiguration ep = manipulateEndpointConfiguration(location, repoInfo.getEndpointConfiguration());
 			res.setEndpointConfiguration(ep);
 			res.setRepo(repo);
-			
+			res.setResponseTime(rtime);
 			return res;
 		} catch (RepositoryException e) {
 			throw new FedXException("Repository " + repoInfo.getId() + " could not be initialized: " + e.getMessage(), e);

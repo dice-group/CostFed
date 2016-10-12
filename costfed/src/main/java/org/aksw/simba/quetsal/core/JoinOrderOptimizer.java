@@ -181,7 +181,7 @@ public class JoinOrderOptimizer extends StatementGroupOptimizer {
 
 			long threads = Config.getConfig().getWorkerThreads();
 			
-			double hashCost = rightArg.nd.card * C_TRANSFER_TUPLE + (2 + threads - 1)/threads * C_TRANSFER_QUERY + (rightArg.nd.card + rightArg.nd.card) * C_HANDLE_TUPLE;
+			double hashCost = rightArg.nd.card * C_TRANSFER_TUPLE + (2 + threads - 1)/threads * C_TRANSFER_QUERY + (leftArg.nd.card + rightArg.nd.card) * C_HANDLE_TUPLE;
 			
 			long bsize = Config.getConfig().getBoundJoinBlockSize();
 			

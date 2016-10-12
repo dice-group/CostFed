@@ -44,7 +44,7 @@ public class ExecuteHibiscusQuery {
        //  String FedSummaries = "C://slices/Linked-SQ-DBpedia-Aidan.ttl";
 		QuetzalConfig.Mode mode = QuetzalConfig.Mode.ASK_DOMINANT;;  //{ASK_DOMINANT, INDEX_DOMINANT}
 		double commonPredThreshold = 0.33 ;  //considered a predicate as common predicate if it is presenet in 33% available data sources
-		QuetzalConfig.initialize(FedSummaries, mode, commonPredThreshold);  // must call this function only one time at the start to load configuration information. Please specify the FedSum mode. 
+		QuetzalConfig.initialize();//FedSummaries, mode, commonPredThreshold);  // must call this function only one time at the start to load configuration information. Please specify the FedSum mode. 
 		System.out.println("One time configuration loading time : "+ (System.currentTimeMillis()-strtTime));
 		FedX fed = FederationManager.getInstance().getFederation();
 		List<Endpoint> members = fed.getMembers();
