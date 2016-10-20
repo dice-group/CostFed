@@ -4,27 +4,27 @@ For each property **p &isin; P** in a dataset **D**, the set of subjects is defi
 
 ![set of subjects](formulas/s_p.png)
 
-Then, we computed the mean and standard deviation of the frequency of their respective subjects. The mean frequency of the subjects of a property **p** is defined as
+Then, we computed the mean and standard deviation of the frequency of their respective objects (o). The mean frequency of the objects of a property **p** is defined as
 
-![mean frequency](formulas/mf_s_p.png)
+![mean frequency](formulas/mf_o_p.png)
 
 whereas the standard deviation is
 
-![std frequency](formulas/sdf_s_p.png)
+![std frequency](formulas/sdf_o_p.png)
 
 Afterwards, for each dataset, we calculated the following indices:
 
 * *net-mean mean frequency*
 
-![net mean frequency](formulas/nmf_s_d.png)
+![net mean frequency](formulas/nmf_o_d.png)
 
 * *net-mean standard deviation of frequency*
 
-![net std frequency](formulas/nsdf_s_d.png)
+![net std frequency](formulas/nsdf_o_d.png)
 
 * *net-mean coefficient of variation*, defined as the rate between **nsdf** and **nmf**.
 
-We repeated the steps above also in the other direction, i.e. for the objects (o).
+We repeated the steps above also in the other direction, i.e. extracting the objects first and computing the indices for the subjects (s).
 
 Dataset|nmf_s(D)|nmf_o(D)|nsdf_s(D)|nsdf_o(D)|ncv_s(D)|ncv_o(D)
 -----:|-----:|-----:|-----:|-----:|-----:|-----:
