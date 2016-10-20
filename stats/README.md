@@ -1,16 +1,30 @@
 # CostFed Statistics #
 
-We first extracted all properties **P** in a dataset **D**.
-For each property **p &isin; P**, we computed the mean frequency of their respective subjects and objects.
-The mean frequency of the subjects of a property **p** is defined as:
+For each property **p &isin; P** in a dataset **D**, the set of subjects is defined as:
 
-[]
+![set of subjects](formulas/s_p.png)
 
-For each dataset, we calculated the following indices in both directions, i.e. on subjects (s) and objects (o).
+Then, we computed the mean and standard deviation of the frequency of their respective subjects. The mean frequency of the subjects of a property **p** is defined as
+
+![mean frequency](formulas/mf_s_p.png)
+
+whereas the standard deviation is
+
+![std frequency](formulas/sdf_s_p.png)
+
+Afterwards, for each dataset, we calculated the following indices:
 
 * *net-mean mean frequency* as **nmf**;
+
+![net mean frequency](formulas/nmf_s_d.png)
+
 * *net-mean standard deviation of frequency* as **nsdf**;
+
+![net std frequency](formulas/nsdf_s_d.png)
+
 * *net-mean coefficient of variation* as **ncv**, defined as the rate between **nsdf** and **nmf**;
+
+We repeated the steps above also in the other direction, i.e. for the objects (o).
 
 Dataset|nmf_s(D)|nmf_o(D)|nsdf_s(D)|nsdf_o(D)|ncv_s(D)|ncv_o(D)
 -----:|-----:|-----:|-----:|-----:|-----:|-----:
