@@ -14,15 +14,15 @@ whereas the standard deviation is
 
 Afterwards, for each dataset, we calculated the following indices:
 
-* *net-mean mean frequency* as **nmf**;
+* *net-mean mean frequency*
 
 ![net mean frequency](formulas/nmf_s_d.png)
 
-* *net-mean standard deviation of frequency* as **nsdf**;
+* *net-mean standard deviation of frequency*
 
 ![net std frequency](formulas/nsdf_s_d.png)
 
-* *net-mean coefficient of variation* as **ncv**, defined as the rate between **nsdf** and **nmf**;
+* *net-mean coefficient of variation*, defined as the rate between **nsdf** and **nmf**.
 
 We repeated the steps above also in the other direction, i.e. for the objects (o).
 
