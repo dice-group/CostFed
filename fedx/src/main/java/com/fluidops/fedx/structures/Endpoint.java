@@ -108,6 +108,7 @@ public class Endpoint  {
 	protected TripleSource tripleSource;			// the triple source, initialized when repository is set
 	protected EndpointConfiguration endpointConfiguration;	// additional endpoint type specific configuration
 
+	protected long responseTime = 0;
 	/**
 	 * Construct a new endpoint.
 	 * 
@@ -151,6 +152,14 @@ public class Endpoint  {
 
 	public boolean isLocal() {
 		return endpointClassification==EndpointClassification.Local;
+	}
+	
+	public long getResponseTime() {
+		return responseTime;	
+	}
+	
+	public void setResponseTime(long val) {
+		responseTime = val;
 	}
 	
 	/**

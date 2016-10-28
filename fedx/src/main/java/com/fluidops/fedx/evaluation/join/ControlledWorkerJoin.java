@@ -43,7 +43,7 @@ import info.aduna.iteration.CloseableIteration;
  */
 public class ControlledWorkerJoin extends JoinExecutorBase<BindingSet> {
 
-	public static Logger log = Logger.getLogger(ControlledWorkerJoin.class);
+	private static Logger log = Logger.getLogger(ControlledWorkerJoin.class);
 	
 	private final ControlledWorkerScheduler scheduler;
 	

@@ -22,15 +22,25 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.QueryModelVisitor;
 import org.openrdf.query.algebra.StatementPattern;
 
+import com.fluidops.fedx.FederationManager;
+import com.fluidops.fedx.evaluation.FederationEvalStrategy;
+import com.fluidops.fedx.evaluation.iterator.BoundJoinConversionIteration;
+import com.fluidops.fedx.evaluation.iterator.BufferedCloseableIterator;
+import com.fluidops.fedx.evaluation.iterator.GroupedCheckConversionIteration;
 import com.fluidops.fedx.structures.QueryInfo;
 import com.fluidops.fedx.structures.QueryType;
 import com.fluidops.fedx.util.QueryAlgebraUtil;
+import com.fluidops.fedx.util.QueryStringUtil;
+
+import info.aduna.iteration.CloseableIteration;
 
 /**
  * Base class providing all common functionality for FedX StatementPatterns
@@ -43,7 +53,7 @@ import com.fluidops.fedx.util.QueryAlgebraUtil;
 public abstract class FedXStatementPattern extends StatementPattern implements StatementTupleExpr, FilterTuple, BoundJoinTupleExpr
 {
 	private static final long serialVersionUID = 3285771028088516437L;
-	protected final List<StatementSource> statementSources = new ArrayList<StatementSource>();
+	private final List<StatementSource> statementSources = new ArrayList<StatementSource>();
 	protected final int id;
 	protected final QueryInfo queryInfo;
 	protected final List<String> freeVars = new ArrayList<String>(3);
@@ -61,22 +71,32 @@ public abstract class FedXStatementPattern extends StatementPattern implements S
 		this(QueryAlgebraUtil.toStatementPattern(st), new QueryInfo("getStatements", QueryType.GET_STATEMENTS));
 	}
 	
-	@Override
-	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
-		throws X {
-		super.visitChildren(visitor);
-		if (localVars.size()>0)
-			LocalVarsNode.visit(visitor, localVars);
-		for (StatementSource s : sort(statementSources))
+	public void addStatementSource(StatementSource statementSource) {
+		statementSources.add(statementSource);		
+	}
+	
+	protected <X extends Exception> void visitSources(QueryModelVisitor<X> visitor)  throws X {
+		for (StatementSource s : sort(getStatementSources())) {
 			s.visit(visitor);
-		
-		if (filterExpr!=null)
-			filterExpr.visit(visitor);
+		}
 	}
 	
 	@Override
-	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
-			throws X {
+	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor) throws X {
+		super.visitChildren(visitor);
+		if (localVars.size() > 0) {
+			LocalVarsNode.visit(visitor, localVars);
+		}
+		
+		visitSources(visitor);
+		
+		if (filterExpr != null) {
+			filterExpr.visit(visitor);
+		}
+	}
+	
+	@Override
+	public <X extends Exception> void visit(QueryModelVisitor<X> visitor) throws X {
 		visitor.meetOther(this);
 	}
 	
@@ -188,5 +208,44 @@ public abstract class FedXStatementPattern extends StatementPattern implements S
 			}			
 		});
 		return res;
+	}
+	
+	@Override
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(List<BindingSet> bindings) {
+		return evaluate(bindings, getStatementSources());
+	}
+	
+	protected abstract CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BindingSet bindings, List<StatementSource> sources);
+	
+	protected CloseableIteration<BindingSet, QueryEvaluationException> evaluate(List<BindingSet> bindings, List<StatementSource> sources) {
+		// we can omit the bound join handling
+		if (bindings.size() == 1 ) {
+			return evaluate(bindings.get(0), sources);
+		}
+		
+		if (getFilterExpr() != null) {
+			throw new NotImplementedException("FedXStatementPattern.evaluate(List<BindingSet>)");
+		}
+		
+		String preparedQuery;
+		
+		BindingSet binEx = bindings.get(0);
+		boolean hasFreeVars = hasFreeVarsFor(binEx);
+		if (hasFreeVars) {
+			FilterValueExpr filterExpr = getFilterExpr();
+			Boolean isEvaluated = false;
+			preparedQuery = QueryStringUtil.selectQueryStringBoundUnion(this, bindings, filterExpr, isEvaluated);
+		} else { // check
+			preparedQuery = QueryStringUtil.selectQueryStringBoundCheck(this, bindings);
+		}
+		
+		FederationEvalStrategy strategy = FederationManager.getInstance().getStrategy();
+		CloseableIteration<BindingSet, QueryEvaluationException> result = strategy.evaluateAtStatementSources(preparedQuery, sources, getQueryInfo());
+		
+		if (hasFreeVars) {
+			return new BoundJoinConversionIteration(result, bindings);
+		} else {
+			return new GroupedCheckConversionIteration(result, bindings);
+		}
 	}
 }

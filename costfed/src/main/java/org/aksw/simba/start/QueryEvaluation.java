@@ -24,7 +24,15 @@ import com.fluidops.fedx.structures.QueryInfo;
 
 public class QueryEvaluation {
 	protected static final Logger log = Logger.getLogger(QueryEvaluation.class);
-
+	static {
+		try {
+			ClassLoader.getSystemClassLoader().loadClass("org.slf4j.LoggerFactory"). getMethod("getLogger", ClassLoader.getSystemClassLoader().loadClass("java.lang.String")).
+			 invoke(null,"ROOT");
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+	}
+	
 	QueryProvider qp;
 
 	public QueryEvaluation() throws Exception {
@@ -41,12 +49,14 @@ public class QueryEvaluation {
 		String repfile = args.length > 1 ? args[1] : null;
 		
 		String host = "localhost";
+		//String host = "ws24348.avicomp.com";
+		//String host = "192.168.0.145";
 		//String queries = "S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 C1 C2 C3 C4 C6 C7 C8 C9 C10"; //"C1 C3 C5 C6 C7 C8 C9 C10 L1 L2 L3 L4 L5 L6 L7 L8";
 		//String queries = "S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 C1 C2 C3 C6 C7 C8 C9 C10";
-		String queries = "S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 C1 C2 C3 C4 C6 C7 C8 C9 C10";
-		//String queries = "S13";
+		//String queries = "S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 C1 C2 C3 C4 C6 C7 C8 C9 C10";
+		String queries = "C4"; // S3 C6 C2
 		
-		List<String> endpoints = Arrays.asList(
+		List<String> endpointsMin = Arrays.asList(
 			 "http://" + host + ":8890/sparql",
 			 "http://" + host + ":8891/sparql",
 			 "http://" + host + ":8892/sparql",
@@ -56,15 +66,48 @@ public class QueryEvaluation {
 			 "http://" + host + ":8896/sparql",
 			 "http://" + host + ":8897/sparql",
 			 "http://" + host + ":8898/sparql"
-	///*		 
+		);
+		
+		List<String> endpointsMax = Arrays.asList(
+			 "http://" + host + ":8890/sparql",
+			 "http://" + host + ":8891/sparql",
+			 "http://" + host + ":8892/sparql",
+			 "http://" + host + ":8893/sparql",
+			 "http://" + host + ":8894/sparql",
+			 "http://" + host + ":8895/sparql",
+			 "http://" + host + ":8896/sparql",
+			 "http://" + host + ":8897/sparql",
+			 "http://" + host + ":8898/sparql"
+			 
 			 , "http://" + host + ":8887/sparql"
 			 , "http://" + host + ":8888/sparql"
 			 , "http://" + host + ":8889/sparql"
 			 , "http://" + host + ":8899/sparql"
-	//*/
 		);
+			
+		List<String> endpointsTest = Arrays.asList(
+				   "http://" + host + ":8887/sparql"
+				 , "http://" + host + ":8888/sparql"
+				 , "http://" + host + ":8889/sparql"
+				 , "http://" + host + ":8899/sparql"	
+		);
+	
+		List<String> endpointsMin2 = Arrays.asList(
+			 "http://" + host + ":8890/sparql",
+			 "http://" + host + ":8891/sparql",
+			 "http://" + host + ":8892/sparql",
+			 "http://" + host + ":8893/sparql",
+			 "http://" + host + ":8894/sparql",
+			 "http://" + host + ":8895/sparql",
+			 "http://" + host + ":8896/sparql",
+			 "http://" + host + ":8897/sparql",
+			 "http://" + host + ":8898/sparql",
+			 "http://" + host + ":8899/sparql"
+		);
+
+		List<String> endpoints = endpointsMax;
 		
-		Map<String, List<List<Object>>> reports = multyEvaluate(queries, 16, cfgName, endpoints);
+		Map<String, List<List<Object>>> reports = multyEvaluate(queries, 3, cfgName, endpoints);
 	
 		for (Map.Entry<String, List<List<Object>>> e : reports.entrySet())
 		{
@@ -117,9 +160,14 @@ public class QueryEvaluation {
 			  
 			    long runTime = System.currentTimeMillis() - startTime;
 			    reportRow.add((Long)count); reportRow.add((Long)runTime);
-			    sstReportRow.add((Long)count); sstReportRow.add((Long)QueryInfo.queryInfo.get().getSourceSelection().time);
-			    log.info(curQueryName + ": Query exection time (msec): "+ runTime + ", Total Number of Records: " + count + ", Source Selection Time: " + QueryInfo.queryInfo.get().getSourceSelection().time);
-			} catch (Exception e) {
+			    sstReportRow.add((Long)count);
+			    sstReportRow.add(QueryInfo.queryInfo.get().numSources.longValue());
+			    sstReportRow.add(QueryInfo.queryInfo.get().totalSources.longValue());
+			    log.info(curQueryName + ": Query exection time (msec): "+ runTime + ", Total Number of Records: " + count + ", Source count: " + QueryInfo.queryInfo.get().numSources.longValue());
+			    //log.info(curQueryName + ": Query exection time (msec): "+ runTime + ", Total Number of Records: " + count + ", Source Selection Time: " + QueryInfo.queryInfo.get().getSourceSelection().time);
+			} catch (Throwable e) {
+				e.printStackTrace();
+				log.error(e);
 				File f = new File("results/" + curQueryName + ".error.txt");
 				ByteArrayOutputStream os = new ByteArrayOutputStream();
 				PrintStream ps = new PrintStream(os);

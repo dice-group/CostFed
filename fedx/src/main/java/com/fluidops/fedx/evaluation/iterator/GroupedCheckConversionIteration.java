@@ -42,7 +42,7 @@ public class GroupedCheckConversionIteration extends ConvertingIteration<Binding
 	}
 
 	@Override
-	protected BindingSet convert(BindingSet bIn) throws QueryEvaluationException {
+	protected BindingSet convert(BindingSet bIn) {
 		int bIndex = -1;
 		Iterator<Binding> bIter = bIn.iterator();
 		while (bIter.hasNext()) {

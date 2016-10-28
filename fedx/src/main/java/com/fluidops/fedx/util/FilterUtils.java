@@ -182,7 +182,7 @@ public class FilterUtils {
 		sb.append(lit.getLabel().replace("\"", "\\\""));
 		sb.append('\'');
 
-		if (lit.getLanguage() != null) {
+		if (lit.getLanguage() != null && lit.getLanguage().isPresent()) {
 			sb.append('@');
 			sb.append(lit.getLanguage());
 		}

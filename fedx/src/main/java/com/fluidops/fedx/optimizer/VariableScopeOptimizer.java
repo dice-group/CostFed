@@ -90,7 +90,7 @@ public class VariableScopeOptimizer extends AbstractQueryModelVisitor<Optimizati
 		if (node instanceof StatementTupleExpr) {
 			meetTupleExpression((StatementTupleExpr)node);			
 		} else if (node instanceof NJoin) {
-			meetNJoin((NJoin) node);
+			meetNJoin((NJoin) node, null);
 		} else {
 			super.meetOther(node);
 		}
@@ -106,40 +106,48 @@ public class VariableScopeOptimizer extends AbstractQueryModelVisitor<Optimizati
 				node.addLocalVar(var);
 	}
 	
-	protected void meetNJoin(NJoin node) {
+	protected void meetNJoin(NJoin node, Map<String, List<StatementTupleExpr>> map) {
 
 		// map variable names to their parent expressions
-		Map<String, List<StatementTupleExpr>> map = new HashMap<String, List<StatementTupleExpr>>();
+		boolean isRoot = map == null;
+		if (isRoot) {
+			map = new HashMap<String, List<StatementTupleExpr>>();
+		}
 				
 		for (TupleExpr t : node.getArgs()) {
 			
+			if (t instanceof NJoin) {
+				meetNJoin((NJoin)t, map);
+			} else 
 			// we can only deal with our expressions. In fact,
 			// t should always be a StatementTupleExpr
 			if (!(t instanceof StatementTupleExpr)) {
 				log.warn("Encountered unexpected expressions type: " + t.getClass() + ", please report this.");
 				return;
-			}
-			
-			StatementTupleExpr st = (StatementTupleExpr)t;
-			for (String var : st.getFreeVars()) {
-				if (isProjection(var))
-					continue;
-				List<StatementTupleExpr> l = map.get(var);
-				if (l==null) {
-					l = new ArrayList<StatementTupleExpr>();
-					map.put(var, l);
+			} else {
+				StatementTupleExpr st = (StatementTupleExpr)t;
+				for (String var : st.getFreeVars()) {
+					if (isProjection(var))
+						continue;
+					List<StatementTupleExpr> l = map.get(var);
+					if (l==null) {
+						l = new ArrayList<StatementTupleExpr>();
+						map.put(var, l);
+					}
+					l.add(st);
 				}
-				l.add(st);
-			}			
+			}
 		}
 		
-		// register the local vars to the particular expression
-		for (Map.Entry<String, List<StatementTupleExpr>> e : map.entrySet()) {
-			if (e.getValue().size()>1)
-				continue;
-			StatementTupleExpr st = e.getValue().get(0);		
-			st.addLocalVar(e.getKey());
-		}		
+		if (isRoot) {
+			// register the local vars to the particular expression
+			for (Map.Entry<String, List<StatementTupleExpr>> e : map.entrySet()) {
+				if (e.getValue().size()>1)
+					continue;
+				StatementTupleExpr st = e.getValue().get(0);		
+				st.addLocalVar(e.getKey());
+			}
+		}
 	}	
 	
 	private boolean isProjection(String var) {

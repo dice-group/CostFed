@@ -17,8 +17,7 @@
 
 package com.fluidops.fedx.algebra;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.EmptyIteration;
+import java.util.List;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
@@ -39,6 +38,9 @@ import com.fluidops.fedx.structures.Endpoint;
 import com.fluidops.fedx.structures.QueryInfo;
 import com.fluidops.fedx.util.QueryStringUtil;
 
+import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.EmptyIteration;
+
 
 
 /**
@@ -56,20 +58,20 @@ public class StatementSourcePattern extends FedXStatementPattern {
 		super(node, queryInfo);	
 	}			
 	
-	public void addStatementSource(StatementSource statementSource) {
-		statementSources.add(statementSource);		
-	}	
-
 	@Override
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BindingSet bindings) {
-					
+		return evaluate(bindings, getStatementSources());
+	}
+	
+	protected CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BindingSet bindings, List<StatementSource> sources) {
+		if (bindings == null) return new EmptyIteration<BindingSet, QueryEvaluationException>();
+		
 		try {
-			
 			Boolean isEvaluated = false;	// is filter evaluated in prepared query
 			String preparedQuery = null;	// used for some triple sources
 			WorkerUnionBase<BindingSet> union = FederationManager.getInstance().createWorkerUnion(queryInfo);
 			
-			for (StatementSource source : statementSources) {
+			for (StatementSource source : sources) {
 				
 				Endpoint ownedEndpoint = EndpointManager.getEndpointManager().getEndpoint(source.getEndpointID());
 				RepositoryConnection conn = ownedEndpoint.getConn();
@@ -90,10 +92,10 @@ public class StatementSourcePattern extends FedXStatementPattern {
 							preparedQuery = QueryStringUtil.selectQueryString(this, bindings, filterExpr, isEvaluated);
 						} catch (IllegalQueryException e1) {
 							/* all vars are bound, this must be handled as a check query, can occur in joins */
-							return handleStatementSourcePatternCheck(bindings);
+							return handleStatementSourcePatternCheck(bindings, sources);
 						}
 					}
-					 
+
 					union.addTask(new ParallelPreparedUnionTask(preparedQuery, t, conn, bindings, (isEvaluated ? null : filterExpr)));
 					
 				} else {
@@ -112,12 +114,12 @@ public class StatementSourcePattern extends FedXStatementPattern {
 	}
 	
 	
-	protected CloseableIteration<BindingSet, QueryEvaluationException> handleStatementSourcePatternCheck(BindingSet bindings)
+	protected CloseableIteration<BindingSet, QueryEvaluationException> handleStatementSourcePatternCheck(BindingSet bindings, List<StatementSource> sources)
 	{
 		// if at least one source has statements, we can return this binding set as result
 		
 		// XXX do this in parallel for the number of endpoints ?
-		for (StatementSource source : statementSources) {
+		for (StatementSource source : sources) {
 			Endpoint ownedEndpoint = EndpointManager.getEndpointManager().getEndpoint(source.getEndpointID());
 			RepositoryConnection ownedConnection = ownedEndpoint.getConn();
 			TripleSource t = ownedEndpoint.getTripleSource();

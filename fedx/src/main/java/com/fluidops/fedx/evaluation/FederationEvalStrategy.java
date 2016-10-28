@@ -32,8 +32,6 @@ import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.BinaryTupleOperator;
-import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueExpr;
@@ -70,6 +68,7 @@ import com.fluidops.fedx.cache.Cache;
 import com.fluidops.fedx.cache.CacheUtils;
 import com.fluidops.fedx.evaluation.concurrent.ControlledWorkerScheduler;
 import com.fluidops.fedx.evaluation.concurrent.ParallelServiceExecutor;
+import com.fluidops.fedx.evaluation.iterator.QueueIteration;
 import com.fluidops.fedx.evaluation.join.ControlledWorkerBoundJoin;
 import com.fluidops.fedx.evaluation.join.ControlledWorkerJoin;
 import com.fluidops.fedx.evaluation.join.SynchronousBoundJoin;
@@ -202,6 +201,7 @@ public abstract class FederationEvalStrategy extends SimpleEvaluationStrategy {
 		return super.evaluate(expr, bindings);
 	}
 	
+	public abstract void evaluate(QueueIteration<BindingSet> qit, TupleExpr expr, List<BindingSet> bindings);
 	
 	/**
 	 * Retrieve the statements matching the provided subject, predicate and object value from the 
@@ -437,7 +437,7 @@ public abstract class FederationEvalStrategy extends SimpleEvaluationStrategy {
 	
 	
 	
-	protected CloseableIteration<BindingSet, QueryEvaluationException> evaluateAtStatementSources(Object preparedQuery, List<StatementSource> statementSources, QueryInfo queryInfo) {
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluateAtStatementSources(Object preparedQuery, List<StatementSource> statementSources, QueryInfo queryInfo) {
 		if (preparedQuery instanceof String)
 			return evaluateAtStatementSources((String)preparedQuery, statementSources, queryInfo);
 		if (preparedQuery instanceof TupleExpr)

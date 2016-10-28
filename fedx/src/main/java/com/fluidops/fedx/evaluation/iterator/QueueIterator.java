@@ -12,9 +12,7 @@ import org.openrdf.query.QueryEvaluationException;
 
 import com.fluidops.fedx.exception.RuntimeInterruptedException;
 
-import info.aduna.iteration.LookAheadIteration;
-
-public class QueueIterator <E> extends LookAheadIteration<E, QueryEvaluationException> {
+public class QueueIterator <E> extends RestartableLookAheadIteration<E> {
 	static Logger log = Logger.getLogger(QueueIterator.class);
 	
 	private ItemReleaser<E> itemReleaser = null;
@@ -125,5 +123,10 @@ public class QueueIterator <E> extends LookAheadIteration<E, QueryEvaluationExce
 			}
 		}
 		closed_ = true;
+	}
+	
+	@Override
+	public synchronized void handleRestart() {
+		closed_ = false;
 	}
 }

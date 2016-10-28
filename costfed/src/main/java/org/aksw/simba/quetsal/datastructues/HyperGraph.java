@@ -5,6 +5,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.openrdf.model.Value;
+import org.openrdf.query.algebra.Var;
+
 import com.fluidops.fedx.algebra.StatementSource;
 /**
  * A hypergraph to represent each DNF groups (BGPs) of triple patterns.
@@ -43,7 +46,7 @@ public class HyperGraph {
 				return false;
 			return true;
 		}
-
+		public final Var var;
 		public final String label;
 		public final Set<HyperEdge> inEdges;
 		public final Set<HyperEdge> outEdges;
@@ -51,7 +54,8 @@ public class HyperGraph {
 		 *  Vertex constructor 
 		 * @param label Label of a vertex
 		 */
-		public Vertex(String label) {
+		public Vertex(Var val, String label) {
+			this.var = val;
 			this.label = label;
 			inEdges = new HashSet<HyperEdge>();
 			outEdges = new HashSet<HyperEdge>();

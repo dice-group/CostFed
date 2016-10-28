@@ -37,10 +37,12 @@ public class ProviderUtil {
 	 * @throws QueryEvaluationException
 	 * @throws MalformedQueryException
 	 */
-	public static void checkConnectionIfConfigured(Repository repo) {
+	public static long checkConnectionIfConfigured(Repository repo) {
 		
 		if (!Config.getConfig().isValidateRepositoryConnections())
-			return;
+			return 0;
+		
+		long startTime = System.currentTimeMillis();
 		
 		RepositoryConnection conn = repo.getConnection();		
 		try {
@@ -51,12 +53,16 @@ public class ProviderUtil {
 				if (!qRes.hasNext()) {
 					log.warn("No data in provided repository (" + repo + ")");
 				}
+				while (qRes.hasNext()) qRes.next();
+				
 			} finally {
-				if (qRes != null)
+				if (qRes != null) {
 					Iterations.closeCloseable(qRes);
+				}
 			}			
 		} finally {			
 			conn.close();
 		}
+		return System.currentTimeMillis() - startTime;
 	}
 }

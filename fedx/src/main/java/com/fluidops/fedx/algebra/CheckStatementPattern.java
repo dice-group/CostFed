@@ -123,8 +123,7 @@ public class CheckStatementPattern implements StatementTupleExpr, BoundJoinTuple
 	}
 
 	@Override
-	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
-			throws X {
+	public <X extends Exception> void visit(QueryModelVisitor<X> visitor) throws X {
 		stmt.visit(visitor);		
 	}
 
@@ -140,7 +139,12 @@ public class CheckStatementPattern implements StatementTupleExpr, BoundJoinTuple
 	}
 
 	@Override
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BindingSet bindings) throws QueryEvaluationException {
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(List<BindingSet> bindings) {
+		throw new Error("Not implemented: CheckStatementPattern.evaluate(List<BindingSet>)");
+	}
+	
+	@Override
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BindingSet bindings) {
 		
 		StatementPattern st = (StatementPattern)stmt;
 	
@@ -150,8 +154,9 @@ public class CheckStatementPattern implements StatementTupleExpr, BoundJoinTuple
 				Endpoint ownedEndpoint = EndpointManager.getEndpointManager().getEndpoint(source.getEndpointID());
 				RepositoryConnection ownedConnection = ownedEndpoint.getConn();
 				TripleSource t = ownedEndpoint.getTripleSource();
-				if (t.hasStatements(st, ownedConnection, bindings))
+				if (t.hasStatements(st, ownedConnection, bindings)) {
 					return new SingleBindingSetIteration(bindings);
+				}
 			}
 		} catch (RepositoryException e) {
 			throw new QueryEvaluationException(e);

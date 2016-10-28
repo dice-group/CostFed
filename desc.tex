@@ -1,0 +1,115 @@
+% !TEX TS-program = pdflatex
+% !TEX encoding = UTF-8 Unicode
+
+% This is a simple template for a LaTeX document using the "article" class.
+% See "book", "report", "letter" for other types of document.
+
+\documentclass[11pt]{article} % use larger type; default would be 10pt
+
+\usepackage[utf8]{inputenc} % set input encoding (not needed with XeLaTeX)
+
+%%% Examples of Article customizations
+% These packages are optional, depending whether you want the features they provide.
+% See the LaTeX Companion or other references for full information.
+
+%%% PAGE DIMENSIONS
+\usepackage{geometry} % to change the page dimensions
+\geometry{a4paper} % or letterpaper (US) or a5paper or....
+% \geometry{margin=2in} % for example, change the margins to 2 inches all round
+% \geometry{landscape} % set up the page for landscape
+%   read geometry.pdf for detailed page layout information
+
+\usepackage{graphicx} % support the \includegraphics command and options
+
+% \usepackage[parfill]{parskip} % Activate to begin paragraphs with an empty line rather than an indent
+
+%%% PACKAGES
+\usepackage{booktabs} % for much better looking tables
+\usepackage{array} % for better arrays (eg matrices) in maths
+\usepackage{paralist} % very flexible & customisable lists (eg. enumerate/itemize, etc.)
+\usepackage{verbatim} % adds environment for commenting out blocks of text & for better verbatim
+\usepackage{subfig} % make it possible to include more than one captioned figure/table in a single float
+\usepackage{amsmath}
+% These packages are all incorporated in the memoir class to one degree or another...
+
+%%% HEADERS & FOOTERS
+\usepackage{fancyhdr} % This should be set AFTER setting up the page geometry
+\pagestyle{fancy} % options: empty , plain , fancy
+\renewcommand{\headrulewidth}{0pt} % customise the layout...
+\lhead{}\chead{}\rhead{}
+\lfoot{}\cfoot{\thepage}\rfoot{}
+
+%%% SECTION TITLE APPEARANCE
+\usepackage{sectsty}
+\allsectionsfont{\sffamily\mdseries\upshape} % (See the fntguide.pdf for font help)
+% (This matches ConTeXt defaults)
+
+%%% ToC (table of contents) APPEARANCE
+\usepackage[nottoc,notlof,notlot]{tocbibind} % Put the bibliography in the ToC
+\usepackage[titles,subfigure]{tocloft} % Alter the style of the Table of Contents
+\renewcommand{\cftsecfont}{\rmfamily\mdseries\upshape}
+\renewcommand{\cftsecpagefont}{\rmfamily\mdseries\upshape} % No bold!
+
+%%% END Article customizations
+
+%%% The "real" document content comes below...
+
+\title{Previous Formulas}
+%%% \author{The Author}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Previous version}
+
+\begin{equation}
+Card(E1 \bowtie E2) = MIN(Card(E1), Card(E2))
+\end{equation}
+
+\begin{equation}
+Cost(E1 \bowtie_h E2) = Card(E1) * CRT + Card(E2) * CRT + 2 * CSQ
+\end{equation}
+
+\begin{equation}
+Cost(E1 \bowtie_b E2) = Card(E1) * CRT + \frac{Card(E1)}{BSZ}* CSQ  + Card(E1 \bowtie E2) * CRT
+\end{equation}
+
+where the cost for sending a SPARQL query is CSQ, the cost for receiving a single result tuple is CRT and BSZ is the size of a bound join block.
+
+In our experiments CSQ=50, CRT=0.02, BSZ=20
+
+\section{Modified version}
+\begin{equation}
+Card(E1 \bowtie E2) = MIN(Card(E1), Card(E2)) * MVK(E1) *  MVK(E2)
+\end{equation}
+where  MVK(E1) and  MVK(E2) are multivalue multiplyers of E1 and E2 respectively.
+\[
+   MVK(E)= \left\{
+     \begin{array}{@{\thinspace}l@{\thinspace}l}
+       \frac{1}{\sqrt{2}}  &: \text{E is a triple pattern like ?s $<$p$>$  $<$o$>$ . }\\
+       \frac{\text{triple count for given predicate}}{\text{distinct subject count}} &: \text{E is a triple pattern like ?s $<$p$>$  ?o. The join variable is ?s.} \\
+       \frac{\text{triple count for given predicate}}{\text{distinct object count}} &: \text{E is a triple pattern like ?s $<$p$>$  ?o. The join variable is ?o.} \\
+       \text{1} &: \text{other cases}
+     \end{array}
+   \right.
+\]
+
+\begin{equation}
+Cost(E1 \bowtie_h E2) = \frac{1 + TC}{TC} * CSQ + Card(E2) * CRT + (Card(E1)  +  Card(E2)) * CHT
+\end{equation}
+where Card(E1) $<$ Card(E2), TC is the number of threads used to query sparql endpoints, CSQ is the cost of sending a SPARQL query, CRT is the cost of receiving a single result tuple, CHT is the cost of handling received tuple.\\\\
+Description: the hash join algorithm sends 2 requests for E1 and E2 using TC threads (cost = first summand in the (5)), then recieves results for E1 and E2 in parallel, so cost = Max(Card(E1), Card(E2)) * CRT = Card(E2) * CRT, finally all the tuples received are
+handled: the internal implementaion uses hashmap with synchronized access to store data, so cost can be estimated as (Card(E1)  +  Card(E2)) * CHT
+
+\begin{equation}
+Cost(E1 \bowtie_b E2) = CSQ + Card(E1) * CRT + \frac{\frac{Card(E1) + BSZ - 1}{BSZ} + CTC - 1}{CTC} * CSQ
+\end{equation}
+
+The bind join algo at first sends the request for E1 (cost = CSQ), receives results for E1 (cost = Card(E1) * CRT), then using TC threads sends resuests for E2 using bunch of BSZ size (cost = third summand in the formula (6)) \\\\
+In our experiments CSQ=100, CRT=0.01, 0.0025, BSZ=20, TC=20
+
+\end{document}
+
+
+

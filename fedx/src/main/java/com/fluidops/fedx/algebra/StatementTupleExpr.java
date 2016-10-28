@@ -79,7 +79,8 @@ public interface StatementTupleExpr extends TupleExpr, FedXExpr, QueryRef {
 	 * 
 	 * @throws QueryEvaluationException
 	 */
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BindingSet bindings) throws QueryEvaluationException; 
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BindingSet bindings); 
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(List<BindingSet> bindings);
 	
 	/**
 	 * Sets/adds a variable names that is local to this expression

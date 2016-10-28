@@ -1,9 +1,12 @@
 package org.aksw.simba.quetsal.util;
 
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -11,17 +14,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.aksw.simba.quetsal.datastructues.Pair;
 import org.aksw.simba.quetsal.datastructues.Trie;
+import org.aksw.simba.quetsal.datastructues.Trie2;
 import org.aksw.simba.quetsal.datastructues.TrieNode;
+import org.aksw.simba.quetsal.datastructues.Tuple3;
+import org.aksw.simba.quetsal.datastructues.Tuple4;
 import org.aksw.simba.quetsal.synopsis.ArrayCollection;
 import org.aksw.simba.quetsal.synopsis.Collection;
 import org.aksw.simba.quetsal.synopsis.MIPsynopsis;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.Logger;
+import org.openrdf.http.client.util.HttpClientBuilders;
+import org.openrdf.model.IRI;
+import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
@@ -32,6 +45,8 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sparql.SPARQLRepository;
 
+import com.fluidops.fedx.FedXFactory;
+
 
 /**
  *  Generate Quetzal-TBSS Summaries for a set of federation members (SPARQL endpoints)
@@ -39,10 +54,40 @@ import org.openrdf.repository.sparql.SPARQLRepository;
  */
 public class TBSSSummariesGenerator {
 	static Logger log = Logger.getLogger(TBSSSummariesGenerator.class);
+	static {
+		try {
+			ClassLoader.getSystemClassLoader().loadClass("org.slf4j.LoggerFactory"). getMethod("getLogger", ClassLoader.getSystemClassLoader().loadClass("java.lang.String")).
+			 invoke(null,"ROOT");
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static HttpClientBuilder httpClientBuilder;
+	public static HttpClient httpClient;
+	
+	static {
+		httpClientBuilder = HttpClientBuilders.getSSLTrustAllHttpClientBuilder();
+		httpClientBuilder.setMaxConnTotal(10);
+		httpClientBuilder.setMaxConnPerRoute(5);
+		//httpClientBuilder.setConnectionReuseStrategy(new NoConnectionReuseStrategy());
+		httpClient = httpClientBuilder.build();
+	}
+	
+	static Map<String, SPARQLRepository> reps = new HashMap<String, SPARQLRepository>();
+	static SPARQLRepository createSPARQLRepository(String url) {
+		SPARQLRepository repo = reps.get(url);
+		if (repo == null) {
+			repo = new SPARQLRepository(url);
+			repo.setHttpClient(FedXFactory.httpClient);
+			repo.initialize();
+			reps.put(url, repo);
+		}
+		return repo;
+	}
+	
 	
 	public BufferedWriter bwr;
-	//public double distinctSbj;
-	//public long trplCount ;
 	
 	/**
 	 * initialize input information for data summaries generation
@@ -51,19 +96,92 @@ public class TBSSSummariesGenerator {
 	 */
 	public TBSSSummariesGenerator(String location) throws IOException 
 	{
-		bwr = new BufferedWriter(new FileWriter(new File(location))); //--name/location where the summaries file will be stored
+		bwr = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(location), "UTF-8")); //--name/location where the summaries file will be stored
 		bwr.append("@prefix ds:<http://aksw.org/quetsal/> .");
 		bwr.newLine();
 	}
 	
-	public static void main(String[] args) throws IOException
+	static boolean verifyIRI(Value obj) {
+		if (!(obj instanceof IRI)) return false;
+		return verifyIRI(obj.stringValue());
+	}
+	
+	static boolean verifyIRI(String sval) {
+		try {
+			// exclude virtuoso specific data
+			if (sval.startsWith("http://www.openlinksw.com/schemas") || sval.startsWith("http://www.openlinksw.com/virtrd")) return false;
+			URL url = new URL(sval);
+			new URI(url.getProtocol(), url.getAuthority(), url.getPath(), url.getQuery(), url.getRef()).toURL().toString();
+			return url.getProtocol() != null && url.getAuthority() != null && !url.getAuthority().isEmpty();
+		} catch (Exception e) {
+			//log.warn("skip IRI: " + sval + ", error: " + e.getMessage());
+			return false;
+		}
+	}
+	
+	static Pair<String, String> splitIRI(String iri) {
+		String[] objPrts = iri.split("/");
+		String objAuth = objPrts[0] + "//" + objPrts[2];
+		return new Pair<String, String>(objAuth, iri.substring(objAuth.length()));
+	}
+	
+	boolean putIRI(String iri, long hits, Trie2.Node nd) {
+		Pair<String, String> pair = splitIRI(iri);
+		return Trie2.insertWord(nd, pair.getFirst(), pair.getSecond(), hits);
+	}
+	
+	static String makeWellFormed(String uri) {
+		try {
+			URL url = new URL(uri);
+			return new URI(url.getProtocol(), url.getAuthority(), url.getPath(), url.getQuery(), url.getRef()).toURL().toString();
+		} catch (Exception e) {
+			log.error("Error in " + uri);
+			throw new RuntimeException(e);
+		}
+	}
+	
+	static String encodeStringLiteral(String s) {
+		if (s.indexOf((int)'"') == -1) {
+			return s;
+		}
+		return s.replace("\"", "\\\"");
+	}
+	
+	static int MIN_TOP_OBJECTS = 10;
+	static int MAX_TOP_OBJECTS = 100;
+	
+	public static void main(String[] args) throws IOException, URISyntaxException
 	{
 		//String host = "10.15.0.144";
 		//String host = "192.168.0.145";
 		//String host = "ws24348.avicomp.com";
 		String host = "localhost";
-		///*
-		List<String> endpoints = Arrays.asList(
+		List<String> endpointsMin = Arrays.asList(
+				 "http://" + host + ":8890/sparql",
+				 "http://" + host + ":8891/sparql",
+				 "http://" + host + ":8892/sparql",
+				 "http://" + host + ":8893/sparql",
+				 "http://" + host + ":8894/sparql",
+				 "http://" + host + ":8895/sparql",
+				 "http://" + host + ":8896/sparql",
+				 "http://" + host + ":8897/sparql",
+				 "http://" + host + ":8898/sparql"
+		);
+		
+		List<String> endpointsMin2 = Arrays.asList(
+				 "http://" + host + ":8890/sparql",
+				 "http://" + host + ":8891/sparql",
+				 "http://" + host + ":8892/sparql",
+				 "http://" + host + ":8893/sparql",
+				 "http://" + host + ":8894/sparql",
+				 "http://" + host + ":8895/sparql",
+				 "http://" + host + ":8896/sparql",
+				 "http://" + host + ":8897/sparql",
+				 "http://" + host + ":8898/sparql",
+				 "http://" + host + ":8899/sparql"
+		);
+		
+		List<String> endpointsMax = Arrays.asList(
 			 "http://" + host + ":8890/sparql",
 			 "http://" + host + ":8891/sparql",
 			 "http://" + host + ":8892/sparql",
@@ -79,19 +197,46 @@ public class TBSSSummariesGenerator {
 			 , "http://" + host + ":8889/sparql"
 			 , "http://" + host + ":8899/sparql"
 		);
-//*/
-		//List<String> endpoints = Arrays.asList("http://" + host + ":8890/sparql", "http://" + host + ":8890/sparql");
-		String outputFile = "summaries/sum-localhost.n3";
-		int branchLimit = 4;
+
+		List<String> endpointsTest = Arrays.asList(
+			 "http://" + host + ":8895/sparql"
+			 //,
+			 //"http://" + host + ":8891/sparql"
+			 //,
+				///*
+			 //"http://" + host + ":8892/sparql",
+			 //"http://" + host + ":8893/sparql"
+			 //,
+			 //"http://" + host + ":8894/sparql"
+
+			 //,
+			 //"http://" + host + ":8895/sparql"
+			 //,
+			 //"http://" + host + ":8896/sparql"
+			 //,
+			 //*/
+			 //"http://" + host + ":8897/sparql"
+			 //,
+			 ///*
+			 //"http://" + host + ":8898/sparql"
+			 //,
+			 //"http://" + host + ":8899/sparql"
+			 //*/
+		);
 		
-	//	String namedGraph = "http://aksw.org/fedbench/";  //can be null. in that case all graph will be considered 
+		//List<String> endpoints = endpointsTest;
+		List<String> endpoints = endpointsMin2;
+		//String outputFile = "summaries/sumX-localhost5.n3";
+		String outputFile = "summaries/sum-localhost.n3";
+		//String namedGraph = "http://aksw.org/fedbench/";  //can be null. in that case all graph will be considered 
 		String namedGraph = null;
 		TBSSSummariesGenerator generator = new TBSSSummariesGenerator(outputFile);
 		long startTime = System.currentTimeMillis();
+		int branchLimit = 4;
 		generator.generateSummaries(endpoints, namedGraph, branchLimit);
 		//generator.generateDAWSummaries(endpoints, namedGraph, branchLimit, 0.5);
-		log.info("Data Summaries Generation Time (min): "+ (double)(System.currentTimeMillis() - startTime) / (1000 * 60));
-		log.info("Data Summaries are secessfully stored at "+ outputFile);
+		log.info("Data Summaries Generation Time (min): " + (double)(System.currentTimeMillis() - startTime) / (1000 * 60));
+		log.info("Data Summaries are secessfully stored at " + outputFile);
 
 		//	outputFile = "summaries\\quetzal-b2.n3";
 		//	generator = new SummariesGenerator(outputFile);
@@ -119,6 +264,43 @@ public class TBSSSummariesGenerator {
 	}
 	
 	ExecutorService executorService;
+	List<Future<?>> tasks = new ArrayList<Future<?>>();
+	
+	Future<?> addTask(Runnable task) {
+		Future<?> future = null;
+		synchronized (executorService) {
+			future = executorService.submit(task);
+			tasks.add(future);
+		}
+		return future;
+	}
+	
+	<T> Future<T> addTask(Callable<T> task) {
+		Future<T> future = null;
+		synchronized (executorService) {
+			future = executorService.submit(task);
+			tasks.add(future);
+		}
+		return future;
+	}
+	
+	void waitForTasks() {
+		Future<?> future = null;
+		while (true) {
+			synchronized (executorService) {
+				if (tasks.isEmpty()) return;
+				future = tasks.get(0);
+			}
+			try {
+				future.get();
+			} catch (Exception e) {
+    			log.error(e);
+			}
+			synchronized (executorService) {
+				tasks.remove(0);
+			}
+		}
+	}
 	/**
 	 * Build Quetzal data summaries for the given list of SPARQL endpoints
 	 * @param endpoints List of SPARQL endpoints url
@@ -128,12 +310,11 @@ public class TBSSSummariesGenerator {
 	 */
 	public void generateSummaries(List<String> endpoints, String graph, int branchLimit) throws IOException
 	{
-		executorService = Executors.newFixedThreadPool(10);
-		List<Future<?>> flist = new ArrayList<Future<?>>();
+		executorService = Executors.newFixedThreadPool(16);
 		AtomicInteger dsnum = new AtomicInteger(0);
 		for (String endpoint : endpoints)
 		{
-			Future<?> future = executorService.submit(new Runnable() {
+			addTask(new Runnable() {
 			    public void run() {
 			    	try {
 				    	String sum = generateSummary(endpoint, graph, branchLimit, dsnum.incrementAndGet());
@@ -151,15 +332,8 @@ public class TBSSSummariesGenerator {
 			    	}
 			    }
 			});
-			flist.add(future);
 		}
-		for (Future<?> f : flist) {
-			try {
-				f.get();
-			} catch (Exception e) {
-    			log.error(e);
-			}
-		}
+		waitForTasks();
 		executorService.shutdown();
 		bwr.close();
 	}
@@ -167,42 +341,87 @@ public class TBSSSummariesGenerator {
 	public String generateSummary(String endpoint, String graph, int branchLimit, int dsnum) throws Exception
 	{
 		long totalTrpl = 0;
-		//long totalSbj = 0;
-		//long totalObj = 0;
 		long totalSbj = getDistinctSubjectCount(endpoint);
 		long totalObj = getDistinctObjectCount(endpoint);
 		
 		StringBuilder sb = new StringBuilder();
 		
 		List<String> lstPred = getPredicates(endpoint, graph);
+		log.info("total distinct subjects: "+ totalSbj + " for endpoint: " + endpoint);
 		log.info("total distinct predicates: "+ lstPred.size() + " for endpoint: " + endpoint);
+		log.info("total distinct objects: "+ totalObj + " for endpoint: " + endpoint);
 		
 		sb.append("#---------------------"+endpoint+" Summaries-------------------------------\n");
 		sb.append("[] a ds:Service ;\n");
 		sb.append("     ds:url   <"+endpoint+"> ;\n");
+		
+		List<Future<Tuple4<String, Long, Long, Long>>> subtasks = new ArrayList<Future<Tuple4<String, Long, Long, Long>>>();
+		
 		for (int i = 0; i < lstPred.size(); i++)
 		{
-			log.info((i+1)+" in progress: " + lstPred.get(i) + ", endpoint: " + endpoint);
-			sb.append("     ds:capability\n");
-			sb.append("         [\n");
-			sb.append("           ds:predicate  <" + lstPred.get(i) + "> ;");
-			long distinctSbj = writeSbjPrefixes(lstPred.get(i), endpoint, graph, branchLimit, sb);
-			long tripleCount = getTripleCount(lstPred.get(i), endpoint);
-			if (distinctSbj == 0) {
-				distinctSbj = tripleCount;
+			final String predicate = lstPred.get(i);
+			if (!verifyIRI(predicate)) {
+				subtasks.add(null);
+				continue;
 			}
-			sb.append("\n           ds:avgSbjSelectivity  " + (1 / (double)distinctSbj) + " ;");
 			
-			writeObjPrefixes(lstPred.get(i), endpoint, graph, branchLimit, sb);
-			double distinctObj = getObj(lstPred.get(i), endpoint);
-			sb.append("\n           ds:avgObjSelectivity  " + (1 / distinctObj) + " ;\n");
-
-			sb.append("           ds:triples    " + tripleCount + " ;\n");
-			sb.append("         ] ;\n");
+			Future<Tuple4<String, Long, Long, Long>> statfuture = addTask(new Callable<Tuple4<String, Long, Long, Long>>() {
+				@Override
+				public Tuple4<String, Long, Long, Long> call() throws Exception {
+					return writePrefixes(predicate, endpoint, graph, branchLimit);
+				}
+			});
+			subtasks.add(statfuture);
+		}
+		
+		for (int i = 0; i < lstPred.size(); i++)
+		{
+			if (subtasks.get(i) == null) continue;
+			final String predicate = lstPred.get(i);
+			
+			StringBuilder tsb = new StringBuilder();
+			try {
+				tsb.append("     ds:capability\n");
+				tsb.append("         [\n");
+				tsb.append("           ds:predicate  <" + predicate + "> ;");
+				//long distinctSbj =
+				
+				// sbjs, objs, total
+				
+				Tuple4<String, Long, Long, Long> stat = subtasks.get(i).get();
+				log.info((i+1)+" from " + lstPred.size() + " done: " + predicate + ", endpoint: " + endpoint);
+				
+				tsb.append(stat.getValue0());
+				long distinctSbj = stat.getValue1();
+				long distinctObj = stat.getValue2();
+				long tripleCount = stat.getValue3();
+				
+				//long tripleCount2 = getTripleCount(lstPred.get(i), endpoint);
+//				if (distinctSbj == 0) {
+//					distinctSbj = tripleCount;
+//				}
+//				if (distinctObj == 0) {
+//					distinctObj = tripleCount;
+//				}
+				tsb.append("           ds:distinctSbjs " + distinctSbj + " ;\n");
+				//tsb.append("\n           ds:avgSbjSelectivity  " + (1 / (double)distinctSbj) + " ;");
+				
+				//writeObjPrefixes(lstPred.get(i), endpoint, graph, branchLimit, tsb);
+				//double distinctObj = getObj(lstPred.get(i), endpoint);
+				tsb.append("           ds:distinctObjs  " + distinctObj + " ;\n");
+				//tsb.append("\n           ds:avgObjSelectivity  " + (1 / (double)distinctObj) + " ;\n");
+				
+				tsb.append("           ds:triples    " + tripleCount + " ;\n");
+				tsb.append("         ] ;\n");
+				sb.append(tsb.toString());
+				totalTrpl += tripleCount;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			
 			//totalSbj += distinctSbj;
 			//totalObj += (long)distinctObj ;
-			totalTrpl += tripleCount;
+			
 		}
 		
 
@@ -228,6 +447,7 @@ public class TBSSSummariesGenerator {
 	 * @throws MalformedQueryException  Memory Error
 	 * @throws RepositoryException  Repository Error
 	 */
+	/*
 	public void generateDAWSummaries(String endpoint, String graph, int branchLimit, double d, int dsnum) throws IOException
 	{
 		StringBuilder sb = new StringBuilder();
@@ -269,7 +489,7 @@ public class TBSSSummariesGenerator {
 		sb.append("             .\n");
 		//     bw.append("     sd:totalTriples \""+totalTrpl+"\" ;");
 	}
-	
+	*/
 	/**
 	 * Get total number of triple for a predicate
 	 * @param pred Predicate
@@ -285,8 +505,7 @@ public class TBSSSummariesGenerator {
 				"{" +
 	       		"?s <"+pred+"> ?o " +
 	       		"} " ;
-		SPARQLRepository repo = new SPARQLRepository(endpoint);
-		repo.initialize();
+		SPARQLRepository repo = createSPARQLRepository(endpoint);
 		RepositoryConnection conn = repo.getConnection();
 		try {
 			TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, strQuery); 
@@ -294,7 +513,6 @@ public class TBSSSummariesGenerator {
 			return Long.parseLong(rs.next().getValue("objs").stringValue());
 		} finally {
 			conn.close();
-			repo.shutDown();
 		}
 	}
 	
@@ -308,8 +526,7 @@ public class TBSSSummariesGenerator {
 				"{" +
 	       		"?s ?p ?o " +
 	       		"} " ;
-		SPARQLRepository repo = new SPARQLRepository(endpoint);
-		repo.initialize();
+		SPARQLRepository repo = createSPARQLRepository(endpoint);
 		RepositoryConnection conn = repo.getConnection();
 		try {
 			TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, strQuery); 
@@ -317,7 +534,6 @@ public class TBSSSummariesGenerator {
 			return Long.parseLong(rs.next().getValue("sbjts").stringValue());
 		} finally {
 			conn.close();
-			repo.shutDown();
 		}
 	}
 	/**
@@ -335,8 +551,7 @@ public class TBSSSummariesGenerator {
 
 	       		"?s ?p ?o " +
 	       		"} " ;
-		SPARQLRepository repo = new SPARQLRepository(endpoint);
-		repo.initialize();
+		SPARQLRepository repo = createSPARQLRepository(endpoint);
 		TupleQuery query = repo.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, strQuery); 
 		TupleQueryResult rs = query.evaluate();
 		while( rs.hasNext() ) 
@@ -344,6 +559,7 @@ public class TBSSSummariesGenerator {
 			count = Long.parseLong(rs.next().getValue("objts").stringValue());
 
 		}
+		rs.close();
 		return count;
 	}
 	/**
@@ -358,16 +574,16 @@ public class TBSSSummariesGenerator {
 				"{" +
 	       		"?s <"+pred+"> ?o " +
 	       		"} " ;
-		SPARQLRepository repo = new SPARQLRepository(endpoint);
-		repo.initialize();
+		SPARQLRepository repo = createSPARQLRepository(endpoint);
 		RepositoryConnection conn = repo.getConnection();
 		try {
 			TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, strQuery); 
 			TupleQueryResult rs = query.evaluate();
-			return Long.parseLong(rs.next().getValue("triples").stringValue());
+			String v = rs.next().getValue("triples").stringValue();
+			rs.close();
+			return Long.parseLong(v);
 		} finally {
 			conn.close();
-			repo.shutDown();
 		}
 	}
 	
@@ -377,16 +593,16 @@ public class TBSSSummariesGenerator {
 				"{" +
 	       		"?s ?p ?o " +
 	       		"} " ;
-		SPARQLRepository repo = new SPARQLRepository(endpoint);
-		repo.initialize();
+		SPARQLRepository repo = createSPARQLRepository(endpoint);
 		RepositoryConnection conn = repo.getConnection();
 		try {
 			TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, strQuery); 
 			TupleQueryResult rs = query.evaluate();
-			return Long.parseLong(rs.next().getValue("triples").stringValue());
+			String v = rs.next().getValue("triples").stringValue();
+			rs.close();
+			return Long.parseLong(v);
 		} finally {
 			conn.close();
-			repo.shutDown();
 		}
 	}
 	
@@ -397,16 +613,16 @@ public class TBSSSummariesGenerator {
 	       		"?s ?p ?o " +
 				"FILTER isIRI(?o)" +
 	       		"} " ;
-		SPARQLRepository repo = new SPARQLRepository(endpoint);
-		repo.initialize();
+		SPARQLRepository repo = createSPARQLRepository(endpoint);
 		RepositoryConnection conn = repo.getConnection();
 		try {
 			TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, strQuery); 
 			TupleQueryResult rs = query.evaluate();
-			return Long.parseLong(rs.next().getValue("triples").stringValue());
+			String v = rs.next().getValue("triples").stringValue();
+			rs.close();
+			return Long.parseLong(v);
 		} finally {
 			conn.close();
-			repo.shutDown();
 		}
 	}
 	
@@ -437,180 +653,169 @@ public class TBSSSummariesGenerator {
 	 * @param branchLimit Branching Limit for Trie
 	 * @throws IOException  IO Error
 	 */
-	public long writeSbjPrefixes(String predicate, String endpoint, String graph, int branchLimit, StringBuilder sb) throws IOException {
-		long distinctSbj = 0;
-		
-		Map<String, List<String>> authGroups = new HashMap<String, List<String>>();
-		String strQuery = getSbjAuthorityQuery(predicate, graph);
-
-		SPARQLRepository repo = new SPARQLRepository(endpoint);
-		repo.initialize();
-
-		RepositoryConnection conn = repo.getConnection();
-		try {
-			TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, strQuery); 
-			TupleQueryResult res = query.evaluate();
-			int rsCount = 0; 
-			while (res.hasNext()) 
-			{
-				String curSbj = res.next().getValue("s").toString();
-				rsCount++;
-				//System.out.println(curSbj);
-				String[] sbjPrts = curSbj.split("/");
-				if ((sbjPrts.length > 2))
-				{
-					String sbjAuth = sbjPrts[0] + "//" + sbjPrts[2];
-					//if(!sbjAuthorities.contains(sbjAuth))
-					//	sbjAuthorities.add(sbjAuth);
-					//---------
-					List<String> theURIs = authGroups.get(sbjAuth);
-					if (null == theURIs) {
-						theURIs = new ArrayList<String>();
-						authGroups.put(sbjAuth, theURIs);
-					}
-					theURIs.add(curSbj);
-				} else {
-					log.warn("Subject <" + curSbj + "> is not a valid URI. Subject prefix ignored.");
-				}
-			}
-			distinctSbj = rsCount;
-		} finally {
-			conn.close();
-			repo.shutDown();
-		}
-
-		//sbjAuthorities = Prefix.getLCPs(authGroups);
-
-		String[] sbjAuthorities = getAllBranchingURIs(authGroups, branchLimit).toArray(new String[]{});
-		if (sbjAuthorities.length > 0)
-		{
-			sb.append("\n           ds:sbjPrefix ");
-			String prevAuth = "" + Character.MAX_VALUE;
-			for (int authority = 0; authority < sbjAuthorities.length; authority++)
-			{
-				String strAuth = sbjAuthorities[authority];
-				if (strAuth.startsWith(prevAuth)) {
-					continue;
-				}
-				prevAuth = strAuth;
-				if (authority == sbjAuthorities.length - 1) {
-					sb.append("<" + strAuth.replace(" ", "") + "> ; ");
-				} else {
-					sb.append("<" + strAuth.replace(" ", "") + ">, ");
-				}
-			}
-		}
-		return distinctSbj;
-	}
-	
-	///**
-	// * Get a SPARQL query to retrieve all the subject authorities for a predicate
-	// * Note: Due to a limit of 10000 results per query on a SPARQL endpoint, we are using Regular expressions in queries
-	// * to get the required part in each qualifying triples rather than doing a local SPLIT operation on results
-	// * @param predicate predicate
-	// * @return query Required SPARQL query
-	// */
-	//public String getSbjAuthorityQuery(String predicate) {
-	//	
-	//	String query = "SELECT DISTINCT ?authPath From <http://deri.benchmark> \n"
-	//				+ "WHERE \n"
-	//				+ "{ \n "
-	//				+ "   ?s <"+predicate+"> ?o. \n"
-	//				+ "  BIND(STRBEFORE(str(?s),REPLACE(str(?s), \"^([^/]*/){3}\", \"\")) AS ?authPath) \n"
-	//						+ "   Filter(isURI(?s)) \n"
-	//						+ "}" ;
-	//		return query;
-	//}
-
-	/**
-	 *  Get a SPARQL query to retrieve all distinct subjects for retrieving all distinct subject authorities for a predicate
-	 * Note: You need to increase the 1000 limit of results for SPARQL endpoints if the distinct subjects for a predicate is greater than that limit
-	 * @param predicate Predicate
-	 * @param graph Named graph
-	 * @return query Required SPARQL query
-	 */
-	public String getSbjAuthorityQuery(String predicate, String graph) {
+	public Tuple4<String, Long, Long, Long> writePrefixes(String predicate, String endpoint, String graph, int branchLimit) throws IOException {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT DISTINCT ?s");
-		if (null != graph) {
-			sb.append(" FROM <");
-			sb.append(graph);
-			sb.append(">");
-		}
-		sb.append(" WHERE { ?s <");
-		sb.append(predicate);
-		sb.append("> ?o. FILTER (isURI(?s)) }");
-		return sb.toString();
-	}
-	
-	/**
-	 * Write all the distinct object authorities having predicate p. 
-	 * @param predicate  Predicate
-	 * @param endpoint Endpoint URL
-	 * @param graph named Graph
-	 * @param branchLimit Branching limit for Trie
-	 * @throws IOException  IO Error
-	 */
-	public void writeObjPrefixes(String predicate, String endpoint, String graph, int branchLimit, StringBuilder sb) throws IOException {
-		SortedSet<String> objAuthorities = new TreeSet<String>();
-		Map<String, List<String>> authGroups = new HashMap<String, List<String>>();
-		String strQuery = getObjAuthorityQury(predicate, graph);
-		SPARQLRepository repo = new SPARQLRepository(endpoint);
-		repo.initialize();
-		RepositoryConnection conn = repo.getConnection();
-		try {
-			TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, strQuery); 
-			TupleQueryResult res = query.evaluate();
-			while (res.hasNext()) 
-			{
-				if (predicate.equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")) {
-					objAuthorities.add(res.next().getValue("o").toString());
-				} else {
-					String anObj = res.next().getValue("o").toString();
-					// System.out.println("obj:" + anObj);
-					String[] objPrts = anObj.split("/");
-					if (objPrts.length > 2)
-					{
-						String objAuth = objPrts[0] + "//" + objPrts[2];
-						//if(!objAuthorities.contains(objAuth))
-						//	objAuthorities.add(objAuth);  
-						List<String> theURIs = authGroups.get(objAuth);
-						if (null == theURIs) {
-							theURIs = new ArrayList<String>();
-							authGroups.put(objAuth, theURIs);
-						}
-						theURIs.add(anObj);
-					} else {
-						log.warn("Problem with object <" + anObj + ">. Object authorithy ignored for that uri");
+		
+		long limit = 1000000;
+		boolean isTypePredicate = predicate.equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+
+		long rsCount = 0;
+		long uniqueSbj = 0;
+		long uniqueObj = 0;
+
+		Trie2.Node rootSbj = Trie2.initializeTrie();
+		Trie2.Node rootObj = Trie2.initializeTrie();
+
+		SPARQLRepository repo = createSPARQLRepository(endpoint);
+
+		long top = 0;
+		
+		long rc;
+		do
+		{
+			rc = 0;
+			StringBuilder qb = new StringBuilder();
+			qb.append("SELECT ?s count(?o) as ?oc");
+			if (null != graph) {
+				qb.append(" FROM <").append(graph).append('>');
+			}
+			qb.append(" WHERE { ?s <").append(predicate).append("> ?o. } GROUP BY ?s LIMIT ").append(limit).append(" OFFSET ").append(top);
+			
+			RepositoryConnection conn = repo.getConnection();
+			try {
+				TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, qb.toString()); 
+				TupleQueryResult res = query.evaluate();
+				
+				while (res.hasNext()) 
+				{
+					++rc;
+					BindingSet bs = res.next();
+					Value curSbj = bs.getValue("s");
+					++uniqueSbj;
+					if (verifyIRI(curSbj)) {
+						putIRI(curSbj.stringValue(), Long.parseLong(bs.getValue("oc").stringValue()), rootSbj);
 					}
 				}
+				res.close();
+			} finally {
+				conn.close();
 			}
-		} finally {
-			conn.close();
-			repo.shutDown();
-		}
+			top += rc;
+		} while (rc == limit);
+		
 
-		//objAuthorities.addAll(Prefix.getLCPs(authGroups));
-		objAuthorities.addAll(getAllBranchingURIs(authGroups, branchLimit));
-		if (!objAuthorities.isEmpty())
+		top = 0;
+		do
 		{
-			sb.append("\n           ds:objPrefix ");
-			String[] objAuthoritiesArr = objAuthorities.toArray(new String[]{});
-			String prevAuth = "" + Character.MAX_VALUE;
-			for (int authority = 0; authority < objAuthorities.size(); authority++)
-			{
-				String strAuth = objAuthoritiesArr[authority];
-				if (strAuth.startsWith(prevAuth)) {
-					continue;
-				}
-				prevAuth = strAuth;
-				if (authority == objAuthorities.size() - 1) {
-					sb.append("<" + strAuth.replace(" ", "") + "> ; ");
-				} else {
-					sb.append("<"+ strAuth.replace(" ", "")+ ">, ");
-				}
+			rc = 0;
+			StringBuilder qb = new StringBuilder();
+			qb.append("SELECT ?o (count(?s) as ?sc)");
+			if (null != graph) {
+				qb.append(" FROM <").append(graph).append('>');
 			}
+			qb.append(" WHERE { ?s <").append(predicate).append("> ?o. } GROUP BY ?o LIMIT ").append(limit).append(" OFFSET ").append(top);
+			
+			RepositoryConnection conn = repo.getConnection();
+			try {
+				TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, qb.toString()); 
+				TupleQueryResult res = query.evaluate();
+				
+				while (res.hasNext()) 
+				{
+					++rc;
+					BindingSet bs = res.next();
+					Value curObj = bs.getValue("o");
+					++uniqueObj;
+					if (verifyIRI(curObj)) {
+						putIRI(curObj.stringValue(), Long.parseLong(bs.getValue("sc").stringValue()), rootObj);
+					}
+				}
+				res.close();
+			} finally {
+				conn.close();
+			}
+			top += rc;
+		} while (rc == limit);
+
+		
+		rsCount = getTripleCount(predicate, endpoint);
+		
+		boolean first = true;
+		sb.append("\n           ds:topSbjs");
+		List<Pair<String, Long>> topsbjstotal = Trie2.findMostHittable(rootSbj, 1000 > MAX_TOP_OBJECTS ? 1000 : MAX_TOP_OBJECTS);
+		List<Pair<String, Long>> topsbjs = new ArrayList<Pair<String, Long>>();
+		List<String> middlesbjs = new ArrayList<String>();
+		long avrmiddlesbjcard = doSaleemAlgo(MIN_TOP_OBJECTS, MAX_TOP_OBJECTS, topsbjstotal, topsbjs, middlesbjs);
+		for (Pair<String, Long> p : topsbjs) {
+			if (!first) sb.append(","); else first = false;
+			sb.append("\n             [ ds:subject <").append(makeWellFormed(p.getFirst())).append(">; ds:card ").append(p.getSecond()).append(" ]");
 		}
+		if (!middlesbjs.isEmpty()) {
+			sb.append(",\n             [ ds:middle ");
+			first = true;
+			for (String ms : middlesbjs) {
+				if (!first) sb.append(","); else first = false;
+				sb.append('<').append(makeWellFormed(ms)).append('>');
+			}
+			sb.append("; ds:card ").append(avrmiddlesbjcard).append(" ]");
+		}
+		if (topsbjs.isEmpty()) sb.append(" []");
+		
+		first = true;
+		sb.append(";\n           ds:topObjs");
+
+		List<Pair<String, Long>> topobjstotal = Trie2.findMostHittable(rootObj, isTypePredicate ? Integer.MAX_VALUE : (1000 > MAX_TOP_OBJECTS ? 1000 : MAX_TOP_OBJECTS));
+		List<Pair<String, Long>> topobjs = null;
+		List<String> middleobjs = new ArrayList<String>();
+		long avrmiddleobjcard = 0;
+		if (!isTypePredicate) {
+			topobjs = new ArrayList<Pair<String, Long>>();
+			avrmiddleobjcard = doSaleemAlgo(MIN_TOP_OBJECTS, MAX_TOP_OBJECTS, topobjstotal, topobjs, middleobjs);
+		} else {
+			topobjs = topobjstotal;
+		}
+		for (Pair<String, Long> p : topobjs) {
+			if (!first) sb.append(","); else first = false;
+			sb.append("\n             [ ds:object <").append(makeWellFormed(p.getFirst())).append(">; ds:card ").append(p.getSecond()).append(" ]");
+		}
+		if (!middleobjs.isEmpty()) {
+			sb.append(",\n             [ ds:middle ");
+			first = true;
+			for (String ms : middleobjs) {
+				if (!first) sb.append(","); else first = false;
+				sb.append('<').append(makeWellFormed(ms)).append('>');
+			}
+			sb.append("; ds:card ").append(avrmiddleobjcard).append(" ]");
+		}
+		if (topobjs.isEmpty()) sb.append(" []");
+		
+		first = true;
+		sb.append(";\n           ds:subjPrefixes");
+		List<Tuple3<String, Long, Long>> sprefs = Trie2.gatherPrefixes(rootSbj, branchLimit);
+		for (Tuple3<String, Long, Long> t : sprefs) {
+			if (!first) sb.append(","); else first = false;
+			sb.append("\n             [ ds:prefix \"").append(encodeStringLiteral(t.getValue0())).append("\"; ds:unique ").append(t.getValue1()).append("; ds:card ").append(t.getValue2()).append(" ]");
+		}
+		if (sprefs.isEmpty()) sb.append(" []");
+		
+		first = true;
+		sb.append(";\n           ds:objPrefixes");
+		if (!isTypePredicate) {
+			List<Tuple3<String, Long, Long>> oprefs = Trie2.gatherPrefixes(rootObj, branchLimit);
+			for (Tuple3<String, Long, Long> t : oprefs) {
+				if (!first) sb.append(","); else first = false;
+				sb.append("\n             [ ds:prefix \"").append(encodeStringLiteral(t.getValue0())).append("\"; ds:unique ").append(t.getValue1()).append("; ds:card ").append(t.getValue2()).append(" ]");
+			}
+			if (oprefs.isEmpty()) sb.append(" []");
+		} else {
+			sb.append(" []");
+		}
+		
+		sb.append(";\n");
+		//log.info("subject: " + topsbjs);
+		//log.info("object: " + topobjs);
+		
+		return new Tuple4<String, Long, Long, Long>(sb.toString(), uniqueSbj, uniqueObj, rsCount);
 	}
 	
 	///**
@@ -684,8 +889,7 @@ public class TBSSSummariesGenerator {
 		ArrayList<Long> idsVector = new ArrayList<Long>() ;
 		String MIPsV = "";
 		String strQuery = getMIPsVQury(pred);
-		SPARQLRepository repo = new SPARQLRepository(endpoint);
-		repo.initialize();
+		SPARQLRepository repo = createSPARQLRepository(endpoint);
 		TupleQuery query = repo.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, strQuery); 
 		TupleQueryResult rs = query.evaluate();
 		while( rs.hasNext() ) 
@@ -735,8 +939,7 @@ public class TBSSSummariesGenerator {
 	{
 		List<String>  predLst = new ArrayList<String>();
 		String strQuery = getPredQury(graph);
-		SPARQLRepository repo = new SPARQLRepository(endPointUrl);
-		repo.initialize();
+		SPARQLRepository repo = createSPARQLRepository(endPointUrl);
 		RepositoryConnection conn = repo.getConnection();
 		try {
 			TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, strQuery); 
@@ -746,9 +949,9 @@ public class TBSSSummariesGenerator {
 				String pred = res.next().getValue("p").toString();
 				predLst.add(pred);	  		
 			}
+			res.close();
 		} finally {
 			conn.close();
-			repo.shutDown();
 		}
 		return predLst;
 	}
@@ -769,5 +972,70 @@ public class TBSSSummariesGenerator {
 		}
 		sb.append(" WHERE { ?s ?p ?o }");
 		return sb.toString();
+	}
+	
+	/**
+	 * 
+	 * 
+	 * @param objects cardinality ordered list of objects
+	 * @param top output collection of top objects
+	 * @param middle collection of top objects
+	 * @return average cardinality
+	 */
+	long doSaleemAlgo(int min, int max, List<Pair<String, Long>> objects, List<Pair<String, Long>> top, List<String> middle) {
+		while (!objects.isEmpty() && objects.get(objects.size() - 1).getSecond() == 1) {
+			objects.remove(objects.size() - 1);
+		}
+			
+		if (min > objects.size()) min = objects.size();
+		
+		for (int i = 0; i < min; ++i) {
+			Pair<String, Long> obj = objects.get(i);
+			top.add(obj);
+		}
+		
+		int max2 = max < objects.size() ? max : objects.size();
+
+		// find first diff maximum
+		long maxdiff = 0;
+		int maxdiffidx = -1;
+		for (int i = min; i < max2 - 1; ++i) {
+			long diff = objects.get(i).getSecond() - objects.get(i + 1).getSecond();
+			if (diff > maxdiff) {
+				maxdiff = diff;
+				maxdiffidx = i;
+			}
+		}
+		if (maxdiffidx == -1) return 0;
+		// copy objects
+		for (int i = min; i < maxdiffidx; ++i) {
+			Pair<String, Long> obj = objects.get(i);
+			top.add(obj);
+		}
+		
+		// find next diff maximum
+		maxdiff = 0;
+		int nextmaxdiffidx = -1;
+		for (int i = maxdiffidx + 1; i < max2 - 1; ++i) {
+			long diff = objects.get(i).getSecond() - objects.get(i + 1).getSecond();
+			if (diff > maxdiff) {
+				maxdiff = diff;
+				nextmaxdiffidx = i;
+			}
+		}
+		if (nextmaxdiffidx == -1) {
+			nextmaxdiffidx = max2;
+		}
+		if (maxdiffidx == nextmaxdiffidx) return 0;
+		
+		// copy middle objects
+		long totalCard = 0;
+		for (int i = maxdiffidx; i < nextmaxdiffidx; ++i) {
+			Pair<String, Long> obj = objects.get(i);
+			middle.add(obj.getFirst());
+			totalCard += obj.getSecond();
+		}
+		
+		return totalCard / (nextmaxdiffidx - maxdiffidx);
 	}
 }

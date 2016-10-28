@@ -43,7 +43,7 @@ public class BoundJoinConversionIteration extends ConvertingIteration<BindingSet
 	}
 
 	@Override
-	protected BindingSet convert(BindingSet bIn) throws QueryEvaluationException {
+	protected BindingSet convert(BindingSet bIn) {
 		QueryBindingSet res = new QueryBindingSet();
 		int bIndex = -1;
 		Iterator<Binding> bIter = bIn.iterator();

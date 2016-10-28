@@ -17,6 +17,8 @@
 
 package com.fluidops.fedx.algebra;
 
+import java.util.List;
+
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.StatementPattern;
@@ -45,7 +47,9 @@ public class ExclusiveStatement extends FedXStatementPattern {
 
 	public ExclusiveStatement(StatementPattern node, StatementSource owner, QueryInfo queryInfo) {
 		super(node, queryInfo);
-		statementSources.add(owner);
+		addStatementSource(owner);
+		queryInfo.numSources.incrementAndGet();
+		queryInfo.totalSources.incrementAndGet();
 	}	
 
 	public StatementSource getOwner() {
@@ -54,6 +58,7 @@ public class ExclusiveStatement extends FedXStatementPattern {
 
 	@Override
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BindingSet bindings) {
+		if (bindings == null) return new EmptyIteration<BindingSet, QueryEvaluationException>();
 		
 		Endpoint ownedEndpoint = EndpointManager.getEndpointManager().getEndpoint(getOwner().getEndpointID());
 		RepositoryConnection ownedConnection = ownedEndpoint.getConn();
@@ -89,5 +94,10 @@ public class ExclusiveStatement extends FedXStatementPattern {
 	@Override
 	public void visit(FedXExprVisitor v) {
 		v.meet(this);
+	}
+
+	@Override
+	protected CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BindingSet bindings, List<StatementSource> sources) {
+		return evaluate(bindings);
 	}
 }

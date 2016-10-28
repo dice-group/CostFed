@@ -115,7 +115,7 @@ public class FedSumSourceSelection {
 					sa =sbjPrts[0]+"//"+sbjPrts[2];
 					//-- add subjectVertex
 					sbjVertexLabel = s;
-					sbjVertex = new Vertex(sbjVertexLabel);
+					sbjVertex = new Vertex(stmt.getSubjectVar(), sbjVertexLabel);
 					if(!vertexExist(sbjVertex,V));
 					V.add(sbjVertex);
 				}
@@ -124,7 +124,7 @@ public class FedSumSourceSelection {
 					s ="null";  
 					//-- add subjectVertex
 					sbjVertexLabel=stmt.getSubjectVar().getName();
-					sbjVertex= new Vertex(sbjVertexLabel);
+					sbjVertex= new Vertex(stmt.getSubjectVar(), sbjVertexLabel);
 					if(!vertexExist(sbjVertex,V))
 					V.add(sbjVertex);
 				}
@@ -133,7 +133,7 @@ public class FedSumSourceSelection {
 					p = stmt.getPredicateVar().getValue().stringValue();
 					//-- add predicateVertex
 					predVertexLabel=p;
-					predVertex = new Vertex(predVertexLabel);
+					predVertex = new Vertex(stmt.getPredicateVar(), predVertexLabel);
 					if(!vertexExist(predVertex,V))
 					V.add(predVertex);
 				}
@@ -142,7 +142,7 @@ public class FedSumSourceSelection {
 					p ="null"; 
 					//-- add predicateVertex
 					predVertexLabel=stmt.getPredicateVar().getName();
-					predVertex= new Vertex(predVertexLabel);
+					predVertex= new Vertex(stmt.getPredicateVar(), predVertexLabel);
 					if(!vertexExist(predVertex,V))
 					V.add(predVertex);
 				}
@@ -156,7 +156,7 @@ public class FedSumSourceSelection {
 			        	 oa = "null";
 					//-- add predicateVertex
 					objVertexLabel=o;
-					objVertex = new Vertex(objVertexLabel);
+					objVertex = new Vertex(stmt.getObjectVar(), objVertexLabel);
 					if(!vertexExist(objVertex,V))
 						V.add(objVertex);
 				}
@@ -165,7 +165,7 @@ public class FedSumSourceSelection {
 					o = "null"; 
 					//-- add predicateVertex
 					objVertexLabel=stmt.getObjectVar().getName();
-					objVertex= new Vertex(objVertexLabel);
+					objVertex= new Vertex(stmt.getObjectVar(), objVertexLabel);
 					if(!vertexExist(objVertex,V))
 					V.add(objVertex);
 				}

@@ -1,0 +1,26 @@
+cacheLocation=cache.db
+workerThreads=10
+boundJoinBlockSize=20
+enforceMaxQueryTime=30
+enableMonitoring=false
+monitoring.enableJMX=false
+monitoring.logQueryPlan=false
+monitoring.logQueries=false
+#sourceSelectionClass=org.aksw.simba.quetsal.core.TBSSSourceSelection
+
+extensionClass=org.aksw.simba.quetsal.configuration.QuetzalConfig
+#quetzal.mode=INDEX_DOMINANT
+quetzal.mode=ASK_DOMINANT
+quetzal.inputCommonPredThreshold=0.33
+quetzal.fedSummaries=summaries/sum-localhost.n3
+statementGroupOptimizerClass=org.aksw.simba.quetsal.core.TopKJoinOrderOptimizer
+
+sparqlEvaluationStrategy=org.aksw.simba.quetsal.core.TBSSFederationEvalStrategy
+optimizer.enableServiceAsBoundJoin=false
+validateRepositoryConnections=true
+debugWorkerScheduler=false
+debugQueryPlan=false
+
+# http client related config
+maxHttpConnectionCount=25
+maxHttpConnectionCountPerRoute=25

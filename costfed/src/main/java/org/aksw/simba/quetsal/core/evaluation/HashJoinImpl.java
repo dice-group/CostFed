@@ -1,5 +1,6 @@
 package org.aksw.simba.quetsal.core.evaluation;
 
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,28 +16,36 @@ import org.apache.log4j.Logger;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 
+import com.fluidops.fedx.evaluation.FederationEvalStrategy;
 import com.fluidops.fedx.evaluation.concurrent.Async;
 import com.fluidops.fedx.evaluation.concurrent.ControlledWorkerScheduler;
 import com.fluidops.fedx.evaluation.iterator.QueueIterator;
+import com.fluidops.fedx.evaluation.iterator.RestartableCloseableIteration;
+import com.fluidops.fedx.evaluation.iterator.RestartableLookAheadIteration;
 import com.fluidops.fedx.structures.QueryInfo;
 
 import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.LookAheadIteration;
 
-public class HashJoinImpl extends LookAheadIteration<BindingSet, QueryEvaluationException> {
+public class HashJoinImpl extends RestartableLookAheadIteration<BindingSet> {
 	public static Logger log = Logger.getLogger(HashJoinImpl.class);
 	
 	/* Constants */
 	private final ControlledWorkerScheduler scheduler;
+	protected final FederationEvalStrategy strategy;		// the evaluation strategy
+	protected List<TupleExpr> childExprs;
+	protected List<CloseableIteration<BindingSet, QueryEvaluationException>> childIters;
+	//protected final TupleExpr leftExpr;
+	//protected final TupleExpr rightExpr;
 	protected Set<String> joinAttributes;
 	protected final BindingSet bindings;					// the bindings
 	protected final QueryInfo queryInfo;
 	private AtomicBoolean started = new AtomicBoolean(false);
 	AtomicInteger runCount = new AtomicInteger(0);
 	
-	protected List<CloseableIteration<BindingSet, QueryEvaluationException>> childIters;
+	
 	protected List<Map<Object, Collection<BindingSet>>> resultTables;
 	
 	//Map<Object, Collection<T>>
@@ -45,33 +54,41 @@ public class HashJoinImpl extends LookAheadIteration<BindingSet, QueryEvaluation
 			@Override public void release(BindingSet item) {}
 		});
 	
-	public HashJoinImpl(
-			ControlledWorkerScheduler scheduler,
-			Set<String> leftArg, CloseableIteration<BindingSet, QueryEvaluationException> leftIter,
-			Set<String> rightArg, CloseableIteration<BindingSet, QueryEvaluationException> rightIter,
+	public HashJoinImpl(ControlledWorkerScheduler scheduler, FederationEvalStrategy strategy,
+			Set<String> leftArg, TupleExpr leftExpr,
+			Set<String> rightArg, TupleExpr rightExpr,
+			//Set<String> leftArg, CloseableIteration<BindingSet, QueryEvaluationException> leftIter,
+			//Set<String> rightArg, CloseableIteration<BindingSet, QueryEvaluationException> rightIter,
 			BindingSet bindings, QueryInfo queryInfo)
 	{
+		this.strategy = strategy;
 		this.bindings = bindings;
 		this.queryInfo = queryInfo;
 		this.scheduler = scheduler;
 		
 		// find join attrs intersection
-		joinAttributes = new HashSet<String>(leftArg);
+		joinAttributes = new HashSet<String>();
+		for (String v : leftArg) {
+			if (v.startsWith("_const_")) continue;
+			joinAttributes.add(v);
+		}
         joinAttributes.retainAll(rightArg);
-        assert(joinAttributes.size() > 0);
-
-		childIters = new ArrayList<CloseableIteration<BindingSet, QueryEvaluationException>>();
-		childIters.add(leftIter);
-		childIters.add(rightIter);
+        log.info(joinAttributes);
+        
+        childExprs = new ArrayList<TupleExpr>();
+        childExprs.add(leftExpr);
+        childExprs.add(rightExpr);
+        childIters = new ArrayList<>(2);
+        childIters.add(null);
+        childIters.add(null);
 		resultTables = new ArrayList<Map<Object, Collection<BindingSet>>>();
 		resultTables.add(new HashMap<Object, Collection<BindingSet>>());
 		resultTables.add(new HashMap<Object, Collection<BindingSet>>());
-		runCount.set(resultTables.size());
 	}
 
-	public void addChildIterator(CloseableIteration<BindingSet, QueryEvaluationException> it) {
-		childIters.add(it);
-	}
+	//public void addChildIterator(CloseableIteration<BindingSet, QueryEvaluationException> it) {
+	//	childIters.add(it);
+	//}
 	
 	public void start() {
 		if (started.compareAndSet(false, true)) {
@@ -117,51 +134,60 @@ public class HashJoinImpl extends LookAheadIteration<BindingSet, QueryEvaluation
 			this.value = value;
 		}
 	}
-	
-	public class HashJoinTask extends Async<CloseableIteration<BindingSet, QueryEvaluationException>> {
+
+	class InnerCallable implements Callable<CloseableIteration<BindingSet, QueryEvaluationException>>
+	{
 		final int idx;
-		HashJoinTask(int idx) {
-			super(new Callable<CloseableIteration<BindingSet, QueryEvaluationException>>(){
-				@Override
-				public CloseableIteration<BindingSet, QueryEvaluationException> call() throws Exception {
-					return childIters.get(idx);
-				}
-			});
+		public InnerCallable(int idx) {
 			this.idx = idx;
-			resultQueue.onAddIterator();
 		}
 		
 		@Override
-		public void run() {
-			QueryInfo.setPriority(1);
-			super.run();
+		public CloseableIteration<BindingSet, QueryEvaluationException> call() throws Exception {
+			CloseableIteration<BindingSet, QueryEvaluationException> it = childIters.get(idx);
+			if (it == null) {
+				it = strategy.evaluate(childExprs.get(idx), bindings);
+				childIters.set(idx, it);
+			}
+			return it;
 		}
-		
+	}
+	
+	public class HashJoinTask extends Async<CloseableIteration<BindingSet, QueryEvaluationException>> {
+		final int idx;
 
+		HashJoinTask(int idx) {
+			super(new InnerCallable(idx));
+			this.idx = idx;
+			resultQueue.onAddIterator();
+			runCount.incrementAndGet();
+		}
 		
 		Collection<KeyAndValue> buff = new ArrayList<KeyAndValue>();
 		
 		@Override
 		public void callAsync(CloseableIteration<BindingSet, QueryEvaluationException> res) {
+
 			int gotRecs = 0;
 			int putRecs = 0;
 			
+
+			
 			while (res.hasNext() && !isClosed()) {
-				if (runCount.get() > 1) {
+				if (true || runCount.get() > 1) {
 					buff.clear();
 					for (int i = 0; i < 100 && res.hasNext(); ++i) {
 						BindingSet r = res.next();
 						BindingSet hashKey = calcKey(r, joinAttributes);
-						if (hashKey.size() == 0) {
-							assert(hashKey.size() != 0);
-						}
 						buff.add(new KeyAndValue(hashKey, r));
+
 					}
 				
 					synchronized (resultTables) {
 						for (KeyAndValue kv : buff)
 						{
 							++gotRecs;
+
 							Collection<BindingSet> coll = resultTables.get(idx).get(kv.key);
 							if (coll == null) {
 								coll = new ArrayList<BindingSet>();
@@ -178,7 +204,7 @@ public class HashJoinImpl extends LookAheadIteration<BindingSet, QueryEvaluation
 						}
 					}
 				} else {
-					resultTables.get(idx).clear(); // free unnecessary table
+					//resultTables.get(idx).clear(); // free unnecessary table
 					Map<Object, Collection<BindingSet>> coll = resultTables.get(1 - idx);
 					for (int i = 0; i < 100 && res.hasNext(); ++i) {
 						BindingSet r = res.next();
@@ -196,7 +222,7 @@ public class HashJoinImpl extends LookAheadIteration<BindingSet, QueryEvaluation
 			}
 			resultQueue.onRemoveIterator();
 			runCount.decrementAndGet();
-			log.info("idx: " + idx + ", got records: " + gotRecs + ", put records: " + putRecs + ", closed: " + isClosed());
+			log.info("hash: " + HashJoinImpl.this.hashCode() + ", idx: " + idx + ", got records: " + gotRecs + ", put records: " + putRecs + ", closed: " + isClosed());
 			res.close();
 		}
 
@@ -208,7 +234,7 @@ public class HashJoinImpl extends LookAheadIteration<BindingSet, QueryEvaluation
 	}
 	
 	protected void do_start() {
-		for (int idx = 0; idx < childIters.size(); ++idx) {
+		for (int idx = 0; idx < childExprs.size(); ++idx) {
 			scheduler.schedule(new HashJoinTask(idx));
 		}
 	}
@@ -231,5 +257,16 @@ public class HashJoinImpl extends LookAheadIteration<BindingSet, QueryEvaluation
 			iter.close();
 		}
 		super.handleClose();
+	}
+	
+	@Override
+	public void handleRestart() {
+		resultQueue.restart();
+		for (int idx = 0; idx < childIters.size(); ++idx) {
+			if (childIters.get(idx) instanceof RestartableCloseableIteration) {
+				((RestartableCloseableIteration<BindingSet>)childIters.get(idx)).restart();
+				scheduler.schedule(new HashJoinTask(idx));
+			}
+		}
 	}
 }

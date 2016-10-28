@@ -22,6 +22,7 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.Var;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -70,10 +71,10 @@ public class TBSSSourceSelectionOriginal extends SourceSelection {
 	
 	public List<CheckTaskPair> remoteCheckTasks = new ArrayList<CheckTaskPair>();
 
-	private Vertex collectVertex(String label, Map<String, Vertex> v) {
+	private Vertex collectVertex(Var var, String label, Map<String, Vertex> v) {
 		Vertex resultVertex = v.get(label);
 		if (null == resultVertex) {
-			resultVertex = new Vertex(label);
+			resultVertex = new Vertex(var, label);
 			v.put(label, resultVertex);
 		}
 		return resultVertex;
@@ -118,17 +119,17 @@ public class TBSSSourceSelectionOriginal extends SourceSelection {
 					String[] sbjPrts = s.split("/");
 					sa = sbjPrts[0] + "//" + sbjPrts[2];
 					//-- add subjectVertex
-					sbjVertex = collectVertex(s, v);
+					sbjVertex = collectVertex(stmt.getSubjectVar(), s, v);
 				} else {
-					sbjVertex = collectVertex(stmt.getSubjectVar().getName(), v);
+					sbjVertex = collectVertex(stmt.getSubjectVar(), stmt.getSubjectVar().getName(), v);
 				}
 				
 				if (stmt.getPredicateVar().getValue() != null)
 				{
 					p = stmt.getPredicateVar().getValue().stringValue();
-					predVertex = collectVertex(p, v);
+					predVertex = collectVertex(stmt.getPredicateVar(), p, v);
 				} else {
-					predVertex = collectVertex(stmt.getPredicateVar().getName(), v);
+					predVertex = collectVertex(stmt.getPredicateVar(), stmt.getPredicateVar().getName(), v);
 				}
 				
 				if (stmt.getObjectVar().getValue() != null)
@@ -138,9 +139,9 @@ public class TBSSSourceSelectionOriginal extends SourceSelection {
 					if (objPrts.length > 2) {     //add only URI
 						oa = objPrts[0] + "//" + objPrts[2];
 					}
-					objVertex = collectVertex(o, v);
+					objVertex = collectVertex(stmt.getObjectVar(), o, v);
 				} else {
-					objVertex = collectVertex(stmt.getObjectVar().getName(), v);
+					objVertex = collectVertex(stmt.getObjectVar(), stmt.getObjectVar().getName(), v);
 				}
 				
 				//-------Step 1 of our source selection---i.e Triple pattern-wise source selection----

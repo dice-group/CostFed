@@ -24,6 +24,7 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.Var;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.repository.RepositoryConnection;
 
@@ -73,10 +74,10 @@ public class TBSSSourceSelection extends SourceSelection {
 	
 	public List<CheckTaskPair> remoteCheckTasks = new ArrayList<CheckTaskPair>();
 
-	private Vertex collectVertex(String label, Map<String, Vertex> v) {
+	private Vertex collectVertex(Var var, String label, Map<String, Vertex> v) {
 		Vertex resultVertex = v.get(label);
 		if (null == resultVertex) {
-			resultVertex = new Vertex(label);
+			resultVertex = new Vertex(var, label);
 			v.put(label, resultVertex);
 		}
 		return resultVertex;
@@ -113,26 +114,26 @@ public class TBSSSourceSelection extends SourceSelection {
 				//cache.clear();
 				stmtToSources.put(stmt, new ArrayList<StatementSource>());
 				//--------
-				String s = null, p = null, o = null, sa = null, oa = null;
+				String s = null, p = null, o = null, sa_obs = null, oa_obs = null;
 				Vertex sbjVertex, predVertex, objVertex;
 				
 				if (stmt.getSubjectVar().getValue() != null)
 				{
 					s = stmt.getSubjectVar().getValue().stringValue();
 					String[] sbjPrts = s.split("/");
-					sa = sbjPrts[0] + "//" + sbjPrts[2];
+					sa_obs = sbjPrts[0] + "//" + sbjPrts[2];
 					//-- add subjectVertex
-					sbjVertex = collectVertex(s, v);
+					sbjVertex = collectVertex(stmt.getSubjectVar(), s, v);
 				} else {
-					sbjVertex = collectVertex(stmt.getSubjectVar().getName(), v);
+					sbjVertex = collectVertex(stmt.getSubjectVar(), stmt.getSubjectVar().getName(), v);
 				}
 				
 				if (stmt.getPredicateVar().getValue() != null)
 				{
 					p = stmt.getPredicateVar().getValue().stringValue();
-					predVertex = collectVertex(p, v);
+					predVertex = collectVertex(stmt.getPredicateVar(), p, v);
 				} else {
-					predVertex = collectVertex(stmt.getPredicateVar().getName(), v);
+					predVertex = collectVertex(stmt.getPredicateVar(), stmt.getPredicateVar().getName(), v);
 				}
 				
 				if (stmt.getObjectVar().getValue() != null)
@@ -140,11 +141,11 @@ public class TBSSSourceSelection extends SourceSelection {
 					o = stmt.getObjectVar().getValue().stringValue();
 					String[] objPrts = o.split("/");
 					if (objPrts.length > 2) {     //add only URI
-						oa = objPrts[0] + "//" + objPrts[2];
+						oa_obs = objPrts[0] + "//" + objPrts[2];
 					}
-					objVertex = collectVertex(o, v);
+					objVertex = collectVertex(stmt.getObjectVar(), o, v);
 				} else {
-					objVertex = collectVertex(stmt.getObjectVar().getName(), v);
+					objVertex = collectVertex(stmt.getObjectVar(), stmt.getObjectVar().getName(), v);
 				}
 				
 				//-------Step 1 of our source selection---i.e Triple pattern-wise source selection----
@@ -160,7 +161,7 @@ public class TBSSSourceSelection extends SourceSelection {
 						if (p.equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type") && o != null) {
 							lookupFedSumClass(stmt, p, o);
 						} else if (!QuetzalConfig.commonPredicates.contains(p) || (s == null && o == null)) {
-							lookupFedSum(stmt, sa, p, oa);
+							lookupFedSum(stmt, s /*sa*/, p, o /*oa*/);
 						} else {
 							cache_ASKselection(stmt);
 						}
@@ -180,7 +181,7 @@ public class TBSSSourceSelection extends SourceSelection {
 						if ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type".equals(p) && o != null)
 							lookupFedSumClass(stmt, p, o);
 						else
-							lookupFedSum(stmt, sa, p, oa);
+							lookupFedSum(stmt, s /*sa*/, p, o /*oa*/);
 					}
 					else
 						cache_ASKselection(stmt);
@@ -463,8 +464,8 @@ public class TBSSSourceSelection extends SourceSelection {
 		return queryString;
 	}
 	
-	public void lookupFedSum(StatementPattern stmt, String sa, String p, String oa) {
-		Set<String> ids = QuetzalConfig.summary.lookupFedSum(stmt, sa, p, oa);
+	public void lookupFedSum(StatementPattern stmt, String s, String p, String o) {
+		Set<String> ids = QuetzalConfig.summary.lookupSources(stmt);
 		if (ids != null && !ids.isEmpty()) {
 			List<StatementSource> sources = stmtToSources.get(stmt);
 			synchronized (sources) {
@@ -482,7 +483,7 @@ public class TBSSSourceSelection extends SourceSelection {
 	 * @param stmt Statement Pattern
 	 */
 	public void lookupFedSumClass(StatementPattern stmt, String p, String o) {
-		Set<String> ids = QuetzalConfig.summary.lookupFedSumClass(stmt, p, o);
+		Set<String> ids = QuetzalConfig.summary.lookupSources(stmt);
 		if (ids != null && !ids.isEmpty()) {
 			List<StatementSource> sources = stmtToSources.get(stmt);
 			synchronized (sources) {
@@ -576,6 +577,10 @@ public class TBSSSourceSelection extends SourceSelection {
 			for (StatementSource src : srcsSuppl.get())
 			{
 				Set<String> prefixes = func.apply(src);
+				if (prefixes == null) {
+					prefixes = func.apply(src);
+					prefixes = new TreeSet<String>();
+				}
 				prefixUnionSet.addAll(prefixes); // union
 				PrefixSets ps = new PrefixSets();
 				projection.set(ps, new TreeSet<String>(prefixes));
@@ -675,7 +680,7 @@ public class TBSSSourceSelection extends SourceSelection {
 					Collection<StatementDescriptor> sd = new ArrayList<StatementDescriptor>();
 					SortedSet<String> prefixIntersectionSet = new TreeSet<String>();
 					//---------------------------------------hybrid or path node-------------------------------------------------------------
-					if (!v.inEdges.isEmpty() && !v.outEdges.isEmpty()) 
+					if (!v.inEdges.isEmpty() && !v.outEdges.isEmpty() && v.var.getValue() == null) 
 					{
 						//System.out.println(v.label + " is hybrid node");
 						for (HyperEdge inEdge : v.inEdges) //has hyperedges or statement patterns
@@ -1012,7 +1017,7 @@ public class TBSSSourceSelection extends SourceSelection {
 
 	public Set<String> getFedSumDMatchingSbjAuthorities(StatementPattern stmt, StatementSource src)
 	{
-		return QuetzalConfig.summary.lookupSbjAuths(stmt, src.getEndpointID());
+		return QuetzalConfig.summary.lookupSbjPrefixes(stmt, src.getEndpointID());
 	}
 	
 	public Set<String> getFedSumDMatchingSbjAuthorities2(StatementPattern stmt, StatementSource src)
@@ -1126,7 +1131,7 @@ public class TBSSSourceSelection extends SourceSelection {
 	 */
 	public Set<String> FedSumD_getMatchingObjAuthorities(StatementPattern stmt, StatementSource src, Vertex v)
 	{
-		return QuetzalConfig.summary.lookupObjAuths(stmt, src.getEndpointID());
+		return QuetzalConfig.summary.lookupObjPrefixes(stmt, src.getEndpointID());
 	}
 	
 	public Set<String> FedSumD_getMatchingObjAuthorities2(StatementPattern stmt, StatementSource src, Vertex v)

@@ -1,5 +1,7 @@
 package org.aksw.simba.quetsal.core;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.aksw.simba.quetsal.configuration.QuetzalConfig;
@@ -19,6 +21,21 @@ public class Cardinality {
 	}
 	
 	public static long getTriplePatternCardinality(StatementPattern stmt, List<StatementSource> stmtSrces)
+	{
+		return QuetzalConfig.summary.getTriplePatternCardinality(stmt, stmtSrces);
+	}
+	
+	public static double getTriplePatternObjectMVKoef(StatementPattern stmt, List<StatementSource> stmtSrces)
+	{
+		return QuetzalConfig.summary.getTriplePatternObjectMVKoef(stmt, stmtSrces);
+	}
+	
+	public static double getTriplePatternSubjectMVKoef(StatementPattern stmt, List<StatementSource> stmtSrces)
+	{
+		return QuetzalConfig.summary.getTriplePatternSubjectMVKoef(stmt, stmtSrces);
+	}
+	
+	public static long getTriplePatternCardinalityOriginal(StatementPattern stmt, List<StatementSource> stmtSrces)
 	{
 		long card = 0;
 		boolean boundP = boundPredicate(stmt), boundS = boundSubject(stmt), boundO = boundObject(stmt);
@@ -51,7 +68,7 @@ public class Cardinality {
 		 	String  queryString = getSbj_ObjLookupQuery(stmtSrces) ;
 		    card = executeQuery(queryString);
 		}
-		else if (!boundP && !boundSubject(stmt) && !boundObject(stmt) ) //?s ?p ?o
+		else if (!boundP && !boundS && !boundO) //?s ?p ?o
 		{	
 		 	String  queryString = getPred_Sbj_ObjLookupQuery(stmtSrces) ;
 		    card = executeQuery(queryString);
