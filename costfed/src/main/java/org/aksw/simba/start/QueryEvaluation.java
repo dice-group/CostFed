@@ -105,7 +105,7 @@ public class QueryEvaluation {
 			 "http://" + host + ":8899/sparql"
 		);
 
-		List<String> endpoints = endpointsMin2;
+		List<String> endpoints = endpointsMax;
 		
 		Map<String, List<List<Object>>> reports = multyEvaluate(queries, 3, cfgName, endpoints);
 	
