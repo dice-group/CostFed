@@ -1,6 +1,7 @@
 ### CostFed: Cost-Based Query Optimization for SPARQL Endpoint Federation
  
- CostFed is an index-assisted federation engine for federated SPARQL query processing over multiple SPARQL endpoints. CostFed makes use of the statistical data collected from endpoints to perform efficient source selection and cost-based query planning. We compare CostFed with state-of-art SPARQL endpoint federation engines on FedBench. Our evaluation shows that CostFed is 3 to 121 times faster than the state-of-the-art on FedBench.
+ CostFed is an index-assisted federation engine for federated SPARQL query processing over multiple SPARQL endpoints. CostFed makes use of statistical information collected from endpoints to perform efficient source selection and cost-based query planning. In contrast to the state of the art, it relies on a non-linear model for the estimation of the selectivity of joins. Therewith, it is able to generate better plans than the state-of-the-art federation engines. In an experimental evaluation based on FedBench benchmark, we show
+that CostFed is 3 to 121 times faster than the state of the art SPARQL endpoint federation engines. 
 
 ### How to Run CostFed?
 * Checkout: the source code and import as new maven project. it will create three sub-projects, i.e, costfed, fex, and semagrow-bench. 
