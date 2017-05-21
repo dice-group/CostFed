@@ -12,7 +12,7 @@ that CostFed is 3 to 121 times faster than the state of the art SPARQL endpoint 
 ### Used Benchmarks
 The queries used in the evaluation can be downloaded from [FedBench](http://fedbench.fluidops.net/) and [LargeRDFBech](https://github.com/AKSW/largerdfbench) homepage. 
 
-###Datasets Availability 
+### Datasets Availability 
 
 All the datasets and corresponding virtuoso SPARQL endpoints can be downloaded from the links given below. You may start a SPARQL endpoint from bin/start.bat (for windows) and bin/start_virtuoso.sh (for linux). 
 
