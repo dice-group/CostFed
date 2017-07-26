@@ -20,10 +20,10 @@ package com.fluidops.fedx.cache;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openrdf.model.Resource;
-import org.openrdf.model.IRI;
-import org.openrdf.model.Value;
-import org.openrdf.repository.RepositoryConnection;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 
 import com.fluidops.fedx.algebra.StatementSource;
 import com.fluidops.fedx.algebra.StatementSource.StatementSourceType;

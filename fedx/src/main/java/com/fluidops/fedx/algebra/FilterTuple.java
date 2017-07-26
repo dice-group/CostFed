@@ -19,7 +19,7 @@ package com.fluidops.fedx.algebra;
 
 import java.util.List;
 
-import org.openrdf.model.Value;
+import org.eclipse.rdf4j.model.Value;
 
 /**
  * Expressions implementing this interface can apply some {@link FilterValueExpr}

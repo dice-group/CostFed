@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openrdf.sail.nativerdf;
+package org.eclipse.rdf4j.sail.nativerdf;
 
 import java.io.File;
 import java.io.IOException;
 
-import org.openrdf.sail.NotifyingSailConnection;
-import org.openrdf.sail.SailException;
+import org.eclipse.rdf4j.sail.NotifyingSailConnection;
+import org.eclipse.rdf4j.sail.SailException;
 
 
 /**

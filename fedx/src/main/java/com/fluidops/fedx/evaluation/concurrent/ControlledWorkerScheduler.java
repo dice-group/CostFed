@@ -13,12 +13,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fluidops.fedx.exception.RuntimeInterruptedException;
 
 public class ControlledWorkerScheduler implements Scheduler {
-	private static final Logger log = Logger.getLogger(ControlledWorkerScheduler.class);
+	private static final Logger log = LoggerFactory.getLogger(ControlledWorkerScheduler.class);
 	private static final AtomicInteger threadCounter_ = new AtomicInteger(0);
 	private static final long timeoutQuantMls_ = 100;
 	

@@ -19,7 +19,7 @@ package com.fluidops.fedx.optimizer;
 
 import java.util.Comparator;
 
-import org.openrdf.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
 
 import com.fluidops.fedx.algebra.ExclusiveStatement;
 import com.fluidops.fedx.algebra.ExclusiveGroup;

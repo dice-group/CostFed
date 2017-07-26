@@ -17,15 +17,15 @@
 
 package com.fluidops.fedx.evaluation.iterator;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.FilterIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.FilterIteration;
 
-import org.apache.log4j.Logger;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.algebra.evaluation.ValueExprEvaluationException;
 
-import com.fluidops.fedx.FederationManager;
 import com.fluidops.fedx.algebra.FilterValueExpr;
 import com.fluidops.fedx.evaluation.FederationEvalStrategy;
 
@@ -36,15 +36,15 @@ import com.fluidops.fedx.evaluation.FederationEvalStrategy;
  */
 public class FilteringIteration extends FilterIteration<BindingSet, QueryEvaluationException> {
 	
-	public static Logger log = Logger.getLogger(FilteringIteration.class);	
+	public static Logger log = LoggerFactory.getLogger(FilteringIteration.class);	
 	
 	protected FilterValueExpr filterExpr;
 	protected FederationEvalStrategy strategy;
 	
-	public FilteringIteration(FilterValueExpr filterExpr, CloseableIteration<BindingSet, QueryEvaluationException> iter) throws QueryEvaluationException {
+	public FilteringIteration(FederationEvalStrategy strategy, FilterValueExpr filterExpr, CloseableIteration<BindingSet, QueryEvaluationException> iter) throws QueryEvaluationException {
 		super(iter);
 		this.filterExpr = filterExpr;
-		this.strategy = FederationManager.getInstance().getStrategy();
+		this.strategy = strategy;
 	}	
 	
 	@Override

@@ -20,9 +20,9 @@ package com.fluidops.fedx.optimizer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.Union;
-import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.Union;
+import org.eclipse.rdf4j.query.algebra.helpers.AbstractQueryModelVisitor;
 
 import com.fluidops.fedx.algebra.EmptyNUnion;
 import com.fluidops.fedx.algebra.EmptyResult;

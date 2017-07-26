@@ -24,13 +24,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-import org.openrdf.query.algebra.ProjectionElem;
-import org.openrdf.query.algebra.QueryModelNode;
-import org.openrdf.query.algebra.Service;
-import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.query.algebra.ProjectionElem;
+import org.eclipse.rdf4j.query.algebra.QueryModelNode;
+import org.eclipse.rdf4j.query.algebra.Service;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.Var;
+import org.eclipse.rdf4j.query.algebra.helpers.AbstractQueryModelVisitor;
 
 import com.fluidops.fedx.algebra.NJoin;
 import com.fluidops.fedx.algebra.StatementTupleExpr;
@@ -49,7 +50,7 @@ import com.fluidops.fedx.structures.QueryInfo;
  */
 public class VariableScopeOptimizer extends AbstractQueryModelVisitor<OptimizationException> implements FedXOptimizer {
 
-	public static Logger log = Logger.getLogger(VariableScopeOptimizer.class);
+	public static Logger log = LoggerFactory.getLogger(VariableScopeOptimizer.class);
 	
 	protected final QueryInfo queryInfo;
 	protected final Set<String> globalVariables = new HashSet<String>();

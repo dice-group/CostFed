@@ -19,11 +19,11 @@ package com.fluidops.fedx.algebra;
 
 import java.util.HashSet;
 
-import org.openrdf.query.algebra.Compare;
-import org.openrdf.query.algebra.AbstractQueryModelNode;
-import org.openrdf.query.algebra.QueryModelVisitor;
-import org.openrdf.query.algebra.ValueExpr;
-import org.openrdf.query.algebra.Compare.CompareOp;
+import org.eclipse.rdf4j.query.algebra.Compare;
+import org.eclipse.rdf4j.query.algebra.AbstractQueryModelNode;
+import org.eclipse.rdf4j.query.algebra.QueryModelVisitor;
+import org.eclipse.rdf4j.query.algebra.ValueExpr;
+import org.eclipse.rdf4j.query.algebra.Compare.CompareOp;
 
 
 /**

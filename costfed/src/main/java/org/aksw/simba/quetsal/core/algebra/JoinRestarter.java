@@ -6,8 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.aksw.simba.quetsal.core.algebra.TopKSourceStatementPattern.Entry;
-import org.apache.commons.lang3.NotImplementedException;
-import org.openrdf.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
 
 import com.fluidops.fedx.algebra.FedXExprVisitor;
 import com.fluidops.fedx.algebra.NTuple;
@@ -38,7 +37,7 @@ public class JoinRestarter extends NTuple {
 	
 	@Override
 	public void visit(FedXExprVisitor v) {
-		throw new NotImplementedException("visit");
+		throw new RuntimeException("not implemented visit");
 	}
 	
 	public List<Entry> getEntries() {

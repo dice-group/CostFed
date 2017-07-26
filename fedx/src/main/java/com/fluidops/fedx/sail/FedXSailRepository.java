@@ -17,13 +17,13 @@
 
 package com.fluidops.fedx.sail;
 
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.repository.sail.SailRepositoryConnection;
-import org.openrdf.sail.Sail;
-import org.openrdf.sail.SailException;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
+import org.eclipse.rdf4j.sail.SailException;
 
-import com.fluidops.fedx.FedXFactory;
+import com.fluidops.fedx.FedX;
+import com.fluidops.fedx.FedXConnection;
 
 /**
  * A special {@link SailRepository} which performs the actions as
@@ -33,21 +33,20 @@ import com.fluidops.fedx.FedXFactory;
  */
 public class FedXSailRepository extends SailRepository
 {
-
-	public FedXSailRepository(Sail sail)
+	public FedXSailRepository(FedX sail)
 	{
 		super(sail);
-		this.setHttpClient(FedXFactory.httpClientBuilder.build());
+		this.setHttpClient(sail.getHttpClient());
+		
 	}
 
 	@Override
 	public SailRepositoryConnection getConnection() throws RepositoryException {
 		try {
-			return new FedXSailRepositoryConnection(this, getSail().getConnection());
+		    return new FedXSailRepositoryConnection(this, (FedXConnection)getSail().getConnection());
 		}
 		catch (SailException e) {
 			throw new RepositoryException(e);
 		}
 	}	
-
 }

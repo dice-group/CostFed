@@ -18,11 +18,10 @@
 package com.fluidops.fedx;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fluidops.fedx.cache.MemoryCache;
 import com.fluidops.fedx.evaluation.FederationEvalStrategy;
@@ -31,7 +30,6 @@ import com.fluidops.fedx.evaluation.SparqlFederationEvalStrategy;
 import com.fluidops.fedx.evaluation.SparqlFederationEvalStrategyWithValues;
 import com.fluidops.fedx.evaluation.concurrent.ControlledWorkerScheduler;
 import com.fluidops.fedx.exception.FedXException;
-import com.fluidops.fedx.exception.FedXRuntimeException;
 import com.fluidops.fedx.monitoring.QueryLog;
 import com.fluidops.fedx.monitoring.QueryPlanLog;
 import com.fluidops.fedx.provider.ProviderUtil;
@@ -46,64 +44,41 @@ import com.fluidops.fedx.provider.ProviderUtil;
  */
 public class Config {
 
-	protected static Logger log = Logger.getLogger(Config.class);
+	protected static Logger log = LoggerFactory.getLogger(Config.class);
 	
-	private static Config instance = null;
-	
-	public static Config getConfig() {
-		if (instance==null)
-			throw new FedXRuntimeException("Config not initialized. Call Config.initialize() first.");
-		return instance;
-	}
-	
-	protected static void reset() {
-		String ecls = getExtensionClass();
-		if (ecls != null) {
-			try {
-				Class.forName(ecls).getMethod("reset").invoke(null);
-			} catch (Exception e) {
-				throw new FedXException("Can't reset a config exntension class " + ecls, e);
-			} 
-		}
-		instance = null;
-	}
-	
-	/**
-	 * Initialize the configuration with the specified properties file.
-	 * 
-	 * @param fedxConfig
-	 * 			the optional location of the properties file. If not specified the default configuration is used.
-	 * 
-	 * @throws FileNotFoundException
-	 * @throws IOException
-	 * @throws IllegalArgumentException
-	 */
-	public static void initialize(String ...fedxConfig) {
-		if (instance != null) {
-			throw new FedXRuntimeException("Config is already initialized.");
-		}
-		instance = new Config();
+	Object extension = null;
+
+	public Config(String ...fedxConfig) {
+
 		String cfg = fedxConfig != null && fedxConfig.length == 1 ? fedxConfig[0] : null;
-		instance.init(cfg);
+		init(cfg);
 		
 		String ecls = getExtensionClass();
 		if (ecls != null) {
 			try {
-				Class.forName(ecls).getMethod("initialize").invoke(null);
+			    extension = Class.forName(ecls).getConstructor(Config.class).newInstance(this);
 			} catch (Exception e) {
 				throw new FedXException("Can't initialize a config exntension class " + ecls, e);
 			} 
 		}
+		
+	    String spcls = getSummaryProviderClass();
+	    try {
+	        summaryProvider = (SummaryProvider)Class.forName(spcls).getConstructor().newInstance();
+	    } catch (Exception e) {
+            throw new FedXException("Can't initialize a summary provider class " + spcls, e);
+        } 
 	}
 	
-
+	@SuppressWarnings("unchecked")
+    public <T> T getExtension() {
+	    return (T)extension;
+	}
 	
 	private Properties props;
-	private Config() {
-		props = new Properties();
-	}
 	
 	private void init(String configFile) throws FedXException {
+	    props = new Properties();
 		if (configFile == null) {
 			log.warn("No configuration file specified. Using default config initialization.");
 			return;
@@ -120,12 +95,33 @@ public class Config {
 		}
 	}
 	
-	public static String getProperty(String propertyName) {
-		return getConfig().props.getProperty(propertyName);
+	public String getProperty(String propertyName) {
+		return props.getProperty(propertyName);
 	}
 	
-	public static String getProperty(String propertyName, String def) {
-		return getConfig().props.getProperty(propertyName, def);
+	public String getProperty(String propertyName, String def) {
+		return props.getProperty(propertyName, def);
+	}
+	
+	SummaryProvider summaryProvider;
+	EndpointListProvider endpointListProvider = null;
+	
+	public SummaryProvider getSummaryProvider() {
+	    return summaryProvider;
+	}
+	
+	public synchronized EndpointListProvider getEndpointListProvider() {
+	    if (endpointListProvider == null) {
+	        String epcls = getEndpointListProviderClass();
+	        if (epcls != null) {
+    	        try {
+    	            endpointListProvider = (EndpointListProvider)Class.forName(epcls).getConstructor().newInstance();
+    	        } catch (Exception e) {
+    	            throw new FedXException("Can't initialize an endpoint list provider class " + epcls, e);
+    	        }
+	        }
+	    }
+	    return endpointListProvider;
 	}
 	
 	/**
@@ -156,12 +152,12 @@ public class Config {
 		return props.getProperty("cacheLocation", "cache.db");
 	}
 	
-	public static int getMaxHttpConnectionCount() {
-		return Integer.parseInt(getConfig().props.getProperty("maxHttpConnectionCount", "1000"));
+	public int getMaxHttpConnectionCount() {
+		return Integer.parseInt(props.getProperty("maxHttpConnectionCount", "1000"));
 	}
 	
-	public static int getMaxHttpConnectionCountPerRoute() {
-		return Integer.parseInt(getConfig().props.getProperty("maxHttpConnectionCountPerRoute", "200"));
+	public int getMaxHttpConnectionCountPerRoute() {
+		return Integer.parseInt(props.getProperty("maxHttpConnectionCountPerRoute", "200"));
 	}
 	
 	/**
@@ -262,8 +258,26 @@ public class Config {
 	 * 
 	 * @return
 	 */
-	public static String getExtensionClass() {
-		return getConfig().props.getProperty("extensionClass", null);
+	public String getExtensionClass() {
+		return props.getProperty("extensionClass", null);
+	}
+	
+	public String getSummaryProviderClass() {
+	    return props.getProperty("summaryProviderClass", "com.fluidops.fedx.DefaultSummaryProvider");
+    }
+	
+	public String getEndpointListProviderClass() {
+	    return props.getProperty("endpointProviderClass");
+	}
+	   
+	/**
+	 * Returns the fully qualified class name of the SourceSelection implementation. 
+	 * 
+	 * 
+	 * @return
+	 */
+	public String getStatementGroupOptimizerClass() {
+		return props.getProperty("statementGroupOptimizerClass", com.fluidops.fedx.optimizer.StatementGroupOptimizer.class.getName());
 	}
 	
 	/**
@@ -272,18 +286,8 @@ public class Config {
 	 * 
 	 * @return
 	 */
-	public static String getStatementGroupOptimizerClass() {
-		return getConfig().props.getProperty("statementGroupOptimizerClass", com.fluidops.fedx.optimizer.StatementGroupOptimizer.class.getName());
-	}
-	
-	/**
-	 * Returns the fully qualified class name of the SourceSelection implementation. 
-	 * 
-	 * 
-	 * @return
-	 */
-	public static String getSourceSelectionClass() {
-		return getConfig().props.getProperty("sourceSelectionClass", com.fluidops.fedx.optimizer.DefaultSourceSelection.class.getName());
+	public String getSourceSelectionClass() {
+		return props.getProperty("sourceSelectionClass", com.fluidops.fedx.optimizer.DefaultSourceSelection.class.getName());
 	}
 	
 	/**
@@ -294,8 +298,8 @@ public class Config {
 	 * 
 	 * @return
 	 */
-	public static String getSailEvaluationStrategy() {
-		return getConfig().props.getProperty("sailEvaluationStrategy", SailFederationEvalStrategy.class.getName());
+	public String getSailEvaluationStrategy() {
+		return props.getProperty("sailEvaluationStrategy", SailFederationEvalStrategy.class.getName());
 	}
 	
 	/**
@@ -308,8 +312,8 @@ public class Config {
 	 * 
 	 * @return
 	 */
-	public static String getSPARQLEvaluationStrategy() {
-		return getConfig().props.getProperty("sparqlEvaluationStrategy", SparqlFederationEvalStrategy.class.getName());
+	public String getSPARQLEvaluationStrategy() {
+		return props.getProperty("sparqlEvaluationStrategy", SparqlFederationEvalStrategy.class.getName());
 	}
 	
 	/**

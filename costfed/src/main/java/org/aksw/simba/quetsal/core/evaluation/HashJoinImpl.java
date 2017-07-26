@@ -1,6 +1,5 @@
 package org.aksw.simba.quetsal.core.evaluation;
 
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -12,12 +11,14 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Logger;
-import org.openrdf.query.Binding;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.evaluation.QueryBindingSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.query.Binding;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.evaluation.QueryBindingSet;
 
 import com.fluidops.fedx.evaluation.FederationEvalStrategy;
 import com.fluidops.fedx.evaluation.concurrent.Async;
@@ -27,10 +28,8 @@ import com.fluidops.fedx.evaluation.iterator.RestartableCloseableIteration;
 import com.fluidops.fedx.evaluation.iterator.RestartableLookAheadIteration;
 import com.fluidops.fedx.structures.QueryInfo;
 
-import info.aduna.iteration.CloseableIteration;
-
 public class HashJoinImpl extends RestartableLookAheadIteration<BindingSet> {
-	public static Logger log = Logger.getLogger(HashJoinImpl.class);
+	public static Logger log = LoggerFactory.getLogger(HashJoinImpl.class);
 	
 	/* Constants */
 	private final ControlledWorkerScheduler scheduler;
@@ -73,7 +72,7 @@ public class HashJoinImpl extends RestartableLookAheadIteration<BindingSet> {
 			joinAttributes.add(v);
 		}
         joinAttributes.retainAll(rightArg);
-        log.info(joinAttributes);
+        log.info("", joinAttributes);
         
         childExprs = new ArrayList<TupleExpr>();
         childExprs.add(leftExpr);

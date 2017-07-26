@@ -17,12 +17,12 @@
 
 package com.fluidops.fedx.cache;
 
-import info.aduna.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 
 import java.io.Serializable;
 import java.util.List;
 
-import org.openrdf.model.Statement;
+import org.eclipse.rdf4j.model.Statement;
 
 import com.fluidops.fedx.cache.Cache.StatementSourceAssurance;
 import com.fluidops.fedx.exception.EntryUpdateException;
@@ -87,7 +87,7 @@ public interface CacheEntry extends Serializable {
 	 * 
 	 * @return
 	 */
-	public List<Endpoint> getEndpoints();
+	//public List<Endpoint> getEndpoints();
 	
 	
 	/**

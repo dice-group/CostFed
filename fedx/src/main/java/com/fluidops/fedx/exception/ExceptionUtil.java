@@ -22,10 +22,11 @@ import java.net.SocketException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
 import com.fluidops.fedx.EndpointManager;
 import com.fluidops.fedx.structures.Endpoint;
@@ -38,7 +39,7 @@ import com.fluidops.fedx.structures.Endpoint;
  */
 public class ExceptionUtil {
 
-	protected static Logger log = Logger.getLogger(ExceptionUtil.class);
+	protected static Logger log = LoggerFactory.getLogger(ExceptionUtil.class);
 	
 	/**
 	 * Regex pattern to identify http error codes from the title of the returned document:
@@ -70,9 +71,9 @@ public class ExceptionUtil {
 	 * @return
 	 * 		 	a modified exception with endpoint source
 	 */
-	public static QueryEvaluationException traceExceptionSource(RepositoryConnection conn, QueryEvaluationException ex, String additionalInfo) {
+	public static QueryEvaluationException traceExceptionSource(EndpointManager endpointManager, RepositoryConnection conn, QueryEvaluationException ex, String additionalInfo) {
 		
-		Endpoint e = EndpointManager.getEndpointManager().getEndpoint(conn);
+		Endpoint e = endpointManager.getEndpoint(conn);
 		
 		String eID;
 		
@@ -108,9 +109,9 @@ public class ExceptionUtil {
 	 * @param ex
 	 * @return
 	 */
-	public static QueryEvaluationException traceExceptionSourceAndRepair(RepositoryConnection conn, QueryEvaluationException ex, String additionalInfo) {
-		repairConnection(conn, ex);
-		return traceExceptionSource(conn, ex, additionalInfo);
+	public static QueryEvaluationException traceExceptionSourceAndRepair(EndpointManager endpointManager, RepositoryConnection conn, QueryEvaluationException ex, String additionalInfo) {
+		repairConnection(endpointManager, conn, ex);
+		return traceExceptionSource(endpointManager, conn, ex, additionalInfo);
 	}
 	
 	/**
@@ -125,14 +126,14 @@ public class ExceptionUtil {
 	 * @throws FedXRuntimeException
 	 * 				if the connection could not be repaired
 	 */
-	public static void repairConnection(RepositoryConnection conn, Exception ex) throws FedXQueryException, FedXRuntimeException {
+	public static void repairConnection(EndpointManager endpointManager, RepositoryConnection conn, Exception ex) throws FedXQueryException, FedXRuntimeException {
 
 		Throwable cause = ex.getCause();
 		while (cause != null) {
 			if (cause instanceof SocketException) {
 				try {
-					Endpoint e = EndpointManager.getEndpointManager().getEndpoint(conn);
-					EndpointManager.getEndpointManager().repairAllConnections();
+					Endpoint e = endpointManager.getEndpoint(conn);
+					endpointManager.repairAllConnections();
 					throw new FedXQueryException("Socket exception occured for endpoint " + getExceptionString(e==null?"unknown":e.getId(), ex) + ", all connections have been repaired. Query processing of the current query is aborted.", cause);
 				} catch (RepositoryException e) {
 					log.error("Connection could not be repaired: ", e);

@@ -17,8 +17,8 @@
 
 package com.fluidops.fedx.statistics;
 
-import org.openrdf.model.Statement;
-import org.openrdf.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
 
 import com.fluidops.fedx.algebra.ExclusiveGroup;
 import com.fluidops.fedx.algebra.StatementSource;

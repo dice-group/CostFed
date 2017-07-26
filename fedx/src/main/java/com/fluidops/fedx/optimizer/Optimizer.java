@@ -18,37 +18,33 @@
 package com.fluidops.fedx.optimizer;
 
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.Dataset;
-import org.openrdf.query.algebra.QueryRoot;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.evaluation.impl.ConstantOptimizer;
-import org.openrdf.query.algebra.evaluation.impl.DisjunctiveConstraintOptimizer;
-import org.openrdf.query.algebra.evaluation.impl.SimpleEvaluationStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.Dataset;
+import org.eclipse.rdf4j.query.algebra.QueryRoot;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.evaluation.impl.ConstantOptimizer;
+import org.eclipse.rdf4j.query.algebra.evaluation.impl.DisjunctiveConstraintOptimizer;
+import org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategy;
 
-import com.fluidops.fedx.Config;
 import com.fluidops.fedx.FedX;
-import com.fluidops.fedx.FederationManager;
 import com.fluidops.fedx.Util;
 import com.fluidops.fedx.algebra.SingleSourceQuery;
-import com.fluidops.fedx.algebra.StatementSource;
 import com.fluidops.fedx.cache.Cache;
 import com.fluidops.fedx.structures.Endpoint;
 import com.fluidops.fedx.structures.QueryInfo;
 
 public class Optimizer {
-	static Logger logger = Logger.getLogger(Optimizer.class);
+	static Logger logger = LoggerFactory.getLogger(Optimizer.class);
 	
 	public static TupleExpr optimize(TupleExpr parsed, Dataset dataset, BindingSet bindings, 
-			SimpleEvaluationStrategy strategy, QueryInfo queryInfo)
+	        StrictEvaluationStrategy strategy, QueryInfo queryInfo)
 	{
-		FedX fed = FederationManager.getInstance().getFederation();
-		List<Endpoint> members = fed.getMembers();
+		FedX fed = queryInfo.getFederation();
+		List<Endpoint> members = queryInfo.getFedXConnection().getEndpoints();
 		
 		// if the federation has a single member only, evaluate the entire query there
 		if (members.size() == 1 && queryInfo.getQuery() != null)
@@ -57,7 +53,7 @@ public class Optimizer {
 		// Clone the tuple expression to allow for more aggressive optimizations
 		TupleExpr query = new QueryRoot(parsed.clone());
 		
-		Cache cache = FederationManager.getInstance().getCache();
+		Cache cache = fed.getCache();
 
 		if (logger.isTraceEnabled())
 			logger.trace("Query before Optimization: " + query);
@@ -84,7 +80,7 @@ public class Optimizer {
 		
 		// Source Selection: all nodes are annotated with their source
 		long srcTime = System.currentTimeMillis();
-		SourceSelection sourceSelection = (SourceSelection)Util.instantiate(Config.getSourceSelectionClass(), members, cache, queryInfo);
+		SourceSelection sourceSelection = (SourceSelection)Util.instantiate(fed.getConfig().getSourceSelectionClass(), members, cache, queryInfo);
 		//Class.forName(Config.getSourceSelectionClass()).newInstance();
 		//SourceSelection sourceSelection = new SourceSelection(members, cache, queryInfo);
 
@@ -153,7 +149,7 @@ public class Optimizer {
 			new UnionOptimizer(queryInfo).optimize(query);
 		
 		// optimize statement groups and join order
-		FedXOptimizer statementGroupOptimizer = (FedXOptimizer)Util.instantiate(Config.getStatementGroupOptimizerClass(), queryInfo);
+		FedXOptimizer statementGroupOptimizer = (FedXOptimizer)Util.instantiate(fed.getConfig().getStatementGroupOptimizerClass(), queryInfo);
 		statementGroupOptimizer.optimize(query);
 		//new StatementGroupOptimizer(queryInfo).optimize(query);
 				

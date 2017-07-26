@@ -1,0 +1,2 @@
+gson-2.8.1.jar should be copied into tomcat lib folder
+use "npm run dev" to start nodejs

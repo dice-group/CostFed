@@ -11,23 +11,22 @@ import java.util.Set;
 
 import org.aksw.simba.quetsal.core.algebra.BindJoin;
 import org.aksw.simba.quetsal.core.algebra.HashJoin;
-import org.apache.log4j.Logger;
-import org.openrdf.query.algebra.Filter;
-import org.openrdf.query.algebra.QueryModelNode;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.Union;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.query.algebra.Filter;
+import org.eclipse.rdf4j.query.algebra.QueryModelNode;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.Union;
 
-import com.fluidops.fedx.Config;
 import com.fluidops.fedx.algebra.ExclusiveGroup;
 import com.fluidops.fedx.algebra.NJoin;
-import com.fluidops.fedx.algebra.StatementSource;
 import com.fluidops.fedx.optimizer.OptimizerUtil;
 import com.fluidops.fedx.optimizer.StatementGroupOptimizer;
 import com.fluidops.fedx.structures.QueryInfo;
 
 public class JoinOrderOptimizer extends StatementGroupOptimizer {
-	public static Logger log = Logger.getLogger(JoinOrderOptimizer.class);
+	public static Logger log = LoggerFactory.getLogger(JoinOrderOptimizer.class);
 
 	protected static double C_HANDLE_TUPLE = 0.0025;
     protected static double C_TRANSFER_TUPLE = 0.01;
@@ -145,7 +144,7 @@ public class JoinOrderOptimizer extends StatementGroupOptimizer {
 
 		
 		if (log.isTraceEnabled()) {
-			log.trace(cardPairs.get(0));
+			log.trace("", cardPairs.get(0));
 		}
 		//long minCard = cardPairs.get(0).nd.card;
 		//long maxCard = cardPairs.get(cardPairs.size() - 1).nd.card;
@@ -174,16 +173,16 @@ public class JoinOrderOptimizer extends StatementGroupOptimizer {
 			joinVars.addAll(OptimizerUtil.getFreeVars(rightArg.expr));
 			
 			if (log.isTraceEnabled()) {
-				log.trace(rightArg);
+				log.trace("", rightArg);
 			}
 			
 			CardinalityVisitor.NodeDescriptor rd = CardinalityVisitor.getJoinCardinality(commonvars, leftArg, rightArg);
 
-			long threads = Config.getConfig().getWorkerThreads();
+			long threads = queryInfo.getFederation().getConfig().getWorkerThreads();
 			
 			double hashCost = rightArg.nd.card * C_TRANSFER_TUPLE + (2 + threads - 1)/threads * C_TRANSFER_QUERY + (leftArg.nd.card + rightArg.nd.card) * C_HANDLE_TUPLE;
 			
-			long bsize = Config.getConfig().getBoundJoinBlockSize();
+			long bsize = queryInfo.getFederation().getConfig().getBoundJoinBlockSize();
 			
 			long numOfBindRequest = (leftArg.nd.card + bsize - 1) / bsize;
 			double bindCost = C_TRANSFER_QUERY + (numOfBindRequest + threads - 1) / threads * C_TRANSFER_QUERY + (leftArg.nd.card /*+ rd.card */) * C_TRANSFER_TUPLE;

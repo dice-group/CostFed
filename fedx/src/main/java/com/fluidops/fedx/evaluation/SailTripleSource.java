@@ -17,32 +17,33 @@
 
 package com.fluidops.fedx.evaluation;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.EmptyIteration;
-import info.aduna.iteration.ExceptionConvertingIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.EmptyIteration;
+import org.eclipse.rdf4j.common.iteration.ExceptionConvertingIteration;
 
-import org.apache.log4j.Logger;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.IRI;
-import org.openrdf.model.Value;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.impl.EmptyBindingSet;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.RepositoryResult;
-import org.openrdf.repository.sail.SailRepositoryConnection;
-import org.openrdf.sail.SailConnection;
-import org.openrdf.sail.SailException;
-import org.openrdf.sail.nativerdf.NativeStoreConnectionExt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.impl.EmptyBindingSet;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.RepositoryResult;
+import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
+import org.eclipse.rdf4j.sail.SailConnection;
+import org.eclipse.rdf4j.sail.SailException;
+import org.eclipse.rdf4j.sail.nativerdf.NativeStoreConnectionExt;
 
-import com.fluidops.fedx.FederationManager;
+import com.fluidops.fedx.FedX;
 import com.fluidops.fedx.algebra.FilterValueExpr;
 import com.fluidops.fedx.evaluation.iterator.FilteringInsertBindingsIteration;
 import com.fluidops.fedx.evaluation.iterator.FilteringIteration;
@@ -60,11 +61,13 @@ import com.fluidops.fedx.util.QueryAlgebraUtil;
  */
 public class SailTripleSource extends TripleSourceBase implements TripleSource {
 
-	public static Logger log = Logger.getLogger(SailTripleSource.class);
+	public static Logger log = LoggerFactory.getLogger(SailTripleSource.class);
 	
+	final FederationEvalStrategy strategy;
 
-	SailTripleSource(Endpoint endpoint) {
-		super(FederationManager.getMonitoringService(), endpoint);
+	SailTripleSource(FederationEvalStrategy strategy, Endpoint endpoint) {
+		super(FedX.getMonitoring(), endpoint);
+		this.strategy = strategy;
 	}
 	
 	@Override
@@ -82,9 +85,9 @@ public class SailTripleSource extends TripleSourceBase implements TripleSource {
 		// apply filter and/or insert original bindings
 		if (filterExpr!=null) {
 			if (bindings.size()>0) 
-				res = new FilteringInsertBindingsIteration(filterExpr, bindings, res);
+				res = new FilteringInsertBindingsIteration(strategy, filterExpr, bindings, res);
 			else
-				res = new FilteringIteration(filterExpr, res);
+				res = new FilteringIteration(strategy, filterExpr, res);
 			if (!res.hasNext())
 				return new EmptyIteration<BindingSet, QueryEvaluationException>();
 		} else if (bindings.size()>0) {
@@ -116,7 +119,7 @@ public class SailTripleSource extends TripleSourceBase implements TripleSource {
 				
 		// if filter is set, apply it
 		if (filterExpr != null) {
-			CloseableIteration<BindingSet, QueryEvaluationException> fres = new FilteringIteration(filterExpr, res);
+			CloseableIteration<BindingSet, QueryEvaluationException> fres = new FilteringIteration(strategy, filterExpr, res);
 			if (!fres.hasNext())
 				return new EmptyIteration<BindingSet, QueryEvaluationException>();
 			return fres;

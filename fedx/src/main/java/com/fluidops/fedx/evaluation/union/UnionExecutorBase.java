@@ -20,17 +20,16 @@ package com.fluidops.fedx.evaluation.union;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Logger;
-import org.openrdf.query.QueryEvaluationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.EmptyIteration;
+import org.eclipse.rdf4j.common.iteration.LookAheadIteration;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
 
 import com.fluidops.fedx.evaluation.concurrent.Async;
 import com.fluidops.fedx.evaluation.iterator.BufferedCloseableIterator;
 import com.fluidops.fedx.evaluation.iterator.QueueIterator;
-import com.fluidops.fedx.structures.QueryInfo;
-
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.EmptyIteration;
-import info.aduna.iteration.LookAheadIteration;
 
 
 /**
@@ -45,7 +44,7 @@ import info.aduna.iteration.LookAheadIteration;
  */
 public abstract class UnionExecutorBase<T> extends LookAheadIteration<T, QueryEvaluationException> {
 
-	public static Logger log = Logger.getLogger(UnionExecutorBase.class);
+	public static Logger log = LoggerFactory.getLogger(UnionExecutorBase.class);
 	protected static AtomicInteger NEXT_UNION_ID = new AtomicInteger(0);
 	
 	/* Constants */
@@ -87,7 +86,7 @@ public abstract class UnionExecutorBase<T> extends LookAheadIteration<T, QueryEv
 			}
 		
 			//log.info("union: " + res.getClass().toString());
-			if (res instanceof org.openrdf.http.client.BackgroundTupleResult) {
+			if (res instanceof org.eclipse.rdf4j.query.resultio.helpers.BackgroundTupleResult) {
 				result.add_release(new BufferedCloseableIterator<T, QueryEvaluationException>(res));
 			} else {
 				result.add_release(res);

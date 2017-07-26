@@ -4,19 +4,20 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.apache.log4j.Logger;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFParseException;
-import org.openrdf.sail.memory.MemoryStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFParseException;
+import org.eclipse.rdf4j.sail.memory.MemoryStore;
 
 import com.fluidops.fedx.Config;
 /**
@@ -26,7 +27,7 @@ import com.fluidops.fedx.Config;
  */
 public class FedSumConfig {
 
-	static Logger log = Logger.getLogger(Config.class);
+	static Logger log = LoggerFactory.getLogger(Config.class);
    	public static  RepositoryConnection con = null;
    	public static  ArrayList<String> dataSources = new  ArrayList<String>() ;
    	public static ArrayList<String> commonPredicates = new ArrayList<String>(); // list of common predicates. Note we use this in ASK_dominent Source selection Algorithm
@@ -44,7 +45,6 @@ public class FedSumConfig {
 	 */
 	public static void initialize(String InputFedSummaries, String inputMode, double inputCommonPredThreshold) throws Exception 
 	{
-		Config.initialize();
 		mode = inputMode;  //{ASK_dominant, Index_dominant}
 		commonPredThreshold =inputCommonPredThreshold;  //considered a predicate as common predicate if it is presenet in 33% available data sources
 		//long startTime = System.currentTimeMillis();

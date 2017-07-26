@@ -20,35 +20,39 @@ package com.fluidops.fedx.evaluation;
 import java.util.List;
 import java.util.concurrent.Executor;
 
-import org.apache.log4j.Logger;
-import org.openrdf.model.IRI;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.BooleanLiteral;
-import org.openrdf.model.impl.SimpleValueFactory;
-import org.openrdf.query.Binding;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.Projection;
-import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.ValueExpr;
-import org.openrdf.query.algebra.evaluation.QueryBindingSet;
-import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
-import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
-import org.openrdf.query.algebra.evaluation.federation.ServiceJoinIterator;
-import org.openrdf.query.algebra.evaluation.impl.SimpleEvaluationStrategy;
-import org.openrdf.query.algebra.evaluation.iterator.CollectionIteration;
-import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
-import org.openrdf.query.impl.EmptyBindingSet;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.EmptyIteration;
+import org.eclipse.rdf4j.common.iteration.SingletonIteration;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.BooleanLiteral;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.query.Binding;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.algebra.Projection;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.ValueExpr;
+import org.eclipse.rdf4j.query.algebra.evaluation.QueryBindingSet;
+import org.eclipse.rdf4j.query.algebra.evaluation.ValueExprEvaluationException;
+import org.eclipse.rdf4j.query.algebra.evaluation.federation.FederatedServiceResolver;
+import org.eclipse.rdf4j.query.algebra.evaluation.federation.ServiceJoinIterator;
+import org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategy;
+import org.eclipse.rdf4j.query.algebra.evaluation.iterator.CollectionIteration;
+import org.eclipse.rdf4j.query.algebra.evaluation.util.QueryEvaluationUtil;
+import org.eclipse.rdf4j.query.impl.EmptyBindingSet;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
 import com.fluidops.fedx.Config;
-import com.fluidops.fedx.EndpointManager;
-import com.fluidops.fedx.FederationManager;
+import com.fluidops.fedx.FedX;
+import com.fluidops.fedx.FedXConnection;
 import com.fluidops.fedx.algebra.CheckStatementPattern;
 import com.fluidops.fedx.algebra.ConjunctiveFilterExpr;
 import com.fluidops.fedx.algebra.EmptyResult;
@@ -84,10 +88,6 @@ import com.fluidops.fedx.statistics.Statistics;
 import com.fluidops.fedx.structures.Endpoint;
 import com.fluidops.fedx.structures.QueryInfo;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.EmptyIteration;
-import info.aduna.iteration.SingletonIteration;
-
 
 /**
  * Base class for the Evaluation strategies.
@@ -98,15 +98,16 @@ import info.aduna.iteration.SingletonIteration;
  * @see SparqlFederationEvalStrategy
  *
  */
-public abstract class FederationEvalStrategy extends SimpleEvaluationStrategy {
-	static Logger log = Logger.getLogger(FederationEvalStrategy.class);
+public abstract class FederationEvalStrategy extends StrictEvaluationStrategy {
+	static Logger log = LoggerFactory.getLogger(FederationEvalStrategy.class);
 	
+	protected FedXConnection conn;
 	protected Executor executor;
 	protected Cache cache;
 	protected Statistics statistics;
 	
-	public FederationEvalStrategy() {
-		super(new org.openrdf.query.algebra.evaluation.TripleSource() {
+	public FederationEvalStrategy(FedXConnection conn) {
+		super(new org.eclipse.rdf4j.query.algebra.evaluation.TripleSource() {
 
 			@Override
 			public CloseableIteration<? extends Statement, QueryEvaluationException> getStatements(
@@ -123,11 +124,24 @@ public abstract class FederationEvalStrategy extends SimpleEvaluationStrategy {
 				return SimpleValueFactory.getInstance();
 			}}, (FederatedServiceResolver)null);	// !!! ", null" added
 		
-		this.executor = FederationManager.getInstance().getExecutor();
-		this.cache = FederationManager.getInstance().getCache();
-		this.statistics = FederationManager.getInstance().getStatistics();
+		this.conn = conn;
+		this.executor = conn.getFederation().getExecutor();
+		this.cache = conn.getFederation().getCache();
+		this.statistics = conn.getFederation().getStatistics();
 	}
 
+	public FedXConnection getFedXConnection() {
+	    return conn;
+	}
+	
+	public FedX getFederation() {
+	    return conn.getFederation();
+	}
+	
+	public ControlledWorkerScheduler getScheduler() {
+	    return conn.getFederation().getScheduler();
+	}
+	
 	class EvalVisitor implements FedXExprVisitor {
 		CloseableIteration<BindingSet, QueryEvaluationException> result = null;
 		BindingSet bindings;
@@ -229,7 +243,7 @@ public abstract class FederationEvalStrategy extends SimpleEvaluationStrategy {
 		if (contexts.length != 0)
 			log.warn("Context queries are not yet supported by FedX.");
 		
-		List<Endpoint> members = FederationManager.getInstance().getFederation().getMembers();
+		List<Endpoint> members = conn.getEndpoints();
 		
 		// a bound query: if at least one fed member provides results
 		// return the statement, otherwise empty result
@@ -247,16 +261,16 @@ public abstract class FederationEvalStrategy extends SimpleEvaluationStrategy {
 			return new EmptyIteration<Statement, QueryEvaluationException>();
 		
 		if (sources.size() == 1) {
-			Endpoint e = EndpointManager.getEndpointManager().getEndpoint(sources.get(0).getEndpointID());
+			Endpoint e = conn.getEndpointManager().getEndpoint(sources.get(0).getEndpointID());
 			return e.getTripleSource().getStatements(e.getConn(), subj, pred, obj, contexts);
 		}
 		
 		// TODO why not collect in parallel?
 		//WorkerUnionBase<Statement> union = new SynchronousWorkerUnion<Statement>(queryInfo);
-		WorkerUnionBase<Statement> union = new ControlledWorkerUnion<Statement>(FederationManager.getInstance().getScheduler(), queryInfo);
+		WorkerUnionBase<Statement> union = new ControlledWorkerUnion<Statement>(conn.getFederation().getScheduler(), queryInfo);
 		
 		for (StatementSource source : sources) {
-			Endpoint e = EndpointManager.getEndpointManager().getEndpoint(source.getEndpointID());
+			Endpoint e = conn.getEndpointManager().getEndpoint(source.getEndpointID());
 			union.addTask(new ParallelGetStatementsTask(e.getTripleSource(), e.getConn(), subj, pred, obj, contexts));
 		}
 		
@@ -292,7 +306,7 @@ public abstract class FederationEvalStrategy extends SimpleEvaluationStrategy {
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluateNJoin(NJoin join, BindingSet bindings) {
 		List<TupleExpr> args = join.getArgs();
 		CloseableIteration<BindingSet, QueryEvaluationException> result = evaluate(args.get(0), bindings);
-		ControlledWorkerScheduler scheduler = FederationManager.getInstance().getScheduler();
+		ControlledWorkerScheduler scheduler = conn.getFederation().getScheduler();
 		for (int i = 1, n = args.size(); i < n; ++i) {
 			result = executeJoin(scheduler, result, args.get(i), bindings, join.getQueryInfo());
 		}
@@ -301,7 +315,7 @@ public abstract class FederationEvalStrategy extends SimpleEvaluationStrategy {
 	
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluateNaryUnion(NUnion union, BindingSet bindings) {
 		
-		ControlledWorkerScheduler unionScheduler = FederationManager.getInstance().getScheduler();
+		ControlledWorkerScheduler unionScheduler = conn.getFederation().getScheduler();
 		ControlledWorkerUnion<BindingSet> unionRunnable = new ControlledWorkerUnion<BindingSet>(unionScheduler, union.getQueryInfo());
 		
 		for (int i = 0; i < union.getNumberOfArguments(); i++) {
@@ -451,20 +465,19 @@ public abstract class FederationEvalStrategy extends SimpleEvaluationStrategy {
 			CloseableIteration<BindingSet, QueryEvaluationException> result;
 			
 			if (statementSources.size()==1) {				
-				Endpoint ownedEndpoint = EndpointManager.getEndpointManager().getEndpoint(statementSources.get(0).getEndpointID());
+				Endpoint ownedEndpoint = conn.getEndpointManager().getEndpoint(statementSources.get(0).getEndpointID());
 				RepositoryConnection conn = ownedEndpoint.getConn();
 				com.fluidops.fedx.evaluation.TripleSource t = ownedEndpoint.getTripleSource();
 				result = t.getStatements(preparedQuery, conn, EmptyBindingSet.getInstance(), null);
 			} 
 			 
 			else {			
-				WorkerUnionBase<BindingSet> union = FederationManager.getInstance().createWorkerUnion(queryInfo);
+				WorkerUnionBase<BindingSet> union = conn.createWorkerUnion(queryInfo);
 				
 				for (StatementSource source : statementSources) {					
-					Endpoint ownedEndpoint = EndpointManager.getEndpointManager().getEndpoint(source.getEndpointID());
-					RepositoryConnection conn = ownedEndpoint.getConn();
+					Endpoint ownedEndpoint = conn.getEndpointManager().getEndpoint(source.getEndpointID());
 					com.fluidops.fedx.evaluation.TripleSource t = ownedEndpoint.getTripleSource();
-					union.addTask(new ParallelPreparedUnionTask(preparedQuery, t, conn, EmptyBindingSet.getInstance(), null));
+					union.addTask(new ParallelPreparedUnionTask(preparedQuery, t, ownedEndpoint, EmptyBindingSet.getInstance(), null));
 				}
 							
 				result = union;
@@ -484,21 +497,20 @@ public abstract class FederationEvalStrategy extends SimpleEvaluationStrategy {
 		try {
 			CloseableIteration<BindingSet, QueryEvaluationException> result;
 			
-			if (statementSources.size()==1) {				
-				Endpoint ownedEndpoint = EndpointManager.getEndpointManager().getEndpoint(statementSources.get(0).getEndpointID());
+			if (statementSources.size() == 1) {
+				Endpoint ownedEndpoint = conn.getEndpointManager().getEndpoint(statementSources.get(0).getEndpointID());
 				RepositoryConnection conn = ownedEndpoint.getConn();
 				com.fluidops.fedx.evaluation.TripleSource t = ownedEndpoint.getTripleSource();
 				result = t.getStatements(preparedQuery, conn, EmptyBindingSet.getInstance(), null);
 			} 
 			 
 			else {			
-				WorkerUnionBase<BindingSet> union = FederationManager.getInstance().createWorkerUnion(queryInfo);
+				WorkerUnionBase<BindingSet> union = conn.createWorkerUnion(queryInfo);
 				
 				for (StatementSource source : statementSources) {					
-					Endpoint ownedEndpoint = EndpointManager.getEndpointManager().getEndpoint(source.getEndpointID());
-					RepositoryConnection conn = ownedEndpoint.getConn();
+					Endpoint ownedEndpoint = conn.getEndpointManager().getEndpoint(source.getEndpointID());
 					com.fluidops.fedx.evaluation.TripleSource t = ownedEndpoint.getTripleSource();
-					union.addTask(new ParallelPreparedAlgebraUnionTask(preparedQuery, t, conn, EmptyBindingSet.getInstance(), null));					
+					union.addTask(new ParallelPreparedAlgebraUnionTask(preparedQuery, t, ownedEndpoint, EmptyBindingSet.getInstance(), null));					
 				}
 							
 				result = union;

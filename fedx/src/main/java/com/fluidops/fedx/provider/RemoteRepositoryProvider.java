@@ -17,11 +17,10 @@
 
 package com.fluidops.fedx.provider;
 
-import org.openrdf.http.protocol.Protocol;
-import org.openrdf.query.algebra.evaluation.federation.SPARQLFederatedService;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.http.HTTPRepository;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.http.HTTPRepository;
 
+import com.fluidops.fedx.Config;
 import com.fluidops.fedx.exception.FedXException;
 import com.fluidops.fedx.structures.Endpoint;
 import com.fluidops.fedx.structures.Endpoint.EndpointClassification;
@@ -34,7 +33,12 @@ import com.fluidops.fedx.structures.Endpoint.EndpointClassification;
  * @author Andreas Schwarte
  */
 public class RemoteRepositoryProvider implements EndpointProvider {
-
+    
+    final Config config;
+    public RemoteRepositoryProvider(Config config) {
+        this.config = config;
+    }
+    
 	@Override
 	public Endpoint loadEndpoint(RepositoryInformation repoInfo) throws FedXException {
 
@@ -48,7 +52,7 @@ public class RemoteRepositoryProvider implements EndpointProvider {
             Repository repo = new HTTPRepository(repositoryServer, repositoryName); 
            	repo.initialize();
 		
-           	ProviderUtil.checkConnectionIfConfigured(repo);
+           	ProviderUtil.checkConnectionIfConfigured(config, repo);
            	
 			String location = repositoryServer + "/" + repositoryName;
 			EndpointClassification epc = EndpointClassification.Remote;
@@ -69,5 +73,4 @@ public class RemoteRepositoryProvider implements EndpointProvider {
 			throw new FedXException("Repository " + repoInfo.getId() + " could not be initialized: " + e.getMessage(), e);
 		}
 	}
-
 }

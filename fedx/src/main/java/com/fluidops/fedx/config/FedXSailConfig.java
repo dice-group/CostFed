@@ -17,7 +17,7 @@
 
 package com.fluidops.fedx.config;
 
-import org.openrdf.sail.config.AbstractSailImplConfig;
+import org.eclipse.rdf4j.sail.config.AbstractSailImplConfig;
 
 
 /**

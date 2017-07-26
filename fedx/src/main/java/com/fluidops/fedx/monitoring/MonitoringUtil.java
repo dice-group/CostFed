@@ -22,7 +22,7 @@ import java.lang.management.ManagementFactory;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import com.fluidops.fedx.FederationManager;
+import com.fluidops.fedx.FedX;
 import com.fluidops.fedx.exception.FedXRuntimeException;
 import com.fluidops.fedx.monitoring.MonitoringImpl.MonitoringInformation;
 import com.fluidops.fedx.monitoring.jmx.FederationStatus;
@@ -43,7 +43,7 @@ public class MonitoringUtil
 	
 	
 	public static MonitoringService getMonitoringService() throws FedXRuntimeException {
-		Monitoring m = FederationManager.getMonitoringService();
+		Monitoring m = FedX.getMonitoring();
 		if (m instanceof MonitoringService)
 			return (MonitoringService)m;
 		throw new FedXRuntimeException("Monitoring is currently disabled for this system.");
@@ -61,13 +61,13 @@ public class MonitoringUtil
 	 * 
 	 * @throws Exception
 	 */
-	public static void initializeJMXMonitoring() throws Exception
+	public static void initializeJMXMonitoring(FedX federation) throws Exception
 	{
 		if (JMX_initialized)
 			return;
 		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 		ObjectName monitoring = new ObjectName("com.fluidops.fedx:type=FederationStatus");
-		mbs.registerMBean(new FederationStatus(), monitoring);
+		mbs.registerMBean(new FederationStatus(federation), monitoring);
 		JMX_initialized = true;
 	}
 }

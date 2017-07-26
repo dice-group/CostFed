@@ -17,17 +17,18 @@
 
 package com.fluidops.fedx.evaluation.join;
 
-import info.aduna.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import org.apache.log4j.Logger;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.algebra.TupleExpr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
 
 import com.fluidops.fedx.Config;
 import com.fluidops.fedx.algebra.CheckStatementPattern;
@@ -47,7 +48,7 @@ import com.fluidops.fedx.structures.QueryInfo;
  */
 public class SynchronousBoundJoin extends SynchronousJoin {
 
-	public static Logger log = Logger.getLogger(SynchronousBoundJoin.class);
+	public static Logger log = LoggerFactory.getLogger(SynchronousBoundJoin.class);
 	
 	
 	public SynchronousBoundJoin(FederationEvalStrategy strategy,
@@ -69,7 +70,7 @@ public class SynchronousBoundJoin extends SynchronousJoin {
 			return;
 		}
 		
-		int nBindingsCfg = Config.getConfig().getBoundJoinBlockSize();	
+		int nBindingsCfg = strategy.getFederation().getConfig().getBoundJoinBlockSize();	
 		int totalBindings = 0;		// the total number of bindings
 		StatementTupleExpr stmt = (StatementTupleExpr)rightArg;
 		
@@ -88,7 +89,7 @@ public class SynchronousBoundJoin extends SynchronousJoin {
 			totalBindings++;
 			hasFreeVars = stmt.hasFreeVarsFor(b);
 			if (!hasFreeVars)
-				stmt = new CheckStatementPattern(stmt);
+				stmt = new CheckStatementPattern(strategy.getFedXConnection(), stmt);
 			final CloseableIteration<BindingSet, QueryEvaluationException> cit = strategy.evaluate(stmt, b);
 			addTask(new Callable<CloseableIteration<BindingSet,QueryEvaluationException>>() 
 			{

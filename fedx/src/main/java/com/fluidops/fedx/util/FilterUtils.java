@@ -19,14 +19,14 @@ package com.fluidops.fedx.util;
 
 import java.util.List;
 
-import org.openrdf.model.Literal;
-import org.openrdf.model.IRI;
-import org.openrdf.model.Value;
-import org.openrdf.query.algebra.And;
-import org.openrdf.query.algebra.Compare;
-import org.openrdf.query.algebra.ValueConstant;
-import org.openrdf.query.algebra.ValueExpr;
-import org.openrdf.query.algebra.Var;
+import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.query.algebra.And;
+import org.eclipse.rdf4j.query.algebra.Compare;
+import org.eclipse.rdf4j.query.algebra.ValueConstant;
+import org.eclipse.rdf4j.query.algebra.ValueExpr;
+import org.eclipse.rdf4j.query.algebra.Var;
 
 import com.fluidops.fedx.algebra.ConjunctiveFilterExpr;
 import com.fluidops.fedx.algebra.FilterExpr;

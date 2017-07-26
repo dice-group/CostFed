@@ -7,13 +7,14 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Logger;
-import org.openrdf.query.QueryEvaluationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
 
 import com.fluidops.fedx.exception.RuntimeInterruptedException;
 
 public class QueueIterator <E> extends RestartableLookAheadIteration<E> {
-	static Logger log = Logger.getLogger(QueueIterator.class);
+	static Logger log = LoggerFactory.getLogger(QueueIterator.class);
 	
 	private ItemReleaser<E> itemReleaser = null;
 	protected Queue<E> rqueue_ = new LinkedList<E>();

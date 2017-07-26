@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.openrdf.query.algebra.AbstractQueryModelNode;
-import org.openrdf.query.algebra.QueryModelVisitor;
+import org.eclipse.rdf4j.query.algebra.AbstractQueryModelNode;
+import org.eclipse.rdf4j.query.algebra.QueryModelVisitor;
 
 
 /**

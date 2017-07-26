@@ -49,7 +49,7 @@ public class FileUtil {
 	 * @return
 	 * 			the file corresponding to the abstract path
 	 */
-	public static File getFileLocation(String path) {
+	public static File getFileLocation(Config cfg, String path) {
 		
 		// check if path is an absolute path that already exists
 		File f = new File(path);
@@ -57,7 +57,7 @@ public class FileUtil {
 		if (f.isAbsolute())
 			return f;
 		
-		f = new File( Config.getConfig().getBaseDir() + path);
+		f = new File(cfg.getBaseDir() + path);
 		return f;
 	}
 	

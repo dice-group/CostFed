@@ -17,8 +17,8 @@
 
 package com.fluidops.fedx.cache;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.EmptyIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.EmptyIteration;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -31,8 +31,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-import org.openrdf.model.Statement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.model.Statement;
 
 import com.fluidops.fedx.exception.EntryAlreadyExistsException;
 import com.fluidops.fedx.exception.EntryUpdateException;
@@ -52,7 +53,7 @@ import com.fluidops.fedx.structures.SubQuery;
  */
 public class MemoryCache implements Cache {
 
-	public static Logger log = Logger.getLogger(MemoryCache.class);
+	public static Logger log = LoggerFactory.getLogger(MemoryCache.class);
 	
 	protected HashMap<SubQuery, CacheEntry> cache = new HashMap<SubQuery, CacheEntry>();
 	protected String cacheLocation;

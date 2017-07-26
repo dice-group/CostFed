@@ -25,15 +25,14 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-import org.openrdf.http.client.util.HttpClientBuilders;
-import org.openrdf.query.algebra.evaluation.federation.FederatedService;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.query.algebra.evaluation.federation.FederatedService;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
 import com.fluidops.fedx.exception.ExceptionUtil;
 import com.fluidops.fedx.exception.FedXException;
-import com.fluidops.fedx.exception.FedXRuntimeException;
 import com.fluidops.fedx.structures.Endpoint;
 
 
@@ -47,43 +46,13 @@ import com.fluidops.fedx.structures.Endpoint;
  */
 public class EndpointManager {
 	
-	protected static Logger log = Logger.getLogger(EndpointManager.class);
+	protected static Logger log = LoggerFactory.getLogger(EndpointManager.class);
 	
 	/*
 	 * TODO
 	 * we probably need to make this class thread safe! => synchronized access
 	 */
-	
-	protected static EndpointManager instance = null;
-	
-	/**
-	 * @return
-	 * 		return the singleton instance of the EndpointManager
-	 */
-	public static EndpointManager getEndpointManager() {
-		if (instance==null)
-			throw new FedXRuntimeException("EndpointManager not yet initialized, initialize() must be invoked before use.");
-		return instance;
-	}
-	
-	/**
-	 * Initialize the singleton endpoint manager without any endpoints
-	 */
-	public static void initialize() {
-		initialize(null);
-	}
-	
-	/**
-	 * Initialize the singleton endpoint manager with the provided endpoints
-	 * 
-	 * @param endpoints
-	 */
-	public static void initialize(List<Endpoint> endpoints) {
-		if (instance!=null)
-			throw new FedXRuntimeException("Endpoint Manager already initialized.");
-		instance = new EndpointManager(endpoints);
-	}
-			
+
 	
 	// map enpoint ids and connections to the corresponding endpoint
 	protected HashMap<String, Endpoint> endpoints = new HashMap<String, Endpoint>();
@@ -104,7 +73,7 @@ public class EndpointManager {
 	 * 
 	 * @param endpoints
 	 */
-	private EndpointManager(List<Endpoint> endpoints) {
+	public EndpointManager(List<Endpoint> endpoints) {
 		init(endpoints);
 	}	
 	
@@ -114,10 +83,12 @@ public class EndpointManager {
 	 * @param _endpoints
 	 * 				a list of (initialized) endpoints or null
 	 */
-	private void init(List<Endpoint> _endpoints) {
-		if (_endpoints!=null)
-			for (Endpoint e : _endpoints)
+	private void init(List<Endpoint> endpoints) {
+		if (endpoints != null) {
+			for (Endpoint e : endpoints) {
 				addEndpoint(e);
+			}
+		}
 	}
 
 	/**
@@ -269,13 +240,5 @@ public class EndpointManager {
 			res.add(e);
 		}
 		return res;
-	}
-	
-	/**
-	 * Shutdown the endpoint manager, called from {@link FederationManager#shutDown()}
-	 */
-	protected void shutDown() {
-		instance=null;
-		//FederatedServiceManager.getInstance().unregisterAll();
 	}
 }

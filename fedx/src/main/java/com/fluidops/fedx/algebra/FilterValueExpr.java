@@ -17,7 +17,7 @@
 
 package com.fluidops.fedx.algebra;
 
-import org.openrdf.query.algebra.ValueExpr;
+import org.eclipse.rdf4j.query.algebra.ValueExpr;
 
 /**
  * Interface to indicate filter expressions. Does not provide methods

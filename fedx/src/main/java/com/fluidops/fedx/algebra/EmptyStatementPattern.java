@@ -17,8 +17,8 @@
 
 package com.fluidops.fedx.algebra;
 
-import org.openrdf.query.algebra.QueryModelVisitor;
-import org.openrdf.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.algebra.QueryModelVisitor;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
 
 /**
  * EmptyStatementPattern represents a statement that cannot produce any results 

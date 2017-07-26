@@ -17,7 +17,7 @@
 
 package com.fluidops.fedx.algebra;
 
-import org.openrdf.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
 
 /**
  * A TrueStatementPattern represents a stmt with no free variables which in addition is

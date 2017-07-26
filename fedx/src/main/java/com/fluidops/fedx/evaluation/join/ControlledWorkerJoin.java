@@ -17,16 +17,17 @@
 
 package com.fluidops.fedx.evaluation.join;
 
-import org.apache.log4j.Logger;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.TupleExpr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
 
 import com.fluidops.fedx.evaluation.FederationEvalStrategy;
 import com.fluidops.fedx.evaluation.concurrent.ControlledWorkerScheduler;
 import com.fluidops.fedx.structures.QueryInfo;
 
-import info.aduna.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 
 
 /**
@@ -43,7 +44,7 @@ import info.aduna.iteration.CloseableIteration;
  */
 public class ControlledWorkerJoin extends JoinExecutorBase<BindingSet> {
 
-	private static Logger log = Logger.getLogger(ControlledWorkerJoin.class);
+	private static Logger log = LoggerFactory.getLogger(ControlledWorkerJoin.class);
 	
 	private final ControlledWorkerScheduler scheduler;
 	

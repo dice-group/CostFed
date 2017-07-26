@@ -12,15 +12,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Logger;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.sparql.SPARQLRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 
 public class SemagrowSummariesGenerator {
-	static Logger log = Logger.getLogger(SemagrowSummariesGenerator.class);
+	static Logger log = LoggerFactory.getLogger(SemagrowSummariesGenerator.class);
 	
 	public BufferedWriter bw ;
 	public double distinctSbj;
@@ -104,7 +105,7 @@ public class SemagrowSummariesGenerator {
 			    			bw.append(sum);
 			    			bw.flush();
 			    		} catch (Exception e) {
-			    			log.error(e);
+			    			log.error("", e);
 			    		}
 			    	}
 			    }
@@ -116,7 +117,7 @@ public class SemagrowSummariesGenerator {
 			try {
 				f.get();
 			} catch (Exception e) {
-    			log.error(e);
+    			log.error("", e);
 			}
 		}
 		executorService.shutdown();

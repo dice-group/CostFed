@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.openrdf.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
 
 import com.fluidops.fedx.Config;
 import com.fluidops.fedx.exception.FedXRuntimeException;
@@ -48,10 +48,11 @@ public class MonitoringImpl implements MonitoringService {
 	 */
 	private final Map<Endpoint, MonitoringInformation> requestMap = new ConcurrentHashMap<Endpoint, MonitoringInformation>();
 	private final QueryLog queryLog;
+	private final QueryPlanLog queryPlanLog;
 	
-	MonitoringImpl() {
-		
-		if (Config.getConfig().isLogQueries()) {
+	MonitoringImpl(Config config) {
+	    queryPlanLog = new QueryPlanLog(config);
+		if (config.isLogQueries()) {
 			try {
 				queryLog = new QueryLog();
 			} catch (IOException e) {
@@ -120,6 +121,6 @@ public class MonitoringImpl implements MonitoringService {
 
 	@Override
 	public void logQueryPlan(TupleExpr tupleExpr) {
-		QueryPlanLog.setQueryPlan(tupleExpr);		
+	    queryPlanLog.setQueryPlan(tupleExpr);		
 	}	
 }

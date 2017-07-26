@@ -6,16 +6,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.aksw.simba.quetsal.core.algebra.BindJoin;
 import org.aksw.simba.quetsal.core.algebra.HashJoin;
 import org.aksw.simba.quetsal.core.algebra.JoinRestarter;
 import org.aksw.simba.quetsal.core.algebra.TopKSourceStatementPattern;
-import org.apache.log4j.Logger;
-import org.openrdf.query.algebra.QueryModelNode;
-import org.openrdf.query.algebra.Slice;
-import org.openrdf.query.algebra.TupleExpr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.query.algebra.QueryModelNode;
+import org.eclipse.rdf4j.query.algebra.Slice;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
 
-import com.fluidops.fedx.Config;
 import com.fluidops.fedx.algebra.ExclusiveGroup;
 import com.fluidops.fedx.algebra.ExclusiveStatement;
 import com.fluidops.fedx.algebra.NJoin;
@@ -24,7 +23,7 @@ import com.fluidops.fedx.optimizer.OptimizerUtil;
 import com.fluidops.fedx.structures.QueryInfo;
 
 public class TopKJoinOrderOptimizer extends JoinOrderOptimizer {
-	public static Logger log = Logger.getLogger(TopKJoinOrderOptimizer.class);
+	public static Logger log = LoggerFactory.getLogger(TopKJoinOrderOptimizer.class);
 			
 	public TopKJoinOrderOptimizer(QueryInfo queryInfo) {
 		super(queryInfo);
@@ -106,7 +105,7 @@ public class TopKJoinOrderOptimizer extends JoinOrderOptimizer {
 		cardPairs.sort((cpl, cpr) -> Long.compare(cpl.nd.card, cpr.nd.card));
 		
 		if (log.isTraceEnabled()) {
-			log.trace(cardPairs.get(0));
+			log.trace("", cardPairs.get(0));
 		}
 		//long minCard = cardPairs.get(0).nd.card;
 		//long maxCard = cardPairs.get(cardPairs.size() - 1).nd.card;
@@ -135,7 +134,7 @@ public class TopKJoinOrderOptimizer extends JoinOrderOptimizer {
 			joinVars.addAll(OptimizerUtil.getFreeVars(rightArg.expr));
 			
 			if (log.isTraceEnabled()) {
-				log.trace(rightArg);
+				log.trace("", rightArg);
 			}
 			
 			long resultCard;
@@ -155,7 +154,7 @@ public class TopKJoinOrderOptimizer extends JoinOrderOptimizer {
 			}
 			
 			double hashCost = rightArg.nd.card * C_TRANSFER_TUPLE + 2 * C_TRANSFER_QUERY;
-			double bindCost = leftArg.nd.card / Config.getConfig().getBoundJoinBlockSize() * C_TRANSFER_QUERY + resultCard * C_TRANSFER_TUPLE;
+			double bindCost = leftArg.nd.card / queryInfo.getFederation().getConfig().getBoundJoinBlockSize() * C_TRANSFER_QUERY + resultCard * C_TRANSFER_TUPLE;
 			
 			leftArg.nd.card = resultCard;
 			leftArg.nd.sel = sel;

@@ -18,22 +18,34 @@
 package com.fluidops.fedx;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
-import org.apache.log4j.Logger;
-import org.openrdf.IsolationLevel;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.SimpleValueFactory;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.sail.Sail;
-import org.openrdf.sail.SailConnection;
-import org.openrdf.sail.SailException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.NoConnectionReuseStrategy;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.IsolationLevel;
+import org.eclipse.rdf4j.http.client.util.HttpClientBuilders;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.sail.Sail;
+import org.eclipse.rdf4j.sail.SailConnection;
+import org.eclipse.rdf4j.sail.SailException;
 
-import com.fluidops.fedx.exception.ExceptionUtil;
+import com.fluidops.fedx.cache.Cache;
+import com.fluidops.fedx.evaluation.concurrent.ControlledWorkerScheduler;
 import com.fluidops.fedx.exception.FedXException;
-import com.fluidops.fedx.structures.Endpoint;
+import com.fluidops.fedx.exception.FedXRuntimeException;
+import com.fluidops.fedx.monitoring.Monitoring;
+import com.fluidops.fedx.monitoring.MonitoringFactory;
+import com.fluidops.fedx.statistics.Statistics;
 
 
 
@@ -50,49 +62,119 @@ import com.fluidops.fedx.structures.Endpoint;
  */
 public class FedX implements Sail {
 
-	public static Logger log = Logger.getLogger(FedX.class);
+	public static Logger log = LoggerFactory.getLogger(FedX.class);
 	
-	protected final List<Endpoint> members = new ArrayList<Endpoint>();
+	protected final Config config;
+	protected EndpointListProvider endpointListProvider;
+	protected SummaryProvider summaryProvider;
+	
+    protected Executor executor;
+    protected ControlledWorkerScheduler scheduler;
+    protected Cache cache;
+    protected Statistics statistics;
+    
+    protected final HttpClient httpClient;
+    
+    static Monitoring monitoring;
+    
+    Properties prefixDeclarations = null;
+    
 	protected boolean open = false;
 		
-	protected FedX() {
-		this(null);
-	}
-	
-	protected FedX(List<Endpoint> endpoints) {
-		if (endpoints != null)
-			for (Endpoint e : endpoints)
-				addMember(e);
+	protected FedX(Config config, Cache cache, Statistics statistics, EndpointListProvider endpointListProvider, SummaryProvider summaryProvider) {
+	    this.config = config;
+	    this.cache = cache;
+	    this.statistics = statistics;
+	    this.endpointListProvider = endpointListProvider;
+	    this.summaryProvider = summaryProvider;
+	    
+	       // initialize httpclient parameters
+        HttpClientBuilder httpClientBuilder = HttpClientBuilders.getSSLTrustAllHttpClientBuilder();
+        httpClientBuilder.setMaxConnTotal(config.getMaxHttpConnectionCount());
+        httpClientBuilder.setMaxConnPerRoute(config.getMaxHttpConnectionCountPerRoute());
+
+        //httpClientBuilder.evictExpiredConnections();
+        httpClientBuilder.setConnectionReuseStrategy(new NoConnectionReuseStrategy());
+        //httpClientBuilder.setConnectionTimeToLive(1000, TimeUnit.MILLISECONDS);
+        //httpClientBuilder.disableAutomaticRetries();
+
+//      httpClientBuilder.setKeepAliveStrategy(new ConnectionKeepAliveStrategy(){
+//
+//          @Override
+//          public long getKeepAliveDuration(HttpResponse response, HttpContext context) {
+//              return 0;
+//          }});
+        
+        httpClient = httpClientBuilder.build();
+        
+	    synchronized (log) {
+    	    if (monitoring == null) {
+    	        monitoring = MonitoringFactory.createMonitoring(config);
+    	    }
+	    }
+        
+        executor = Executors.newCachedThreadPool();
+        
+        scheduler = new ControlledWorkerScheduler(config.getWorkerThreads(), "Evaluation Scheduler");
+        if (log.isDebugEnabled()) {
+            log.debug("Scheduler for async operations initialized with " + config.getWorkerThreads() + " worker threads.");
+        }
+        
+        // initialize prefix declarations, if any
+        String prefixFile = config.getPrefixDeclarations();
+        if (prefixFile != null) {
+            prefixDeclarations = new Properties();
+            try {
+                prefixDeclarations.load(new FileInputStream(new File(prefixFile)));
+            } catch (IOException e) {
+                throw new FedXRuntimeException("Error loading prefix properties: " + e.getMessage());
+            }
+        }
 		open = true;
 	}
 	
-	/**
-	 * Add a member to the federation (internal)
-	 * @param endpoint
-	 */
-	protected void addMember(Endpoint endpoint) {
-		members.add(endpoint);
+	public Config getConfig() {
+	    return config;
 	}
 	
-	/**
-	 * Remove a member from the federation (internal)
-	 * 
-	 * @param endpoint
-	 * @return
-	 */
-	public boolean removeMember(Endpoint endpoint) {
-		return members.remove(endpoint);
-	}	
+	public HttpClient getHttpClient() {
+	    return httpClient;
+	}
 	
+	public Properties getPrefixDeclarations() {
+	    return prefixDeclarations;
+	}
 	
+    public Cache getCache() {
+        return cache;
+    }
+    
+    public Statistics getStatistics() {
+        return statistics;
+    }
+    
+    public Executor getExecutor() {
+        return executor;
+    }
+    
+    public static Monitoring getMonitoring() {
+        return monitoring;
+    }
+    
+    public ControlledWorkerScheduler getScheduler() {
+        return scheduler;
+    }
+    
 	@Override
 	public SailConnection getConnection() throws SailException {
-		return new FedXConnection(this);
+		return new FedXConnection(this, endpointListProvider.getEndpoints(this), summaryProvider.getSummary(this));
 	}
 
 	@Override
 	public File getDataDir() {
-		throw new UnsupportedOperationException("Operation not supported yet.");
+	    log.info("Operation not supported yet. (getDataDir)");
+	    return new File(config.getProperty("quetzal.fedSummaries"));
+		//throw new UnsupportedOperationException("Operation not supported yet.");
 	}
 
 	@Override
@@ -103,14 +185,6 @@ public class FedX implements Sail {
 	@Override
 	public void initialize() throws SailException {
 		log.debug("Initializing federation....");
-		for (Endpoint member : members) {
-			try {
-				member.initialize();
-			} catch (RepositoryException e) {
-				log.error("Initialization of endpoint " + member.getId() + " failed: " + e.getMessage());
-				throw new SailException(e);
-			}
-		}	
 		open = true;
 	}
 
@@ -121,13 +195,22 @@ public class FedX implements Sail {
 
 	@Override
 	public void setDataDir(File dataDir) {
-		throw new UnsupportedOperationException("Operation not supported yet.");		
+		//throw new UnsupportedOperationException("Operation not supported yet.");		
 	}
 
 	@Override
 	public void shutDown() throws SailException {
 		try {
-			FederationManager.getInstance().shutDown();
+		    log.info("Shutting down federation and all underlying repositories ...");
+		    
+		    scheduler.shutdown();
+		    scheduler = null;
+	        // Abort all running queries
+	        shutDownInternal();
+	        cache.persist();
+	        
+	        monitoring = null;
+	        
 		} catch (FedXException e) {
 			throw new SailException(e);
 		}		
@@ -140,25 +223,16 @@ public class FedX implements Sail {
 	 * 				if not all members could be shut down
 	 */
 	protected void shutDownInternal() throws FedXException {
-		List<Exception> errors = new ArrayList<Exception>(2);
-		for (Endpoint member : members) {
-			try {
-				member.shutDown();
-			} catch (Exception e) {
-				log.error( ExceptionUtil.getExceptionString("Error shutting down endpoint " + member.getId(), e) );
-				errors.add(e);
-			}
-		}
-		
-		if (errors.size()>0)
-			throw new FedXException("At least one federation member could not be shut down.", errors.get(0));
-		
+	    if (summaryProvider != null) {
+	        summaryProvider.close();
+	        summaryProvider = null;
+	    }
+	    if (endpointListProvider != null) {
+	        endpointListProvider.close();
+	        endpointListProvider = null;
+	    }
 		open = false;
 	}
-	
-	public List<Endpoint> getMembers() {
-		return new ArrayList<Endpoint>(members);
-	}	
 	
 	public boolean isOpen() {
 		return open;
@@ -167,11 +241,11 @@ public class FedX implements Sail {
 //	for sesame from 2.8
 	@Override
 	public IsolationLevel getDefaultIsolationLevel() {
-		return org.openrdf.IsolationLevels.READ_COMMITTED;
+		return org.eclipse.rdf4j.IsolationLevels.READ_COMMITTED;
 	}
 
 	@Override
 	public List<IsolationLevel> getSupportedIsolationLevels() {
-		return Arrays.asList(new IsolationLevel[]{org.openrdf.IsolationLevels.READ_COMMITTED});
+		return Arrays.asList(new IsolationLevel[]{org.eclipse.rdf4j.IsolationLevels.READ_COMMITTED});
 	}
 }

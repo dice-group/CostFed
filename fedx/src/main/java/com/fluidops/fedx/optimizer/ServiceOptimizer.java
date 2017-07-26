@@ -20,10 +20,10 @@ package com.fluidops.fedx.optimizer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openrdf.query.algebra.Service;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
+import org.eclipse.rdf4j.query.algebra.Service;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.helpers.AbstractQueryModelVisitor;
 
 import com.fluidops.fedx.EndpointManager;
 import com.fluidops.fedx.algebra.ExclusiveGroup;
@@ -142,7 +142,7 @@ public class ServiceOptimizer extends AbstractQueryModelVisitor<OptimizationExce
 	 * @return
 	 */
 	private Endpoint getFedXEndpoint(String serviceUri) {
-		EndpointManager em = EndpointManager.getEndpointManager();
+		EndpointManager em = queryInfo.getFedXConnection().getEndpointManager();
 		Endpoint e = em.getEndpointByUrl(serviceUri);
 		if (e!=null)
 			return e;

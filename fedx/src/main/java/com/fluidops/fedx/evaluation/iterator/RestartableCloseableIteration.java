@@ -2,9 +2,9 @@ package com.fluidops.fedx.evaluation.iterator;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.openrdf.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
 
-import info.aduna.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 
 public abstract class RestartableCloseableIteration<E> implements CloseableIteration<E, QueryEvaluationException> {
 	

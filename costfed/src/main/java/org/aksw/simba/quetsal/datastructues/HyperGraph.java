@@ -5,8 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.openrdf.model.Value;
-import org.openrdf.query.algebra.Var;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.query.algebra.Var;
 
 import com.fluidops.fedx.algebra.StatementSource;
 /**

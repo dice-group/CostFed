@@ -19,18 +19,15 @@ package com.fluidops.fedx.evaluation.union;
 
 import java.util.concurrent.Callable;
 
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.repository.RepositoryConnection;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
 
-import com.fluidops.fedx.EndpointManager;
 import com.fluidops.fedx.algebra.FilterValueExpr;
 import com.fluidops.fedx.evaluation.TripleSource;
 import com.fluidops.fedx.structures.Endpoint;
 import com.fluidops.fedx.util.QueryStringUtil;
-
-import info.aduna.iteration.CloseableIteration;
 
 /**
  * A task implementation representing a statement expression to be evaluated.
@@ -40,26 +37,25 @@ import info.aduna.iteration.CloseableIteration;
 public class ParallelUnionTask implements Callable<CloseableIteration<BindingSet, QueryEvaluationException>> {
 	
 	protected final TripleSource tripleSource;
-	protected final RepositoryConnection conn;
+	protected final Endpoint ep;
 	protected final StatementPattern stmt;
 	protected final BindingSet bindings;
 	protected final FilterValueExpr filterExpr;
 	
-	public ParallelUnionTask(StatementPattern stmt, TripleSource tripleSource, RepositoryConnection conn, BindingSet bindings, FilterValueExpr filterExpr) {
+	public ParallelUnionTask(StatementPattern stmt, TripleSource tripleSource, Endpoint ep, BindingSet bindings, FilterValueExpr filterExpr) {
 		this.stmt = stmt;
 		this.bindings = bindings;
 		this.tripleSource = tripleSource;
-		this.conn = conn;
+		this.ep = ep;
 		this.filterExpr = filterExpr;
 	}
 
 	@Override
 	public CloseableIteration<BindingSet, QueryEvaluationException> call() {
-		return tripleSource.getStatements(stmt, conn, bindings, filterExpr);
+		return tripleSource.getStatements(stmt, ep.getConn(), bindings, filterExpr);
 	}
 	
 	public String toString() {
-		Endpoint e = EndpointManager.getEndpointManager().getEndpoint(conn);
-		return this.getClass().getSimpleName() + " @" + e.getId() + ": " + QueryStringUtil.toString(stmt);
+		return this.getClass().getSimpleName() + " @" + ep.getId() + ": " + QueryStringUtil.toString(stmt);
 	}
 }

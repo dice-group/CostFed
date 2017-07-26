@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.LookAheadIteration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.LookAheadIteration;
 
 public class BufferedCloseableIterator <T, E extends RuntimeException> extends LookAheadIteration<T, E> {
-	static Logger logger = Logger.getLogger(BufferedCloseableIterator.class);
+	static Logger logger = LoggerFactory.getLogger(BufferedCloseableIterator.class);
 	
 	RuntimeException ex_ = null;
 	List<T> buffer_ = new ArrayList<T>();

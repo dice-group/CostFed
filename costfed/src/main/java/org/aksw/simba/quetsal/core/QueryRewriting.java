@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.openrdf.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
 
 import com.fluidops.fedx.algebra.StatementSource;
 /**

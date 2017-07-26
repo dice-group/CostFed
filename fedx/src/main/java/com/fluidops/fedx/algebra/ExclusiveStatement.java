@@ -19,21 +19,19 @@ package com.fluidops.fedx.algebra;
 
 import java.util.List;
 
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.repository.RepositoryConnection;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.EmptyIteration;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 
-import com.fluidops.fedx.EndpointManager;
 import com.fluidops.fedx.evaluation.TripleSource;
 import com.fluidops.fedx.evaluation.iterator.SingleBindingSetIteration;
 import com.fluidops.fedx.exception.IllegalQueryException;
 import com.fluidops.fedx.structures.Endpoint;
 import com.fluidops.fedx.structures.QueryInfo;
 import com.fluidops.fedx.util.QueryStringUtil;
-
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.EmptyIteration;
 
 
 
@@ -60,7 +58,7 @@ public class ExclusiveStatement extends FedXStatementPattern {
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BindingSet bindings) {
 		if (bindings == null) return new EmptyIteration<BindingSet, QueryEvaluationException>();
 		
-		Endpoint ownedEndpoint = EndpointManager.getEndpointManager().getEndpoint(getOwner().getEndpointID());
+		Endpoint ownedEndpoint = getQueryInfo().getFedXConnection().getEndpointManager().getEndpoint(getOwner().getEndpointID());
 		RepositoryConnection ownedConnection = ownedEndpoint.getConn();
 		TripleSource t = ownedEndpoint.getTripleSource();
 		

@@ -5,9 +5,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.aksw.simba.quetsal.util.HibiscusSummariesGenerator;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.repository.RepositoryException;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
 /**
  * Test FedSummaries Generator for a set of SPARQL endpoints

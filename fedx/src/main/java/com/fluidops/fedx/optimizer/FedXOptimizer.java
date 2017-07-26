@@ -17,7 +17,7 @@
 
 package com.fluidops.fedx.optimizer;
 
-import org.openrdf.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
 
 /**
  * Interface for any FedX optimizer

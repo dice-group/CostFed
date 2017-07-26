@@ -17,64 +17,66 @@
 
 package com.fluidops.fedx.monitoring.jmx;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.openrdf.query.BindingSet;
-
-import com.fluidops.fedx.FederationManager;
+import com.fluidops.fedx.FedX;
 import com.fluidops.fedx.evaluation.concurrent.ControlledWorkerScheduler;
-import com.fluidops.fedx.structures.Endpoint;
 
 public class FederationStatus implements FederationStatusMBean {
 
+    final FedX federation;
+    public FederationStatus(FedX federation) {
+        this.federation = federation;
+    }
+    
 	@Override
 	public List<String> getFederationMembersDescription() {
-		List<Endpoint> members = FederationManager.getInstance().getFederation().getMembers();
-		List<String> res = new ArrayList<String>();		
-		for (Endpoint e : members) 
-			res.add(e.toString());
-		return res;
+	    throw new RuntimeException("not implemented");
+//		List<Endpoint> members = FederationManager.getInstance().getFederation().getMembers();
+//		List<String> res = new ArrayList<String>();		
+//		for (Endpoint e : members) 
+//			res.add(e.toString());
+//		return res;
 	}
 
 	@Override
 	public int getIdleJoinWorkerThreads() {
-		ControlledWorkerScheduler scheduler = FederationManager.getInstance().getScheduler();
+		ControlledWorkerScheduler scheduler = federation.getScheduler();
 		return 0;
 		//return scheduler.getNumberOfIdleWorkers();
 	}
 
 	@Override
 	public int getTotalJoinWorkerThreads() {
-		ControlledWorkerScheduler scheduler = FederationManager.getInstance().getScheduler();
+		ControlledWorkerScheduler scheduler = federation.getScheduler();
 		return 0;
 		//return scheduler.getTotalNumberOfWorkers();
 	}
 
 	@Override
 	public int getIdleUnionWorkerThreads() {
-		ControlledWorkerScheduler scheduler = FederationManager.getInstance().getScheduler();
+		ControlledWorkerScheduler scheduler = federation.getScheduler();
 		return 0;
 		//return scheduler.getNumberOfIdleWorkers();
 	}
 
 	@Override
 	public int getTotalUnionWorkerThreads() {
-		ControlledWorkerScheduler scheduler = FederationManager.getInstance().getScheduler();
+		ControlledWorkerScheduler scheduler = federation.getScheduler();
 		return 0;
 		//return scheduler.getTotalNumberOfWorkers();
 	}
 
 	@Override
 	public int getNumberOfScheduledJoinTasks() {
-		ControlledWorkerScheduler scheduler = FederationManager.getInstance().getScheduler();
+		ControlledWorkerScheduler scheduler = federation.getScheduler();
 		return 0;
 		//return scheduler.getNumberOfTasks();
 	}
 
 	@Override
 	public int getNumberOfScheduledUnionTasks() {
-		ControlledWorkerScheduler scheduler = FederationManager.getInstance().getScheduler();
+		ControlledWorkerScheduler scheduler = federation.getScheduler();
 		return 0;
 		//return scheduler.getNumberOfTasks();
 	}

@@ -17,13 +17,17 @@
 
 package com.fluidops.fedx.structures;
 
-import org.openrdf.model.Resource;
+import org.eclipse.rdf4j.model.Resource;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.openrdf.model.IRI;
-import org.openrdf.model.Value;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 
+import com.fluidops.fedx.FedX;
+import com.fluidops.fedx.FedXConnection;
+import com.fluidops.fedx.QueryManager;
 import com.fluidops.fedx.optimizer.SourceSelection;
 import com.fluidops.fedx.util.QueryStringUtil;
 
@@ -42,10 +46,12 @@ public class QueryInfo {
 
 	static AtomicInteger NEXT_QUERY_ID = new AtomicInteger(1);		// static id count
 	
+	private final FedXConnection conn;
 	private final int queryID;
 	private final String query;
 	private final QueryType queryType;
 	private SourceSelection sourceSelection;
+	private Object summary;
 	
 	public int progress = 0;
 	public AtomicInteger numSources = new AtomicInteger(0);
@@ -56,19 +62,33 @@ public class QueryInfo {
 	public static ThreadLocal<QueryInfo> queryInfo = new ThreadLocal<QueryInfo>();
 	//public static boolean isNJoinchangedOrder = false;
 	
-	public QueryInfo(String query, QueryType queryType) {
+	public QueryInfo(FedXConnection conn, String query, QueryType queryType, Object summary) {
 		synchronized (QueryInfo.class) {
 			this.queryID = NEXT_QUERY_ID.getAndIncrement();
 		}
+		this.conn = conn;
 		this.query = query;
 		this.queryType = queryType;
+		this.summary = summary;
 		queryInfo.set(this);
 	}
 	
-	public QueryInfo(Resource subj, IRI pred, Value obj) {
-		this(QueryStringUtil.toString(subj, pred, obj), QueryType.GET_STATEMENTS);
+	public QueryInfo(FedXConnection conn, Resource subj, IRI pred, Value obj, Object summary) {
+		this(conn, QueryStringUtil.toString(subj, pred, obj), QueryType.GET_STATEMENTS, summary);
 	}
 
+	public FedX getFederation() {
+	    return conn.getFederation();
+	}
+	
+	public FedXConnection getFedXConnection() {
+	    return conn;
+	}
+	
+	public QueryManager getQueryManager() {
+	    return conn.getQueryManager();
+	}
+	
 	public int getQueryID() {
 		return queryID;
 	}
@@ -87,6 +107,15 @@ public class QueryInfo {
 	
 	public void setSourceSelection(SourceSelection sourceSelection) {
 		this.sourceSelection = sourceSelection;
+	}
+	
+	@SuppressWarnings("unchecked")
+    public <T> T getSummary() {
+	    return (T)summary;
+	}
+	
+	RepositoryConnection getSummaryConnection() {
+	    throw new RuntimeException("not implemented");
 	}
 	
 	public static int getPriority() {

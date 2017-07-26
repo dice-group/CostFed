@@ -1,4 +1,4 @@
-cacheLocation=cache.db
+cacheLocation=d:\\projects\\costfed\\cache.db
 workerThreads=20
 boundJoinBlockSize=20
 enforceMaxQueryTime=30
@@ -9,10 +9,16 @@ monitoring.logQueries=false
 sourceSelectionClass=org.aksw.simba.quetsal.core.TBSSSourceSelection
 #sourceSelectionClass=org.aksw.simba.quetsal.core.TBSSSourceSelectionOriginal
 extensionClass=org.aksw.simba.quetsal.configuration.QuetzalConfig
+summaryProviderClass=org.aksw.simba.quetsal.configuration.CostFedSummaryProvider
+endpointProviderClass=org.aksw.simba.quetsal.configuration.EndpointListFromDirectoryProvider
+
 #quetzal.mode=INDEX_DOMINANT
 quetzal.mode=ASK_DOMINANT
 quetzal.inputCommonPredThreshold=0.33
-quetzal.fedSummaries=summaries/sum-localhost.n3
+#quetzal.fedSummaries=summaries/sum-localhost.n3
+quetzal.fedSummaries=d:\\projects\\costfed\\summaries
+quetzal.endpoints=d:\\projects\\costfed\\endpoints
+
 statementGroupOptimizerClass=org.aksw.simba.quetsal.core.JoinOrderOptimizer
 #prefixDeclarations
 #sailEvaluationStrategy=com.fluidops.fedx.evaluation.SailFederationEvalStrategy

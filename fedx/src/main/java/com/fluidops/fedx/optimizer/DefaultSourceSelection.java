@@ -23,14 +23,15 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
-import org.apache.log4j.Logger;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.impl.EmptyBindingSet;
-import org.openrdf.repository.RepositoryConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.impl.EmptyBindingSet;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 
-import com.fluidops.fedx.FederationManager;
 import com.fluidops.fedx.algebra.EmptyStatementPattern;
 import com.fluidops.fedx.algebra.ExclusiveStatement;
 import com.fluidops.fedx.algebra.StatementSource;
@@ -50,8 +51,6 @@ import com.fluidops.fedx.structures.QueryInfo;
 import com.fluidops.fedx.structures.SubQuery;
 import com.fluidops.fedx.util.QueryStringUtil;
 
-import info.aduna.iteration.CloseableIteration;
-
 
 /**
  * Perform source selection during optimization 
@@ -60,7 +59,7 @@ import info.aduna.iteration.CloseableIteration;
  *
  */
 public class DefaultSourceSelection extends SourceSelection {
-	static Logger log = Logger.getLogger(DefaultSourceSelection.class);
+	static Logger log = LoggerFactory.getLogger(DefaultSourceSelection.class);
 	
 	public DefaultSourceSelection(List<Endpoint> endpoints, Cache cache, QueryInfo queryInfo) {
 		super(endpoints, cache, queryInfo);
@@ -113,7 +112,7 @@ public class DefaultSourceSelection extends SourceSelection {
 		// if remote checks are necessary, execute them using the concurrency
 		// infrastructure and block until everything is resolved
 		if (remoteCheckTasks.size() > 0) {
-			SourceSelectionExecutorWithLatch.run(this, remoteCheckTasks, cache);
+			SourceSelectionExecutorWithLatch.run(queryInfo.getFederation().getScheduler(), this, remoteCheckTasks, cache);
 		}
 				
 		for (StatementPattern stmt : stmtToSources.keySet()) {
@@ -153,19 +152,20 @@ public class DefaultSourceSelection extends SourceSelection {
 		 * 
 		 * @param tasks
 		 */
-		public static void run(DefaultSourceSelection sourceSelection, List<CheckTaskPair> tasks, Cache cache) {
-			new SourceSelectionExecutorWithLatch(sourceSelection).executeRemoteSourceSelection(tasks, cache);
+		public static void run(ControlledWorkerScheduler scheduler, DefaultSourceSelection sourceSelection, List<CheckTaskPair> tasks, Cache cache) {
+			new SourceSelectionExecutorWithLatch(scheduler, sourceSelection).executeRemoteSourceSelection(tasks, cache);
 		}		
 		
 		private final DefaultSourceSelection sourceSelection;
-		private ControlledWorkerScheduler scheduler = FederationManager.getInstance().getScheduler();
+		private final ControlledWorkerScheduler scheduler;
 
 		private boolean finished=false;
 		private Thread initiatorThread;
 		protected List<Exception> errors = new ArrayList<Exception>();
 		
 
-		private SourceSelectionExecutorWithLatch(DefaultSourceSelection sourceSelection) {
+		private SourceSelectionExecutorWithLatch(ControlledWorkerScheduler scheduler, DefaultSourceSelection sourceSelection) {
+		    this.scheduler = scheduler;
 			this.sourceSelection = sourceSelection;
 		}
 

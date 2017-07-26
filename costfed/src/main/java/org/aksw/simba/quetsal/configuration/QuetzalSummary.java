@@ -14,20 +14,22 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.aksw.simba.quetsal.core.Cardinality;
-import org.apache.log4j.Logger;
-import org.openrdf.model.IRI;
-import org.openrdf.model.Value;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.repository.RepositoryConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 
 import com.fluidops.fedx.algebra.StatementSource;
 
+@Deprecated
 public class QuetzalSummary implements Summary {
-	static Logger log = Logger.getLogger(QuetzalSummary.class);
+	static Logger log = LoggerFactory.getLogger(QuetzalSummary.class);
 	
 	static class KeyTuple implements Comparable<KeyTuple> {
 		String predicate;
@@ -139,7 +141,10 @@ public class QuetzalSummary implements Summary {
 	Map<String, String> endpoints = new HashMap<String, String>();
 	Map<String, String> strings = new HashMap<String, String>();
 	
-	public QuetzalSummary(RepositoryConnection con) {
+	RepositoryConnection conn;
+	
+	public QuetzalSummary(RepositoryConnection conn) {
+	    this.conn = conn;
 		long start = System.currentTimeMillis();
 		
 		String sbjQueryString = "Prefix ds:<http://aksw.org/quetsal/> "
@@ -150,7 +155,7 @@ public class QuetzalSummary implements Summary {
 				+ "			?cap ds:sbjPrefix ?val }" ;
 		
 		
-		fillMap(con, sbjQueryString, psbj, purls, true);
+		fillMap(conn, sbjQueryString, psbj, purls, true);
 		
 		String objQueryString = "Prefix ds:<http://aksw.org/quetsal/> "
 				+ "SELECT ?url ?p ?val"
@@ -159,7 +164,7 @@ public class QuetzalSummary implements Summary {
 				+ "		    ?cap ds:predicate ?p."
 				+ "			?cap ds:objPrefix ?val }" ;
 		
-		fillMap(con, objQueryString, pobj, null, false);
+		fillMap(conn, objQueryString, pobj, null, false);
 		
 		for (SbjObjAuths so : urlToAuths.values()) {
 			so.sbjArr = so.sbjs.toArray(new String[]{});
@@ -398,7 +403,7 @@ public class QuetzalSummary implements Summary {
 	
 	@Override
 	public long getTriplePatternCardinality(StatementPattern stmt, List<StatementSource> stmtSrces) {
-		return Cardinality.getTriplePatternCardinalityOriginal(stmt, stmtSrces);
+		return Cardinality.getTriplePatternCardinalityOriginal(conn, stmt, stmtSrces);
 	}
 	
 	@Override
@@ -412,4 +417,23 @@ public class QuetzalSummary implements Summary {
 	{
 		return 1;
 	}
+
+    @Override
+    public void close() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public RepositoryConnection getConnection() {
+        return conn;
+    }
+
+    @Override
+    public void shutDown() {
+        if (conn != null) {
+            conn.close();
+            conn = null;
+        }
+    }
 }

@@ -1,0 +1,14 @@
+#
+# Sesame configuration template for a costfed repository
+#
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix rep: <http://www.openrdf.org/config/repository#>.
+@prefix cf: <http://www.openrdf.org/config/repository/costfed#>.
+
+[] a rep:Repository ;
+   rep:repositoryID "{%Repository ID|costfed%}" ;
+   rdfs:label "{%Repository title|CostFed Repository%}" ;
+   rep:repositoryImpl [
+      rep:repositoryType "openrdf:CostFedRepository" ;
+      cf:config "{%ConfigFilePath%}"
+   ].

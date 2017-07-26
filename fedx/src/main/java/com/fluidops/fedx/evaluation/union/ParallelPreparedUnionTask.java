@@ -19,16 +19,13 @@ package com.fluidops.fedx.evaluation.union;
 
 import java.util.concurrent.Callable;
 
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.repository.RepositoryConnection;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
 
-import com.fluidops.fedx.EndpointManager;
 import com.fluidops.fedx.algebra.FilterValueExpr;
 import com.fluidops.fedx.evaluation.TripleSource;
 import com.fluidops.fedx.structures.Endpoint;
-
-import info.aduna.iteration.CloseableIteration;
 
 /**
  * A task implementation representing a prepared union, i.e. the prepared query is executed
@@ -39,27 +36,26 @@ import info.aduna.iteration.CloseableIteration;
 public class ParallelPreparedUnionTask implements Callable<CloseableIteration<BindingSet, QueryEvaluationException>> {
 	
 	protected final TripleSource tripleSource;
-	protected final RepositoryConnection conn;
+	protected final Endpoint ep;
 	protected final String preparedQuery;
 	protected final BindingSet bindings;
 	protected final FilterValueExpr filterExpr;
 	
-	public ParallelPreparedUnionTask(String preparedQuery, TripleSource tripleSource, RepositoryConnection conn, BindingSet bindings, FilterValueExpr filterExpr) {
+	public ParallelPreparedUnionTask(String preparedQuery, TripleSource tripleSource, Endpoint ep, BindingSet bindings, FilterValueExpr filterExpr) {
 		this.preparedQuery = preparedQuery;
 		this.bindings = bindings;
 		this.tripleSource = tripleSource;
-		this.conn = conn;
+		this.ep = ep;
 		this.filterExpr = filterExpr;
 	}
 
 	@Override
 	public CloseableIteration<BindingSet, QueryEvaluationException> call() {
-		return tripleSource.getStatements(preparedQuery, conn, bindings, filterExpr);
+		return tripleSource.getStatements(preparedQuery, ep.getConn(), bindings, filterExpr);
 	}
 
 	
 	public String toString() {
-		Endpoint e = EndpointManager.getEndpointManager().getEndpoint(conn);
-		return this.getClass().getSimpleName() + " @" + e.getId() + ": " + preparedQuery;
+		return this.getClass().getSimpleName() + " @" + ep.getId() + ": " + preparedQuery;
 	}
 }

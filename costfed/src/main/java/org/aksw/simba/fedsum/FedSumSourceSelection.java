@@ -1,7 +1,5 @@
 
 package org.aksw.simba.fedsum;
-import info.aduna.iteration.CloseableIteration;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,20 +12,20 @@ import java.util.concurrent.CountDownLatch;
 
 import org.aksw.simba.quetsal.datastructues.HyperGraph.HyperEdge;
 import org.aksw.simba.quetsal.datastructues.HyperGraph.Vertex;
-import org.apache.log4j.Logger;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.impl.EmptyBindingSet;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.impl.EmptyBindingSet;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
-import com.fluidops.fedx.EndpointManager;
-import com.fluidops.fedx.FederationManager;
 import com.fluidops.fedx.algebra.EmptyStatementPattern;
 import com.fluidops.fedx.algebra.ExclusiveStatement;
 import com.fluidops.fedx.algebra.StatementSource;
@@ -40,7 +38,6 @@ import com.fluidops.fedx.cache.CacheUtils;
 import com.fluidops.fedx.evaluation.TripleSource;
 import com.fluidops.fedx.evaluation.concurrent.ControlledWorkerScheduler;
 import com.fluidops.fedx.evaluation.concurrent.ParallelExecutor;
-
 import com.fluidops.fedx.exception.ExceptionUtil;
 import com.fluidops.fedx.exception.OptimizationException;
 import com.fluidops.fedx.structures.Endpoint;
@@ -57,17 +54,17 @@ public class FedSumSourceSelection {
 	
 	public Map<HyperEdge,StatementPattern> hyperEdgeToStmt = new HashMap<HyperEdge,StatementPattern>(); //Hyper edges to Triple pattern Map
 	public Map<Integer,HashSet<Vertex>> DNFHyperVertices = new HashMap<Integer,HashSet<Vertex>>(); //Map of vertices in different DNF hypergraphs
-	public static Logger log = Logger.getLogger(FedSumSourceSelection.class);
+	public static Logger log = LoggerFactory.getLogger(FedSumSourceSelection.class);
 	
 	protected final List<Endpoint> endpoints;
 	protected final Cache cache;
 	protected final QueryInfo queryInfo;
 	///protected final List<StatementPattern> triplePatterns;
 	
-	public FedSumSourceSelection(List<Endpoint> endpoints, Cache cache, QueryInfo queryInfo2) {
+	public FedSumSourceSelection(List<Endpoint> endpoints, Cache cache, QueryInfo queryInfo) {
 		this.endpoints = endpoints;
 		this.cache = cache;
-		this.queryInfo = queryInfo2;
+		this.queryInfo = queryInfo;
 	}
 	public List<CheckTaskPair> remoteCheckTasks = new ArrayList<CheckTaskPair>();
 
@@ -231,8 +228,8 @@ public class FedSumSourceSelection {
 		// infrastructure and block until everything is resolved
 		if (remoteCheckTasks.size()>0) {
 			
-			SourceSelectionExecutorWithLatch.run(this, remoteCheckTasks, cache);
-			System.out.println("Number of ASK request: " + remoteCheckTasks.size());
+			SourceSelectionExecutorWithLatch.run(queryInfo.getFederation().getScheduler(), this, remoteCheckTasks, cache);
+			log.info("Number of ASK request: " + remoteCheckTasks.size());
 		}
 		else
 			System.out.println("Number of ASK request: 0");
@@ -472,7 +469,7 @@ public void cache_ASKselection(StatementPattern stmt)
 		Set<Endpoint> endpoints = new HashSet<Endpoint>();
 		for (List<StatementSource> sourceList : stmtToSources.values())
 			for (StatementSource source : sourceList)
-				endpoints.add( EndpointManager.getEndpointManager().getEndpoint(source.getEndpointID()));
+				endpoints.add(queryInfo.getFedXConnection().getEndpointManager().getEndpoint(source.getEndpointID()));
 		return endpoints;
 	}	
 	
@@ -1031,19 +1028,20 @@ public void cache_ASKselection(StatementPattern stmt)
 		 * 
 		 * @param tasks
 		 */
-		public static void run(FedSumSourceSelection sourceSelection, List<CheckTaskPair> tasks, Cache cache) {
-			new SourceSelectionExecutorWithLatch(sourceSelection).executeRemoteSourceSelection(tasks, cache);
+		public static void run(ControlledWorkerScheduler scheduler, FedSumSourceSelection sourceSelection, List<CheckTaskPair> tasks, Cache cache) {
+			new SourceSelectionExecutorWithLatch(scheduler, sourceSelection).executeRemoteSourceSelection(tasks, cache);
 		}		
 		
 		private final FedSumSourceSelection sourceSelection;
-		private ControlledWorkerScheduler scheduler = FederationManager.getInstance().getScheduler();
+		private final ControlledWorkerScheduler scheduler;
 		private CountDownLatch latch;
 		private boolean finished=false;
 		private Thread initiatorThread;
 		protected List<Exception> errors = new ArrayList<Exception>();
 		
 
-		private SourceSelectionExecutorWithLatch(FedSumSourceSelection sourceSelection) {
+		private SourceSelectionExecutorWithLatch(ControlledWorkerScheduler scheduler, FedSumSourceSelection sourceSelection) {
+		    this.scheduler = scheduler;
 			this.sourceSelection = sourceSelection;
 		}
 

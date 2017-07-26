@@ -9,24 +9,22 @@ import org.aksw.simba.quetsal.core.algebra.HashJoin;
 import org.aksw.simba.quetsal.core.algebra.JoinRestarter;
 import org.aksw.simba.quetsal.core.algebra.TopKSourceStatementPattern;
 import org.aksw.simba.quetsal.core.algebra.TopKSourceStatementPattern.Entry;
-import org.apache.log4j.Logger;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.QueryModelNode;
-import org.openrdf.query.algebra.Slice;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.common.iteration.LookAheadIteration;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.algebra.QueryModelNode;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.helpers.AbstractQueryModelVisitor;
 
-import com.fluidops.fedx.Config;
 import com.fluidops.fedx.algebra.ExclusiveGroup;
 import com.fluidops.fedx.algebra.StatementSource;
 import com.fluidops.fedx.evaluation.iterator.RestartableCloseableIteration;
 import com.fluidops.fedx.structures.QueryInfo;
 
-import info.aduna.iteration.LookAheadIteration;
-
 public class RestarterIteration<E> extends LookAheadIteration<E, QueryEvaluationException> {
-	private static Logger log = Logger.getLogger(RestarterIteration.class);
+	private static Logger log = LoggerFactory.getLogger(RestarterIteration.class);
 	
 	final JoinRestarter jr;
 	RestartableCloseableIteration<E> arg;
@@ -53,7 +51,7 @@ public class RestarterIteration<E> extends LookAheadIteration<E, QueryEvaluation
 		@Override
 		public void meet(StatementPattern stmt) {
 			List<StatementSource> stmtSrces = jr.getQueryInfo().getSourceSelection().getStmtToSources().get(stmt);
-			getDescriptor().card = Cardinality.getTriplePatternCardinality(stmt, stmtSrces);
+			getDescriptor().card = Cardinality.getTriplePatternCardinality(queryInfo, stmt, stmtSrces);
 		}
 		
 		public void meet(TopKSourceStatementPattern stmt) {
@@ -100,7 +98,7 @@ public class RestarterIteration<E> extends LookAheadIteration<E, QueryEvaluation
 		void reset(Entry e) {
 			cost = 0;
 			curEntry = e;
-			nBindingsCfg = Config.getConfig().getBoundJoinBlockSize();
+			nBindingsCfg = queryInfo.getFederation().getConfig().getBoundJoinBlockSize();
 		}
 		
 		public void meet(TopKSourceStatementPattern sp)  {

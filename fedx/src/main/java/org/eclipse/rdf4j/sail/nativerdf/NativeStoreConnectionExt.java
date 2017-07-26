@@ -15,21 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openrdf.sail.nativerdf;
-
-import info.aduna.iteration.CloseableIteration;
+package org.eclipse.rdf4j.sail.nativerdf;
 
 import java.io.IOException;
 
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.Dataset;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.evaluation.TripleSource;
-import org.openrdf.query.algebra.evaluation.impl.SimpleEvaluationStrategy;
-import org.openrdf.query.impl.EmptyBindingSet;
-import org.openrdf.sail.SailException;
-import org.openrdf.sail.federation.evaluation.RepositoryTripleSource;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.Dataset;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.evaluation.TripleSource;
+import org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategy;
+import org.eclipse.rdf4j.query.impl.EmptyBindingSet;
+import org.eclipse.rdf4j.sail.SailException;
 
 
 /**
@@ -86,7 +84,7 @@ public class NativeStoreConnectionExt extends NativeStoreConnection {
 			TripleSource tripleSource = null;
 			//new RepositoryTripleSource(nativeStore, includeInferred, transactionActive());
 			
-			SimpleEvaluationStrategy strategy = new SimpleEvaluationStrategy(tripleSource, dataset, null);
+			StrictEvaluationStrategy strategy = new StrictEvaluationStrategy(tripleSource, dataset, null);
 			
 			return strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
 	}

@@ -7,14 +7,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 /**
  * Trie data structure
  * @author Saleem
  *
  */
 public class Trie {
-	static Logger log = Logger.getLogger(Trie.class);
+	static Logger log = LoggerFactory.getLogger(Trie.class);
 	
 	//static int max=-1;
 	//static TrieNode maxNode = null;

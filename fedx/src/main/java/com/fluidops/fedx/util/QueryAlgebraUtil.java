@@ -21,26 +21,27 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.IRI;
-import org.openrdf.model.Value;
-import org.openrdf.model.impl.SimpleValueFactory;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.algebra.Compare;
-import org.openrdf.query.algebra.Filter;
-import org.openrdf.query.algebra.Join;
-import org.openrdf.query.algebra.Projection;
-import org.openrdf.query.algebra.ProjectionElem;
-import org.openrdf.query.algebra.ProjectionElemList;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.Union;
-import org.openrdf.query.algebra.ValueConstant;
-import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.Compare.CompareOp;
-import org.openrdf.query.impl.EmptyBindingSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.algebra.Compare;
+import org.eclipse.rdf4j.query.algebra.Filter;
+import org.eclipse.rdf4j.query.algebra.Join;
+import org.eclipse.rdf4j.query.algebra.Projection;
+import org.eclipse.rdf4j.query.algebra.ProjectionElem;
+import org.eclipse.rdf4j.query.algebra.ProjectionElemList;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.Union;
+import org.eclipse.rdf4j.query.algebra.ValueConstant;
+import org.eclipse.rdf4j.query.algebra.Var;
+import org.eclipse.rdf4j.query.algebra.Compare.CompareOp;
+import org.eclipse.rdf4j.query.impl.EmptyBindingSet;
 
 import com.fluidops.fedx.algebra.FilterValueExpr;
 import com.fluidops.fedx.algebra.IndependentJoinGroup;
@@ -56,7 +57,7 @@ import com.fluidops.fedx.exception.IllegalQueryException;
  */
 public class QueryAlgebraUtil {
 
-	public static Logger log = Logger.getLogger(QueryAlgebraUtil.class);
+	public static Logger log = LoggerFactory.getLogger(QueryAlgebraUtil.class);
 	
 	/**
 	 * returns true iff there is at least one free variable, i.e. there is no binding

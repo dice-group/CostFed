@@ -20,12 +20,14 @@ package com.fluidops.fedx.structures;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
 import com.fluidops.fedx.EndpointManager;
+import com.fluidops.fedx.evaluation.FederationEvalStrategy;
 import com.fluidops.fedx.evaluation.TripleSource;
 import com.fluidops.fedx.evaluation.TripleSourceFactory;
 import com.fluidops.fedx.exception.FedXRuntimeException;
@@ -48,7 +50,7 @@ import com.fluidops.fedx.exception.FedXRuntimeException;
  */
 public class Endpoint  {
 	
-	public static Logger log = Logger.getLogger(Endpoint.class);
+	public static Logger log = LoggerFactory.getLogger(Endpoint.class);
 	
 	/**
 	 * Classify endpoints into remote or local ones.
@@ -96,17 +98,17 @@ public class Endpoint  {
 		}
 	}
 	
-	protected String id = null;										// the identifier
-	protected String name = null;									// the name
-	protected String endpoint = null;								// the endpoint, e.g. for SPARQL the URL
-	protected EndpointType type = null;									// the type, e.g. SPARQL, NativeRepo
-	protected EndpointClassification endpointClassification;		// the endpoint classification
+	protected String id = null;                                    // the identifier
+	protected String name = null;                                  // the name
+	protected String endpoint = null;                              // the endpoint, e.g. for SPARQL the URL
+	protected EndpointType type = null;                            // the type, e.g. SPARQL, NativeRepo
+	protected EndpointClassification endpointClassification;       // the endpoint classification
 		
 	protected Repository repo;
-	protected RepositoryConnection conn  = null;	// a Singleton RepositoryConnection for the given endpoint
-	protected boolean initialized = false;			// true, iff the contained repository is initialized
-	protected TripleSource tripleSource;			// the triple source, initialized when repository is set
-	protected EndpointConfiguration endpointConfiguration;	// additional endpoint type specific configuration
+	protected RepositoryConnection conn  = null;                   // a RepositoryConnection for the given endpoint
+	protected boolean initialized = false;                         // true, iff the contained repository is initialized
+	protected TripleSource tripleSource;                           // the triple source, initialized when repository is set
+	protected EndpointConfiguration endpointConfiguration;         // additional endpoint type specific configuration
 
 	protected long responseTime = 0;
 	/**
@@ -261,12 +263,12 @@ public class Endpoint  {
 	 * 
 	 * @throws RepositoryException
 	 */
-	public void initialize() throws RepositoryException {
-		if (repo==null)
+	public void initialize(FederationEvalStrategy strategy) throws RepositoryException {
+		if (repo == null)
 			throw new FedXRuntimeException("Repository for endpoint " + id + " not yet specified");
 		if (isInitialized())
 			return;		
-		tripleSource = TripleSourceFactory.tripleSourceFor(this, type);
+		tripleSource = TripleSourceFactory.tripleSourceFor(strategy, this, type);
 		conn = repo.getConnection();
 		initialized = true;
 	}

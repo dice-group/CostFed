@@ -2,17 +2,18 @@ package com.fluidops.fedx.evaluation.iterator;
 
 import java.util.concurrent.Callable;
 
-import org.apache.log4j.Logger;
-import org.openrdf.query.QueryEvaluationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
 
-import com.fluidops.fedx.FederationManager;
 import com.fluidops.fedx.evaluation.concurrent.Async;
+import com.fluidops.fedx.evaluation.concurrent.Scheduler;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.EmptyIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.EmptyIteration;
 
 public class QueueIteration<E> extends RestartableLookAheadIteration<E> {
-	static final Logger log = Logger.getLogger(QueueIteration.class);
+	static final Logger log = LoggerFactory.getLogger(QueueIteration.class);
 
 	protected QueueIterator<CloseableIteration<E, QueryEvaluationException>> resultQueue =
 		new QueueIterator<CloseableIteration<E, QueryEvaluationException>>(
@@ -57,9 +58,10 @@ public class QueueIteration<E> extends RestartableLookAheadIteration<E> {
 	}
 	
 	public class QueueTask extends Async<CloseableIteration<E, QueryEvaluationException>> {
-		
-		public QueueTask(Callable<CloseableIteration<E, QueryEvaluationException>> cl) {
+	    final Scheduler scheduler;
+		public QueueTask(Scheduler scheduler, Callable<CloseableIteration<E, QueryEvaluationException>> cl) {
 			super(cl);
+			this.scheduler = scheduler;
 			resultQueue.onAddIterator();
 		}
 		
@@ -71,7 +73,7 @@ public class QueueIteration<E> extends RestartableLookAheadIteration<E> {
 				return;
 			}
 			//log.info("queue: " + res.getClass().toString());
-			if (res instanceof org.openrdf.http.client.BackgroundTupleResult) {
+			if (res instanceof org.eclipse.rdf4j.query.resultio.helpers.BackgroundTupleResult) {
 				resultQueue.add_release(new BufferedCloseableIterator<E, QueryEvaluationException>(res));
 			} else {
 				resultQueue.add_release(res);
@@ -90,12 +92,12 @@ public class QueueIteration<E> extends RestartableLookAheadIteration<E> {
 		}
 	}
 	
-	public QueueTask createTask(Callable<CloseableIteration<E, QueryEvaluationException>> async) {
-		return new QueueTask(async);
+	public QueueTask createTask(Scheduler scheduler, Callable<CloseableIteration<E, QueryEvaluationException>> async) {
+		return new QueueTask(scheduler, async);
 	}
 	
-	public void executeTask(Callable<CloseableIteration<E, QueryEvaluationException>> async) {
-		FederationManager.getInstance().getScheduler().schedule(new QueueTask(async));
+	public void executeTask(Scheduler scheduler, Callable<CloseableIteration<E, QueryEvaluationException>> async) {
+	    scheduler.schedule(new QueueTask(scheduler, async));
 	}
 
 }

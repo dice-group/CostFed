@@ -26,27 +26,26 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
-import org.openrdf.query.BooleanQuery;
-import org.openrdf.query.GraphQuery;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.Query;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.impl.EmptyBindingSet;
-import org.openrdf.query.impl.SimpleDataset;
-import org.openrdf.query.parser.ParsedOperation;
-import org.openrdf.query.parser.ParsedQuery;
-import org.openrdf.query.parser.QueryParserUtil;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.sail.SailException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.query.BooleanQuery;
+import org.eclipse.rdf4j.query.GraphQuery;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.Query;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.impl.EmptyBindingSet;
+import org.eclipse.rdf4j.query.impl.SimpleDataset;
+import org.eclipse.rdf4j.query.parser.ParsedOperation;
+import org.eclipse.rdf4j.query.parser.ParsedQuery;
+import org.eclipse.rdf4j.query.parser.QueryParserUtil;
+import org.eclipse.rdf4j.sail.SailException;
 
 import com.fluidops.fedx.exception.FedXException;
 import com.fluidops.fedx.exception.FedXRuntimeException;
 import com.fluidops.fedx.optimizer.Optimizer;
+import com.fluidops.fedx.sail.FedXSailRepositoryConnection;
 import com.fluidops.fedx.structures.QueryInfo;
 import com.fluidops.fedx.structures.QueryType;
 
@@ -61,33 +60,17 @@ import com.fluidops.fedx.structures.QueryType;
  */
 public class QueryManager {
 
-	public static Logger log = Logger.getLogger(QueryManager.class);
+	public static Logger log = LoggerFactory.getLogger(QueryManager.class);
 	
-	// singleton behavior: initialized in constructor of FederationManager
-	protected static QueryManager instance = null;
-	protected static QueryManager getInstance() {
-		if (instance == null) {
-			throw new FedXRuntimeException("QueryManager not initialized, used FedXFactory methods to initialize FedX correctly.");
-		}
-		return instance;
-	}
-	
-	protected final FederationManager federationManager;
-	protected final Repository repo;
-	protected final RepositoryConnection conn;
+	//protected final FedXConnection conn;
+	//protected final Repository repo;
+	protected final FedXSailRepositoryConnection conn;
 	protected Set<QueryInfo> runningQueries = new ConcurrentSkipListSet<QueryInfo>();
 	protected Map<String, String> prefixDeclarations = new HashMap<String, String>();
 	
-	protected QueryManager(FederationManager federationManager, Repository repo) {
-		this.federationManager = federationManager;
-		this.repo = repo;
-		try	{
-			this.conn = repo.getConnection();
-		} catch (RepositoryException e)	{
-			throw new FedXRuntimeException(e);		// should never occur
-		}
+	public QueryManager(FedXSailRepositoryConnection conn) {
+	    this.conn = conn;
 	}
-	
 	
 	/**
 	 * Add the query to the set of running queries, queries are identified via a unique id
@@ -157,8 +140,7 @@ public class QueryManager {
 	 * @return
 	 * @throws MalformedQueryException
 	 */
-	public static TupleQuery prepareTupleQuery(String queryString) {
-				
+	public TupleQuery prepareTupleQuery(String queryString) {
 		Query q = prepareQuery(queryString);
 		if (!(q instanceof TupleQuery))
 			throw new FedXRuntimeException("Query is not a tuple query: " + q.getClass());
@@ -175,8 +157,7 @@ public class QueryManager {
 	 * @return
 	 * @throws MalformedQueryException
 	 */
-	public static GraphQuery prepareGraphQuery(String queryString) {
-				
+	public GraphQuery prepareGraphQuery(String queryString) {
 		Query q = prepareQuery(queryString);
 		if (!(q instanceof GraphQuery))
 			throw new FedXRuntimeException("Query is not a graph query: " + q.getClass());
@@ -193,8 +174,7 @@ public class QueryManager {
 	 * @return
 	 * @throws MalformedQueryException
 	 */
-	public static BooleanQuery prepareBooleanQuery(String queryString) {
-				
+	public BooleanQuery prepareBooleanQuery(String queryString) {
 		Query q = prepareQuery(queryString);
 		if (!(q instanceof BooleanQuery))
 			throw new FedXRuntimeException("Unexpected query type: " + q.getClass());
@@ -215,22 +195,21 @@ public class QueryManager {
 	 * @return
 	 * @throws MalformedQueryException
 	 */
-	public static Query prepareQuery(String queryString) {
-		QueryManager qm = getInstance();
-		
-		if (qm.prefixDeclarations.size() > 0) {
+	public Query prepareQuery(String queryString) {
+	    if (prefixDeclarations.size() > 0) {
 			
 			/* we have to check for prefixes in the query to not add
 			 * duplicate entries. In case duplicates are present
 			 * Sesame throws a MalformedQueryException
 			 */
-			if (prefixCheck.matcher(queryString).matches())
-				queryString = qm.getPrefixDeclarationsCheck(queryString) + queryString;
-			else
-				queryString = qm.getPrefixDeclarations() + queryString;
+			if (prefixCheck.matcher(queryString).matches()) {
+				queryString = getPrefixDeclarationsCheck(queryString) + queryString;
+			} else {
+				queryString = getPrefixDeclarations() + queryString;
+			}
 		}
 		
-		Query q = qm.conn.prepareQuery(QueryLanguage.SPARQL, queryString);
+	    Query q = conn.prepareQuery(QueryLanguage.SPARQL, queryString);
 		
 		// TODO set query time
 		
@@ -240,30 +219,28 @@ public class QueryManager {
 	/**
 	 * Retrieve the query plan for the given query string.
 	 */
-	public static String getQueryPlan(String queryString) {
-		
-		QueryManager qm = getInstance();
-				
-		if (qm.prefixDeclarations.size() > 0) {
+	public String getQueryPlan(String queryString, Object summary) {
+		if (prefixDeclarations.size() > 0) {
 			
 			/* we have to check for prefixes in the query to not add
 			 * duplicate entries. In case duplicates are present
 			 * Sesame throws a MalformedQueryException
 			 */
-			if (prefixCheck.matcher(queryString).matches())
-				queryString = qm.getPrefixDeclarationsCheck(queryString) + queryString;
-			else
-				queryString = qm.getPrefixDeclarations() + queryString;
+			if (prefixCheck.matcher(queryString).matches()) {
+				queryString = getPrefixDeclarationsCheck(queryString) + queryString;
+			} else {
+				queryString = getPrefixDeclarations() + queryString;
+			}
 		}
 		
 		ParsedOperation query = QueryParserUtil.parseOperation(QueryLanguage.SPARQL, queryString, null);
 		if (!(query instanceof ParsedQuery))
 			throw new MalformedQueryException("Not a ParsedQuery: " + query.getClass());
 		// we use a dummy query info object here
-		QueryInfo qInfo = new QueryInfo(queryString, QueryType.SELECT);
+		QueryInfo qInfo = new QueryInfo(conn.getSailConnection(), queryString, QueryType.SELECT, summary);
 		TupleExpr tupleExpr = ((ParsedQuery)query).getTupleExpr();
 		try {
-			tupleExpr = Optimizer.optimize(tupleExpr, new SimpleDataset(), EmptyBindingSet.getInstance(), FederationManager.getInstance().getStrategy(), qInfo);
+			tupleExpr = Optimizer.optimize(tupleExpr, new SimpleDataset(), EmptyBindingSet.getInstance(), conn.getSailConnection().getStrategy(), qInfo);
 			return tupleExpr.toString();
 		} catch (SailException e) {
 			throw new FedXException("Unable to retrieve query plan: " + e.getMessage());

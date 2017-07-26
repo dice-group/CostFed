@@ -17,13 +17,14 @@
 
 package com.fluidops.fedx.evaluation.iterator;
 
-import info.aduna.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.evaluation.QueryBindingSet;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.algebra.evaluation.QueryBindingSet;
 
 import com.fluidops.fedx.algebra.FilterValueExpr;
+import com.fluidops.fedx.evaluation.FederationEvalStrategy;
 
 
 /**
@@ -36,10 +37,10 @@ public class FilteringInsertBindingsIteration extends FilteringIteration {
 
 	protected final BindingSet bindings;
 	
-	public FilteringInsertBindingsIteration(FilterValueExpr filterExpr, BindingSet bindings,
+	public FilteringInsertBindingsIteration(FederationEvalStrategy strategy, FilterValueExpr filterExpr, BindingSet bindings,
 			CloseableIteration<BindingSet, QueryEvaluationException> iter)
 			throws QueryEvaluationException {
-		super(filterExpr, iter);
+		super(strategy, filterExpr, iter);
 		this.bindings = bindings;
 	}
 	

@@ -17,11 +17,11 @@
 
 package com.fluidops.fedx.evaluation.iterator;
 
-import info.aduna.iteration.ExceptionConvertingIteration;
-import info.aduna.iteration.Iteration;
+import org.eclipse.rdf4j.common.iteration.ExceptionConvertingIteration;
+import org.eclipse.rdf4j.common.iteration.Iteration;
 
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.repository.RepositoryResult;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.repository.RepositoryResult;
 
 
 /**

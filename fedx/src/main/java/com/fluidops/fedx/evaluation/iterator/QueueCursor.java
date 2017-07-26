@@ -7,7 +7,7 @@ package com.fluidops.fedx.evaluation.iterator;
 
 
 
-import info.aduna.iteration.LookAheadIteration;
+import org.eclipse.rdf4j.common.iteration.LookAheadIteration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,7 +17,7 @@ import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import org.openrdf.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
 
 /**
  * Makes working with a queue easier by adding the methods {@link #done()} and

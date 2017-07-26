@@ -1,19 +1,20 @@
 package com.fluidops.fedx.provider;
 
-import org.apache.log4j.Logger;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
 import com.fluidops.fedx.Config;
 import com.fluidops.fedx.structures.Endpoint;
 
-import info.aduna.iteration.Iterations;
+import org.eclipse.rdf4j.common.iteration.Iterations;
 
 /**
  * Convenience methods for {@link Endpoint} providers
@@ -22,7 +23,7 @@ import info.aduna.iteration.Iterations;
  *
  */
 public class ProviderUtil {
-	private static final Logger log = Logger.getLogger(ProviderUtil.class);
+	private static final Logger log = LoggerFactory.getLogger(ProviderUtil.class);
 	/**
 	 * Checks the connection by submitting a SPARQL SELECT query:
 	 * 
@@ -37,11 +38,12 @@ public class ProviderUtil {
 	 * @throws QueryEvaluationException
 	 * @throws MalformedQueryException
 	 */
-	public static long checkConnectionIfConfigured(Repository repo) {
+	public static long checkConnectionIfConfigured(Config cfg, Repository repo) {
 		
-		if (!Config.getConfig().isValidateRepositoryConnections())
+		if (!cfg.isValidateRepositoryConnections()) {
 			return 0;
-		
+		}
+			
 		long startTime = System.currentTimeMillis();
 		
 		RepositoryConnection conn = repo.getConnection();		

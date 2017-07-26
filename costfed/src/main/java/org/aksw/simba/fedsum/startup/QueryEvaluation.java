@@ -2,20 +2,18 @@ package org.aksw.simba.fedsum.startup;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.aksw.simba.fedsum.FedSumConfig;
 import org.aksw.sparql.query.algebra.helpers.BGPGroupGenerator;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.repository.sail.SailRepository;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
 
+import com.fluidops.fedx.Config;
 import com.fluidops.fedx.FedXFactory;
-import com.fluidops.fedx.FederationManager;
 
 public class QueryEvaluation<repo> {
 	
@@ -35,13 +33,14 @@ public class QueryEvaluation<repo> {
 	long strtTime = System.currentTimeMillis();
 	String FedSummaries = "summaries\\FedSumFedBench.n3";
 	
+	Config config = new Config(args[0]);
 	String mode = "ASK_dominant";  //{ASK_dominant, Index_dominant}
 	double commonPredThreshold = 0.33 ;  //considered a predicate as common predicate if it is presenet in 33% available data sources
 
 	FedSumConfig.initialize(FedSummaries, mode, commonPredThreshold);  // must call this function only one time at the start to load configuration information. Please specify the FedSum mode. 
 	System.out.println("One time configuration loading time : "+ (System.currentTimeMillis()-strtTime));
 
-	  SailRepository repo = FedXFactory.initializeSparqlFederation(FedSumConfig.dataSources);
+    SailRepository repo = FedXFactory.initializeSparqlFederation(config, FedSumConfig.dataSources);
 
 	String cd1 = "SELECT ?predicate ?object WHERE { " +     //cd1
 			"{ <http://dbpedia.org/resource/Barack_Obama> ?predicate ?object }" +
@@ -422,7 +421,6 @@ String ls5 = "SELECT $drug $keggUrl $chebiImage WHERE {"+
 	//  endTime = System.currentTimeMillis();
 	//   System.out.println("Execution time(sec) : "+ (endTime-startTime)/1000);
 	   System.out.println("Total Number of Records: " + count );
-       FederationManager.getInstance().shutDown();
 	   System.out.println("Done.");
 	   bw.close();
 	   System.exit(0);

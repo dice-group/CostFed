@@ -17,20 +17,24 @@
 
 package com.fluidops.fedx.sail;
 
-import org.openrdf.model.impl.SimpleValueFactory;
-import org.openrdf.query.BooleanQuery;
-import org.openrdf.query.GraphQuery;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.Update;
-import org.openrdf.repository.sail.SailBooleanQuery;
-import org.openrdf.repository.sail.SailGraphQuery;
-import org.openrdf.repository.sail.SailQuery;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.repository.sail.SailRepositoryConnection;
-import org.openrdf.repository.sail.SailTupleQuery;
-import org.openrdf.sail.SailConnection;
+import java.util.Properties;
 
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.query.BooleanQuery;
+import org.eclipse.rdf4j.query.GraphQuery;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.Update;
+import org.eclipse.rdf4j.repository.sail.SailBooleanQuery;
+import org.eclipse.rdf4j.repository.sail.SailGraphQuery;
+import org.eclipse.rdf4j.repository.sail.SailQuery;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
+import org.eclipse.rdf4j.repository.sail.SailTupleQuery;
+
+import com.fluidops.fedx.FedX;
+import com.fluidops.fedx.FedXConnection;
+import com.fluidops.fedx.QueryManager;
 import com.fluidops.fedx.structures.QueryType;
 
 /**
@@ -44,7 +48,8 @@ import com.fluidops.fedx.structures.QueryType;
  */
 public class FedXSailRepositoryConnection extends SailRepositoryConnection
 {
-
+    protected final QueryManager queryManager;
+    
 	/**
 	 * We add a binding to each parsed query mapping the original query
 	 * in order to send the original query to the endpoint if there is
@@ -53,11 +58,25 @@ public class FedXSailRepositoryConnection extends SailRepositoryConnection
 	public static final String BINDING_ORIGINAL_QUERY = "__originalQuery";
 	public static final String BINDING_ORIGINAL_QUERY_TYPE = "__originalQueryType";
 	
-	protected FedXSailRepositoryConnection(SailRepository repository, SailConnection sailConnection)
+	FedXSailRepositoryConnection(SailRepository repository, FedXConnection sailConnection)
 	{
 		super(repository, sailConnection);
+		queryManager = new QueryManager(this);
+		sailConnection.setQqueryManager(queryManager);
+		
+        Properties props = ((FedX)repository.getSail()).getPrefixDeclarations();
+        if (props != null) {
+            for (String ns : props.stringPropertyNames()) {
+                queryManager.addPrefixDeclaration(ns, props.getProperty(ns)); // register namespace/prefix pair
+            }
+        }
 	}
 
+	@Override
+	public FedXConnection getSailConnection() {
+	    return (FedXConnection)super.getSailConnection();
+	}
+	
 	@Override
 	public SailQuery prepareQuery(QueryLanguage ql, String queryString,
 			String baseURI)

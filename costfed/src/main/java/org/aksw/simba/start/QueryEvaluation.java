@@ -10,20 +10,20 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.repository.sail.SailRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
 
 import com.fluidops.fedx.Config;
 import com.fluidops.fedx.FedXFactory;
-import com.fluidops.fedx.FederationManager;
 import com.fluidops.fedx.structures.QueryInfo;
 
 public class QueryEvaluation {
-	protected static final Logger log = Logger.getLogger(QueryEvaluation.class);
+	protected static final Logger log = LoggerFactory.getLogger(QueryEvaluation.class);
 	static {
 		try {
 			ClassLoader.getSystemClassLoader().loadClass("org.slf4j.LoggerFactory"). getMethod("getLogger", ClassLoader.getSystemClassLoader().loadClass("java.lang.String")).
@@ -54,7 +54,7 @@ public class QueryEvaluation {
 		//String queries = "S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 C1 C2 C3 C4 C6 C7 C8 C9 C10"; //"C1 C3 C5 C6 C7 C8 C9 C10 L1 L2 L3 L4 L5 L6 L7 L8";
 		//String queries = "S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 C1 C2 C3 C6 C7 C8 C9 C10";
 		//String queries = "S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 C1 C2 C3 C4 C6 C7 C8 C9 C10";
-		String queries = "C4"; // S3 C6 C2
+		String queries = "S1"; // S3 C6 C2
 		
 		List<String> endpointsMin = Arrays.asList(
 			 "http://" + host + ":8890/sparql",
@@ -105,7 +105,7 @@ public class QueryEvaluation {
 			 "http://" + host + ":8899/sparql"
 		);
 
-		List<String> endpoints = endpointsMax;
+		List<String> endpoints = endpointsMin;
 		
 		Map<String, List<List<Object>>> reports = multyEvaluate(queries, 3, cfgName, endpoints);
 	
@@ -141,12 +141,12 @@ public class QueryEvaluation {
 			sstreport.add(sstReportRow);
 			sstReportRow.add(curQueryName);
 			
-			Config.initialize(cfgName);
+			Config config = new Config(cfgName);
 			SailRepository repo = null;
 			TupleQueryResult res = null;
 			
 			try {
-				repo = FedXFactory.initializeSparqlFederation(endpoints);
+				repo = FedXFactory.initializeSparqlFederation(config, endpoints);
 				TupleQuery query = repo.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, curQuery); 
 			   	long startTime = System.currentTimeMillis();
 			   	res = query.evaluate();
@@ -167,7 +167,7 @@ public class QueryEvaluation {
 			    //log.info(curQueryName + ": Query exection time (msec): "+ runTime + ", Total Number of Records: " + count + ", Source Selection Time: " + QueryInfo.queryInfo.get().getSourceSelection().time);
 			} catch (Throwable e) {
 				e.printStackTrace();
-				log.error(e);
+				log.error("", e);
 				File f = new File("results/" + curQueryName + ".error.txt");
 				ByteArrayOutputStream os = new ByteArrayOutputStream();
 				PrintStream ps = new PrintStream(os);
@@ -179,8 +179,9 @@ public class QueryEvaluation {
 				if (null != res) {
 		    		res.close();
 		    	}
+				
 		    	if (null != repo) {
-		    		FederationManager.getInstance().shutDown();
+		    	    repo.shutDown();
 		    	}
 	        }
 		}

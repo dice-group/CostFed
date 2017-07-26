@@ -19,15 +19,14 @@ package com.fluidops.fedx.config;
 
 import java.util.Collections;
 
-import org.openrdf.sail.Sail;
-import org.openrdf.sail.config.SailConfigException;
-import org.openrdf.sail.config.SailFactory;
-import org.openrdf.sail.config.SailImplConfig;
+import org.eclipse.rdf4j.sail.Sail;
+import org.eclipse.rdf4j.sail.config.SailConfigException;
+import org.eclipse.rdf4j.sail.config.SailFactory;
+import org.eclipse.rdf4j.sail.config.SailImplConfig;
 
+import com.fluidops.fedx.DefaultEndpointListProvider;
 import com.fluidops.fedx.FedXFactory;
-import com.fluidops.fedx.FederationManager;
 import com.fluidops.fedx.exception.FedXException;
-import com.fluidops.fedx.structures.Endpoint;
 
 /**
  * A {@link SailFactory} that initializes FedX Sails based on 
@@ -69,12 +68,10 @@ public class FedXSailFactory implements SailFactory {
 			throw new SailConfigException("FedX Sail Configuration must not be null");
 		
 		try	{
-			FedXFactory.initializeFederation(fedxConfig, Collections.<Endpoint>emptyList());
+			return FedXFactory.initializeFederation(fedxConfig, new DefaultEndpointListProvider(Collections.<String>emptyList())).getSail();
 		} catch (FedXException e) {
 			throw new SailConfigException(e);
 		}
-		
-		return FederationManager.getInstance().getFederation();
 	}
 
 	/**

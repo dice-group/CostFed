@@ -17,15 +17,16 @@
 
 package com.fluidops.fedx.evaluation;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.EmptyIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.EmptyIteration;
 
 import java.util.List;
 
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
 
+import com.fluidops.fedx.FedXConnection;
 import com.fluidops.fedx.algebra.FilterTuple;
 import com.fluidops.fedx.algebra.FilterValueExpr;
 import com.fluidops.fedx.algebra.StatementTupleExpr;
@@ -49,8 +50,8 @@ import com.fluidops.fedx.util.QueryStringUtil;
 public class SparqlFederationEvalStrategyWithValues extends SparqlFederationEvalStrategy {
 
 	
-	public SparqlFederationEvalStrategyWithValues() {
-		
+	public SparqlFederationEvalStrategyWithValues(FedXConnection conn) {
+		super(conn);
 	}
 	
 	
@@ -75,7 +76,7 @@ public class SparqlFederationEvalStrategyWithValues extends SparqlFederationEval
 		// apply filter and/or convert to original bindings
 		if (filterExpr!=null && !isEvaluated) {
 			result = new BoundJoinVALUESConversionIteration(result, bindings);		// apply conversion
-			result = new FilteringIteration(filterExpr, result);				// apply filter
+			result = new FilteringIteration(this, filterExpr, result);				// apply filter
 			if (!result.hasNext())	
 				return new EmptyIteration<BindingSet, QueryEvaluationException>();
 		} else {

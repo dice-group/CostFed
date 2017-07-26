@@ -19,11 +19,12 @@ package com.fluidops.fedx.provider;
 
 import java.io.File;
 
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.sail.nativerdf.NativeStore;
-import org.openrdf.sail.nativerdf.NativeStoreExt;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.sail.nativerdf.NativeStore;
+import org.eclipse.rdf4j.sail.nativerdf.NativeStoreExt;
 
+import com.fluidops.fedx.Config;
 import com.fluidops.fedx.exception.FedXException;
 import com.fluidops.fedx.exception.FedXRuntimeException;
 import com.fluidops.fedx.structures.Endpoint;
@@ -41,10 +42,15 @@ import com.fluidops.fedx.util.FileUtil;
  */
 public class NativeStoreProvider implements EndpointProvider {
 
+    final Config config;
+    public NativeStoreProvider(Config config) {
+        this.config = config;
+    }
+    
 	@Override
 	public Endpoint loadEndpoint(RepositoryInformation repoInfo) throws FedXException {
 		
-		File store = FileUtil.getFileLocation(repoInfo.getLocation());
+		File store = FileUtil.getFileLocation(config, repoInfo.getLocation());
 		
 		if (!store.exists()){
 			throw new FedXRuntimeException("Store does not exist at '" + repoInfo.getLocation() + ": " + store.getAbsolutePath() + "'.");
@@ -55,7 +61,7 @@ public class NativeStoreProvider implements EndpointProvider {
 			SailRepository repo = new SailRepository(ns);
 			repo.initialize();
 			
-			ProviderUtil.checkConnectionIfConfigured(repo);
+			ProviderUtil.checkConnectionIfConfigured(config, repo);
 			
 			Endpoint res = new Endpoint(repoInfo.getId(), repoInfo.getName(), repoInfo.getLocation(), repoInfo.getType(), EndpointClassification.Local);
 			res.setEndpointConfiguration(repoInfo.getEndpointConfiguration());
@@ -73,6 +79,4 @@ public class NativeStoreProvider implements EndpointProvider {
 			throw new FedXException("Repository " + repoInfo.getId() + " could not be initialized: " + e.getMessage(), e);
 		}
 	}
-
-
 }

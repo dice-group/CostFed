@@ -21,10 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import org.apache.log4j.Logger;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.TupleExpr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
 
 import com.fluidops.fedx.Config;
 import com.fluidops.fedx.algebra.BoundJoinTupleExpr;
@@ -36,7 +37,7 @@ import com.fluidops.fedx.evaluation.FederationEvalStrategy;
 import com.fluidops.fedx.evaluation.concurrent.ControlledWorkerScheduler;
 import com.fluidops.fedx.structures.QueryInfo;
 
-import info.aduna.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 
 
 
@@ -55,7 +56,7 @@ import info.aduna.iteration.CloseableIteration;
  */
 public class ControlledWorkerBoundJoin extends ControlledWorkerJoin {
 
-	public static Logger log = Logger.getLogger(ControlledWorkerBoundJoin.class);
+	public static Logger log = LoggerFactory.getLogger(ControlledWorkerBoundJoin.class);
 	
 	public ControlledWorkerBoundJoin(ControlledWorkerScheduler scheduler, FederationEvalStrategy strategy,
 			CloseableIteration<BindingSet, QueryEvaluationException> leftIter,
@@ -73,7 +74,7 @@ public class ControlledWorkerBoundJoin extends ControlledWorkerJoin {
 			return;
 		}
 		
-		int nBindingsCfg = Config.getConfig().getBoundJoinBlockSize();	
+		int nBindingsCfg = strategy.getFederation().getConfig().getBoundJoinBlockSize();	
 		int totalBindings = 0;		// the total number of bindings
 		TupleExpr expr = rightArg;
 		
@@ -88,7 +89,7 @@ public class ControlledWorkerBoundJoin extends ControlledWorkerJoin {
 				if (stmt.hasFreeVarsFor(b)) {
 					taskCreator = new BoundJoinTaskCreator(strategy, stmt);
 				} else {
-					expr = new CheckStatementPattern(stmt);
+					expr = new CheckStatementPattern(strategy.getFedXConnection(), stmt);
 					taskCreator = new CheckJoinTaskCreator(strategy, (CheckStatementPattern)expr);
 				}
 			} else if (expr instanceof FedXService) { 
@@ -161,7 +162,7 @@ public class ControlledWorkerBoundJoin extends ControlledWorkerJoin {
 	private boolean canApplyVectoredEvaluation(TupleExpr expr) {
 		if (expr instanceof BoundJoinTupleExpr) {
 			if (expr instanceof FedXService) 
-				return Config.getConfig().getEnableServiceAsBoundJoin();
+				return strategy.getFederation().getConfig().getEnableServiceAsBoundJoin();
 			return true;
 		}				
 		return false;

@@ -17,7 +17,7 @@
 
 package com.fluidops.fedx.monitoring;
 
-import org.openrdf.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
 
 import com.fluidops.fedx.Config;
 
@@ -40,20 +40,25 @@ public class QueryPlanLog
 
 	static ThreadLocal<String> queryPlan = new ThreadLocal<String>();
 	
-	public static String getQueryPlan() {
-		if (!isActive() || !Config.getConfig().isEnableMonitoring())
+	Config config;
+	public QueryPlanLog(Config config) {
+	    this.config = config;
+	}
+	
+	public String getQueryPlan() {
+		if (!isActive() || !config.isEnableMonitoring())
 			throw new IllegalStateException("QueryPlan log module is not active, use monitoring.logQueryPlan=true in the configuration to activate.");
 		return queryPlan.get();
 	}
 	
-	public static void setQueryPlan(TupleExpr query) {
+	public void setQueryPlan(TupleExpr query) {
 		if (!isActive())
 			return;
 		queryPlan.set(query.toString());
 	}
 	
-	private static boolean isActive() {
-		return Config.getConfig().isLogQueryPlan();
+	private boolean isActive() {
+		return config.isLogQueryPlan();
 	}
 	
 }

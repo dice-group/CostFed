@@ -13,24 +13,26 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.apache.log4j.Logger;
-import org.openrdf.model.IRI;
-import org.openrdf.model.Value;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.rio.RDFFormat;
-import org.openrdf.sail.memory.MemoryStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.sail.memory.MemoryStore;
 
 import com.fluidops.fedx.algebra.StatementSource;
+import com.google.common.collect.Lists;
 
 public class CostFedSummary implements Summary {
-	static Logger log = Logger.getLogger(CostFedSummary.class);
+	static Logger log = LoggerFactory.getLogger(CostFedSummary.class);
 	
 	static class KeyTuple implements Comparable<KeyTuple> {
 		String predicate;
@@ -198,6 +200,7 @@ public class CostFedSummary implements Summary {
 		return eid;
 	}
 	
+	Repository repo;
 	RepositoryConnection conn;
 	
 	// endpoint url -> endpoint id // auxiliary
@@ -217,7 +220,7 @@ public class CostFedSummary implements Summary {
 	// endpoint id -> predicate -> Capability 
 	Map<String, EndpointCapability> urlCaps = new HashMap<String, EndpointCapability>();
 	
-	void buildPrefixes(String query, SortedMap<KeyTuple, ValueTuple> prefixMap, boolean isSbjPrefix) {
+	void buildPrefixes(RepositoryConnection conn, String query, SortedMap<KeyTuple, ValueTuple> prefixMap, boolean isSbjPrefix) {
 		TupleQuery tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
 		TupleQueryResult result = tupleQuery.evaluate();
 		while (result.hasNext())
@@ -243,7 +246,7 @@ public class CostFedSummary implements Summary {
 		result.close();
 	}
 	
-	void buildTops(String query, Map<KeyTuple, ValueTuple> prefixMap, boolean isSubject) {
+	void buildTops(RepositoryConnection conn, String query, Map<KeyTuple, ValueTuple> prefixMap, boolean isSubject) {
 		TupleQuery tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
 		TupleQueryResult result = tupleQuery.evaluate();
 		while (result.hasNext())
@@ -301,85 +304,105 @@ public class CostFedSummary implements Summary {
 		}
 	}
 	
-	public CostFedSummary(RepositoryConnection conn) {
-		this.conn = conn;
+	public CostFedSummary(List<String> files) {
 		
 		long start = System.currentTimeMillis();
 		
-		String endpointsCapsQuery = "Prefix ds: <http://aksw.org/quetsal/> "
-				+ "SELECT ?url ?totalSbj ?totalObj ?totalTriples"
-				+ " WHERE { ?s ds:url ?url; ds:totalSbj ?totalSbj; ds:totalObj ?totalObj; ds:totalTriples ?totalTriples. }";
-		TupleQuery tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, endpointsCapsQuery);
-		TupleQueryResult result = tupleQuery.evaluate();
-		while (result.hasNext())
-		{
-			BindingSet row = result.next();
-			String endpoint = row.getValue("url").stringValue();
-			long sc = Long.parseLong(row.getValue("totalSbj").stringValue());
-			long oc = Long.parseLong(row.getValue("totalObj").stringValue());
-			long tc = Long.parseLong(row.getValue("totalTriples").stringValue());
-			
-			String eid = getEID(endpoint);
-			EndpointCapability ec = urlCaps.get(eid);
-			if (ec == null) {
-				ec = new EndpointCapability();
-				urlCaps.put(eid, ec);
-			}
-			ec.setTotalSubjects(sc);
-			ec.setTotalObjects(oc);
-			ec.setTotalTriples(tc);
+		try {
+    		repo = new SailRepository( new MemoryStore(/*new File("summaries/")*/) );
+            repo.initialize();
+            conn = repo.getConnection();
+            
+            for (String filename : files)
+            {
+                try {
+                    conn.add(new File(filename).getAbsoluteFile(), "aksw.org.simba", RDFFormat.N3);
+                } catch (Exception e) {
+                    throw new Exception("can't load file: " + filename, e);
+                }
+            }
+            
+    		String endpointsCapsQuery = "Prefix ds: <http://aksw.org/quetsal/> "
+    				+ "SELECT ?url ?totalSbj ?totalObj ?totalTriples"
+    				+ " WHERE { ?s ds:url ?url; ds:totalSbj ?totalSbj; ds:totalObj ?totalObj; ds:totalTriples ?totalTriples. }";
+    		
+    		TupleQuery tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, endpointsCapsQuery);
+    		TupleQueryResult result = tupleQuery.evaluate();
+    		while (result.hasNext())
+    		{
+    			BindingSet row = result.next();
+    			String endpoint = row.getValue("url").stringValue();
+    			long sc = Long.parseLong(row.getValue("totalSbj").stringValue());
+    			long oc = Long.parseLong(row.getValue("totalObj").stringValue());
+    			long tc = Long.parseLong(row.getValue("totalTriples").stringValue());
+    			
+    			String eid = getEID(endpoint);
+    			EndpointCapability ec = urlCaps.get(eid);
+    			if (ec == null) {
+    				ec = new EndpointCapability();
+    				urlCaps.put(eid, ec);
+    			}
+    			ec.setTotalSubjects(sc);
+    			ec.setTotalObjects(oc);
+    			ec.setTotalTriples(tc);
+    		}
+    		result.close();
+    	
+    		String servPredCapsQuery = "Prefix ds: <http://aksw.org/quetsal/> "
+    				+ "SELECT ?url ?p ?dsbj ?dobj ?tc"
+    				+ " WHERE { ?s ds:url ?url. "
+    				+ " 		?s ds:capability ?cap. "
+    				+ "		    ?cap ds:predicate ?p."
+    				+ "			?cap ds:distinctSbjs ?dsbj."
+    				+ "			?cap ds:distinctObjs ?dobj."
+    				+ "         ?cap ds:triples ?tc.}" ;
+    		
+    		tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, servPredCapsQuery);
+    		result = tupleQuery.evaluate();
+    	
+    		while (result.hasNext())
+    		{
+    			BindingSet row = result.next();
+    			
+    			String endpoint = row.getValue("url").stringValue();
+    			String predicate = row.getValue("p").stringValue();
+    			long dsbj = Long.parseLong(row.getValue("dsbj").stringValue());
+    			long dobj = Long.parseLong(row.getValue("dobj").stringValue());
+    			long tc = Long.parseLong(row.getValue("tc").stringValue());
+    			
+    			String eid = getEID(endpoint);
+    			updateMap(purls, predicate, eid);
+    			Capability cap = getOrCreateCapability(eid, predicate);
+    			cap.subjectCount = dsbj;
+    			cap.objectCount = dobj;
+    			cap.tripleCount = tc;
+    		}
+    	
+    		String subjPrefixesQuery = "Prefix ds: <http://aksw.org/quetsal/> "
+    				+ "SELECT ?url ?p ?prefix ?unique ?card"
+    				+ " WHERE { ?s ds:url ?url; ds:capability [ds:predicate ?p; ds:subjPrefixes [ds:prefix ?prefix; ds:unique ?unique; ds:card ?card]] }";
+    		buildPrefixes(conn, subjPrefixesQuery, psbj, true);
+    
+    		String objPrefixesQuery = "Prefix ds: <http://aksw.org/quetsal/> "
+    				+ "SELECT ?url ?p ?prefix ?unique ?card"
+    				+ " WHERE { ?s ds:url ?url; ds:capability [ds:predicate ?p; ds:objPrefixes [ds:prefix ?prefix; ds:unique ?unique; ds:card ?card]] }";
+    		buildPrefixes(conn, objPrefixesQuery, pobj, false);
+    		
+    		String sbjTopQuery = "Prefix ds: <http://aksw.org/quetsal/> "
+    				+ "SELECT ?url ?p ?iri ?card"
+    				+ " WHERE { ?s ds:url ?url; ds:capability [ds:predicate ?p; ds:topSbjs [ds:subject ?iri; ds:card ?card]] }";
+    		buildTops(conn, sbjTopQuery, ptopsbj, true);
+    		
+    		String objTopQuery = "Prefix ds: <http://aksw.org/quetsal/> "
+    				+ "SELECT ?url ?p ?iri ?card"
+    				+ " WHERE { ?s ds:url ?url; ds:capability [ds:predicate ?p; ds:topObjs [ds:object ?iri; ds:card ?card]] }"; 
+    		buildTops(conn, objTopQuery, ptopobj, false);
+		} catch (Exception ex) {
+		    shutDown();
+		    throw new RuntimeException(ex);
 		}
-		result.close();
-		
-		String servPredCapsQuery = "Prefix ds: <http://aksw.org/quetsal/> "
-				+ "SELECT ?url ?p ?dsbj ?dobj ?tc"
-				+ " WHERE { ?s ds:url ?url. "
-				+ " 		?s ds:capability ?cap. "
-				+ "		    ?cap ds:predicate ?p."
-				+ "			?cap ds:distinctSbjs ?dsbj."
-				+ "			?cap ds:distinctObjs ?dobj."
-				+ "         ?cap ds:triples ?tc.}" ;
-		
-		tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, servPredCapsQuery);
-		result = tupleQuery.evaluate();
-		
-		while (result.hasNext())
-		{
-			BindingSet row = result.next();
-			
-			String endpoint = row.getValue("url").stringValue();
-			String predicate = row.getValue("p").stringValue();
-			long dsbj = Long.parseLong(row.getValue("dsbj").stringValue());
-			long dobj = Long.parseLong(row.getValue("dobj").stringValue());
-			long tc = Long.parseLong(row.getValue("tc").stringValue());
-			
-			String eid = getEID(endpoint);
-			updateMap(purls, predicate, eid);
-			Capability cap = getOrCreateCapability(eid, predicate);
-			cap.subjectCount = dsbj;
-			cap.objectCount = dobj;
-			cap.tripleCount = tc;
-		}
-		
-		String subjPrefixesQuery = "Prefix ds: <http://aksw.org/quetsal/> "
-				+ "SELECT ?url ?p ?prefix ?unique ?card"
-				+ " WHERE { ?s ds:url ?url; ds:capability [ds:predicate ?p; ds:subjPrefixes [ds:prefix ?prefix; ds:unique ?unique; ds:card ?card]] }";
-		buildPrefixes(subjPrefixesQuery, psbj, true);
-
-		String objPrefixesQuery = "Prefix ds: <http://aksw.org/quetsal/> "
-				+ "SELECT ?url ?p ?prefix ?unique ?card"
-				+ " WHERE { ?s ds:url ?url; ds:capability [ds:predicate ?p; ds:objPrefixes [ds:prefix ?prefix; ds:unique ?unique; ds:card ?card]] }";
-		buildPrefixes(objPrefixesQuery, pobj, false);
-		
-		String sbjTopQuery = "Prefix ds: <http://aksw.org/quetsal/> "
-				+ "SELECT ?url ?p ?iri ?card"
-				+ " WHERE { ?s ds:url ?url; ds:capability [ds:predicate ?p; ds:topSbjs [ds:subject ?iri; ds:card ?card]] }";
-		buildTops(sbjTopQuery, ptopsbj, true);
-		
-		String objTopQuery = "Prefix ds: <http://aksw.org/quetsal/> "
-				+ "SELECT ?url ?p ?iri ?card"
-				+ " WHERE { ?s ds:url ?url; ds:capability [ds:predicate ?p; ds:topObjs [ds:object ?iri; ds:card ?card]] }"; 
-		buildTops(objTopQuery, ptopobj, false);
+	
+		log.info("CostFedSummary generation time: " + (System.currentTimeMillis() - start) + " ms");
 		
 		/*
 		TupleQuery tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, subjPrefixesQuery);
@@ -440,7 +463,7 @@ public class CostFedSummary implements Summary {
 		}
 		*/
 		
-		log.info("CostFedSummary generation time: " + (System.currentTimeMillis() - start) + " ms");
+		
 	}
 	
 
@@ -730,23 +753,49 @@ public class CostFedSummary implements Summary {
 		return ((double)totalTriples)/totalSubjects;
 	}
 	
+    @Override
+    public RepositoryConnection getConnection() {
+        return conn;
+    }
+
+    int refs = 1;
+ 
+    public void addref() {
+        refs++;
+    }
+    
+    @Override
+    public void close() {
+        if (--refs == 0) {
+            shutDown();
+        }
+    }
+    
+	@Override
+	public void shutDown() {
+	    if (conn != null) {
+	        conn.close();
+	        conn = null;
+	    }
+	    if (repo != null) {
+	        repo.shutDown();
+	        repo = null;
+	    }
+	}
 ///////////////////////////////////////////////////////////////////////////////////////
 	public static void main(String[] args) throws IOException
 	{
 		String theFedSummaries = "summaries/sumX-localhost5.n3";
-		Repository repo = new SailRepository( new MemoryStore(/*new File("summaries/")*/) );
-		repo.initialize();
-		RepositoryConnection conn = repo.getConnection();
-		conn.add(new File(theFedSummaries), "aksw.org.simba", RDFFormat.N3);
+		CostFedSummary summary = new CostFedSummary(Lists.newArrayList(theFedSummaries));
 		try {
-			new CostFedSummary(conn);
-			//TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, strQuery); 
-			//TupleQueryResult rs = query.evaluate();
-			//return Long.parseLong(rs.next().getValue("objs").stringValue());
+		    //TupleQuery query = summary.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, strQuery); 
+            //TupleQueryResult rs = query.evaluate();
+            //return Long.parseLong(rs.next().getValue("objs").stringValue());
 		} finally {
-			conn.close();
-			repo.shutDown();
-		}
+		    summary.shutDown();    
+        }
 		
 	}
+
+
 }

@@ -23,24 +23,22 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.openrdf.model.Statement;
-import org.openrdf.model.Value;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.QueryModelVisitor;
-import org.openrdf.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.algebra.QueryModelVisitor;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
 
-import com.fluidops.fedx.FederationManager;
+import com.fluidops.fedx.FedXConnection;
 import com.fluidops.fedx.evaluation.FederationEvalStrategy;
 import com.fluidops.fedx.evaluation.iterator.BoundJoinConversionIteration;
-import com.fluidops.fedx.evaluation.iterator.BufferedCloseableIterator;
 import com.fluidops.fedx.evaluation.iterator.GroupedCheckConversionIteration;
 import com.fluidops.fedx.structures.QueryInfo;
 import com.fluidops.fedx.structures.QueryType;
 import com.fluidops.fedx.util.QueryAlgebraUtil;
 import com.fluidops.fedx.util.QueryStringUtil;
-
-import info.aduna.iteration.CloseableIteration;
 
 /**
  * Base class providing all common functionality for FedX StatementPatterns
@@ -67,8 +65,8 @@ public abstract class FedXStatementPattern extends StatementPattern implements S
 		initFreeVars();
 	}
 	
-	protected FedXStatementPattern(Statement st) {
-		this(QueryAlgebraUtil.toStatementPattern(st), new QueryInfo("getStatements", QueryType.GET_STATEMENTS));
+	protected FedXStatementPattern(Statement st, Object summary, FedXConnection conn) {
+		this(QueryAlgebraUtil.toStatementPattern(st), new QueryInfo(conn, "getStatements", QueryType.GET_STATEMENTS, summary));
 	}
 	
 	public void addStatementSource(StatementSource statementSource) {
@@ -239,7 +237,7 @@ public abstract class FedXStatementPattern extends StatementPattern implements S
 			preparedQuery = QueryStringUtil.selectQueryStringBoundCheck(this, bindings);
 		}
 		
-		FederationEvalStrategy strategy = FederationManager.getInstance().getStrategy();
+		FederationEvalStrategy strategy = queryInfo.getFedXConnection().getStrategy();
 		CloseableIteration<BindingSet, QueryEvaluationException> result = strategy.evaluateAtStatementSources(preparedQuery, sources, getQueryInfo());
 		
 		if (hasFreeVars) {

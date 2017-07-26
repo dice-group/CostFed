@@ -17,17 +17,15 @@
 
 package com.fluidops.fedx.provider;
 
-import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
-import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
-import org.openrdf.query.algebra.evaluation.federation.SPARQLFederatedService;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.sparql.SPARQLRepository;
+import org.apache.http.client.HttpClient;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 
-import com.fluidops.fedx.FedXFactory;
+import com.fluidops.fedx.Config;
 import com.fluidops.fedx.exception.FedXException;
 import com.fluidops.fedx.structures.Endpoint;
-import com.fluidops.fedx.structures.EndpointConfiguration;
 import com.fluidops.fedx.structures.Endpoint.EndpointClassification;
+import com.fluidops.fedx.structures.EndpointConfiguration;
 import com.fluidops.fedx.structures.SparqlEndpointConfiguration;
 
 
@@ -42,17 +40,26 @@ import com.fluidops.fedx.structures.SparqlEndpointConfiguration;
  */
 public class SPARQLProvider implements EndpointProvider {
 
+    final Config config;
+    final HttpClient httpClient;
+    public SPARQLProvider(Config config, HttpClient httpClient) {
+        this.config = config;
+        this.httpClient = httpClient;
+    }
+    
 	@Override
 	public Endpoint loadEndpoint(RepositoryInformation repoInfo) throws FedXException {
 
 		try {
 			SPARQLRepository repo = new SPARQLRepository(repoInfo.getLocation());
-			repo.setHttpClient(FedXFactory.httpClient);
+			if (httpClient != null) {
+			    repo.setHttpClient(httpClient);
+			}
 			repo.initialize();
 			
-			long rtime = ProviderUtil.checkConnectionIfConfigured(repo);
+			long rtime = ProviderUtil.checkConnectionIfConfigured(config, repo);
 			if (rtime != 0) {
-				rtime = ProviderUtil.checkConnectionIfConfigured(repo); // measure again
+				rtime = ProviderUtil.checkConnectionIfConfigured(config, repo); // measure again
 			}
 			
 			String location = repoInfo.getLocation();

@@ -17,8 +17,6 @@
 
 package com.fluidops.fedx.algebra;
 
-import info.aduna.iteration.CloseableIteration;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,20 +24,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.openrdf.model.Value;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.AbstractQueryModelNode;
-import org.openrdf.query.algebra.QueryModelVisitor;
-import org.openrdf.repository.RepositoryException;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.algebra.AbstractQueryModelNode;
+import org.eclipse.rdf4j.query.algebra.QueryModelVisitor;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
-import com.fluidops.fedx.EndpointManager;
-import com.fluidops.fedx.FederationManager;
 import com.fluidops.fedx.structures.Endpoint;
 import com.fluidops.fedx.structures.QueryInfo;
-
-
 
 /**
  * Represents a group of statements that can only produce results at a single endpoint, the owner.
@@ -65,7 +60,7 @@ public class ExclusiveGroup extends AbstractQueryModelNode implements StatementT
 		init();	// init free vars + filter expr
 		this.id = NodeFactory.getNextId();
 		this.queryInfo = queryInfo;
-		ownedEndpoint = EndpointManager.getEndpointManager().getEndpoint(owner.getEndpointID());
+		ownedEndpoint = queryInfo.getFedXConnection().getEndpointManager().getEndpoint(owner.getEndpointID());
 		queryInfo.numSources.addAndGet(-ownedNodes.size() + 1);
 		queryInfo.totalSources.addAndGet(-ownedNodes.size() + 1);
 	}
@@ -176,7 +171,7 @@ public class ExclusiveGroup extends AbstractQueryModelNode implements StatementT
 		
 		try {
 			// use the particular evaluation strategy for evaluation
-			return FederationManager.getInstance().getStrategy().evaluateExclusiveGroup(this, ownedEndpoint.getConn(), ownedEndpoint.getTripleSource(), bindings);
+			return queryInfo.getFedXConnection().getStrategy().evaluateExclusiveGroup(this, ownedEndpoint.getConn(), ownedEndpoint.getTripleSource(), bindings);
 		} catch (RepositoryException e) {
 			throw new QueryEvaluationException(e);
 		} catch (MalformedQueryException e) {

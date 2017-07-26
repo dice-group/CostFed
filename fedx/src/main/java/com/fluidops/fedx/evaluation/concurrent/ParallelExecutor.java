@@ -17,9 +17,9 @@
 
 package com.fluidops.fedx.evaluation.concurrent;
 
-import info.aduna.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 
-import org.openrdf.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
 
 import com.fluidops.fedx.evaluation.join.JoinExecutorBase;
 import com.fluidops.fedx.evaluation.union.UnionExecutorBase;

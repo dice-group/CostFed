@@ -9,31 +9,28 @@ import org.aksw.simba.quetsal.core.algebra.JoinRestarter;
 import org.aksw.simba.quetsal.core.algebra.TopKSourceStatementPattern;
 import org.aksw.simba.quetsal.core.evaluation.BindJoinImpl;
 import org.aksw.simba.quetsal.core.evaluation.HashJoinImpl;
-import org.aksw.simba.quetsal.core.evaluation.TopKSourceStatementIteration;
 import org.aksw.simba.quetsal.core.evaluation.RestarterIteration;
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.log4j.Logger;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.evaluation.QueryBindingSet;
+import org.aksw.simba.quetsal.core.evaluation.TopKSourceStatementIteration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
 
-import com.fluidops.fedx.FederationManager;
-import com.fluidops.fedx.algebra.CheckStatementPattern;
+import com.fluidops.fedx.FedXConnection;
 import com.fluidops.fedx.algebra.StatementTupleExpr;
-import com.fluidops.fedx.evaluation.FederationEvalStrategy;
 import com.fluidops.fedx.evaluation.SparqlFederationEvalStrategy;
 import com.fluidops.fedx.evaluation.iterator.QueueIteration;
 import com.fluidops.fedx.evaluation.iterator.RestartableCloseableIteration;
-import com.fluidops.fedx.evaluation.join.ParallelBoundJoinTask;
-import com.fluidops.fedx.evaluation.join.ParallelCheckJoinTask;
-import com.fluidops.fedx.structures.QueryInfo;
-
-import info.aduna.iteration.CloseableIteration;
 
 public class TBSSFederationEvalStrategy extends SparqlFederationEvalStrategy {
-	static Logger log = Logger.getLogger(TBSSFederationEvalStrategy.class);
-			
+    static Logger log = LoggerFactory.getLogger(TBSSFederationEvalStrategy.class);
+    
+	public TBSSFederationEvalStrategy(FedXConnection conn) {
+        super(conn);
+    }
+
 	@Override
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(TupleExpr expr, BindingSet bindings)
 	{
@@ -59,14 +56,14 @@ public class TBSSFederationEvalStrategy extends SparqlFederationEvalStrategy {
 			StatementTupleExpr stmt = (StatementTupleExpr)expr;
 			return stmt.evaluate(bindings);
 		} else {
-			throw new NotImplementedException(expr + "");
+			throw new RuntimeException(expr + " not implemented");
 		}
 	}
 	
 	public void evaluate(QueueIteration<BindingSet> qit, TupleExpr expr, List<BindingSet> bindings)
 	{
 		Callable<CloseableIteration<BindingSet, QueryEvaluationException>> task = new AsyncEval(expr, bindings);
-		FederationManager.getInstance().getScheduler().schedule(qit.createTask(task));
+		getScheduler().schedule(qit.createTask(getScheduler(), task));
 	}
 	
 	CloseableIteration<BindingSet, QueryEvaluationException> evaluateJoinRestarter(JoinRestarter jri, BindingSet bindings)
@@ -85,13 +82,13 @@ public class TBSSFederationEvalStrategy extends SparqlFederationEvalStrategy {
 	
 	CloseableIteration<BindingSet, QueryEvaluationException> evaluateBindJoin(BindJoin join, BindingSet bindings)
 	{
-		return new BindJoinImpl(FederationManager.getInstance().getScheduler(), this, join.getLeftArg(), join.getRightArg(), bindings, join.getQueryInfo());
+		return new BindJoinImpl(getScheduler(), this, join.getLeftArg(), join.getRightArg(), bindings, join.getQueryInfo());
 		//return executeJoin(FederationManager.getInstance().getScheduler(), leftResult, join.getRightArg(), bindings, join.getQueryInfo());
 	}
 	
 	CloseableIteration<BindingSet, QueryEvaluationException> evaluateHashJoin(HashJoin join, BindingSet bindings)
 	{
-		return new HashJoinImpl(FederationManager.getInstance().getScheduler(),	this,
+		return new HashJoinImpl(getScheduler(),	this,
 			join.getLeftArg().getBindingNames(), join.getLeftArg(),
 			join.getRightArg().getBindingNames(), join.getRightArg(),
 			bindings, join.getQueryInfo());

@@ -19,9 +19,9 @@ package com.fluidops.fedx.cache;
 
 import java.util.List;
 
-import info.aduna.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 
-import org.openrdf.model.Statement;
+import org.eclipse.rdf4j.model.Statement;
 
 import com.fluidops.fedx.exception.EntryAlreadyExistsException;
 import com.fluidops.fedx.exception.EntryUpdateException;

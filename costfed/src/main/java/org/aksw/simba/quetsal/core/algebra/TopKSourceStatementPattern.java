@@ -6,19 +6,17 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.aksw.simba.quetsal.core.Cardinality;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.AbstractQueryModelNode;
-import org.openrdf.query.algebra.QueryModelVisitor;
-import org.openrdf.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.algebra.AbstractQueryModelNode;
+import org.eclipse.rdf4j.query.algebra.QueryModelVisitor;
 
-import com.fluidops.fedx.algebra.LocalVarsNode;
 import com.fluidops.fedx.algebra.StatementSource;
 import com.fluidops.fedx.algebra.StatementSourcePattern;
+import com.fluidops.fedx.evaluation.concurrent.ControlledWorkerScheduler;
 import com.fluidops.fedx.evaluation.iterator.QueueIteration;
 import com.fluidops.fedx.structures.QueryInfo;
-
-import info.aduna.iteration.CloseableIteration;
 
 public class TopKSourceStatementPattern extends StatementSourcePattern {
 	private static final long serialVersionUID = -3691476813071027998L;
@@ -61,7 +59,7 @@ public class TopKSourceStatementPattern extends StatementSourcePattern {
 	public TopKSourceStatementPattern(StatementSourcePattern arg, QueryInfo queryInfo) {
 		super(arg, queryInfo);
 		for (StatementSource src : arg.getStatementSources()) {
-			long card = Cardinality.getTriplePatternCardinality(arg, Arrays.asList(src));
+			long card = Cardinality.getTriplePatternCardinality(queryInfo, arg, Arrays.asList(src));
 			assert(card != 0);
 			srcEntries.add(new Entry(card,	src));
 		}
@@ -74,6 +72,10 @@ public class TopKSourceStatementPattern extends StatementSourcePattern {
 		queryInfo.totalSources.addAndGet(srcEntries.size());
 	}
 
+	public ControlledWorkerScheduler getScheduler() {
+	    return queryInfo.getFederation().getScheduler();
+	}
+	
 	public List<Entry> getEntries() {
 		return srcEntries;
 	}
@@ -147,7 +149,7 @@ public class TopKSourceStatementPattern extends StatementSourcePattern {
 		if (!replaySrcs.isEmpty()) {
 			for (List<List<BindingSet>> levelcache : bindingCache) {
 				for (List<BindingSet> item : levelcache) {
-					iteration.executeTask(new Callable<CloseableIteration<BindingSet,QueryEvaluationException>>() {
+					iteration.executeTask(getScheduler(), new Callable<CloseableIteration<BindingSet,QueryEvaluationException>>() {
 						@Override
 						public CloseableIteration<BindingSet, QueryEvaluationException> call() throws Exception {
 							return evaluate(item, replaySrcs);
@@ -164,7 +166,7 @@ public class TopKSourceStatementPattern extends StatementSourcePattern {
 		if (binding != null) {
 			bindingCache.get(bindingCache.size() - 1).add(Arrays.asList(binding));
 			cachedBindingCount++;
-			iteration.executeTask(new Callable<CloseableIteration<BindingSet,QueryEvaluationException>>() {
+			iteration.executeTask(getScheduler(), new Callable<CloseableIteration<BindingSet,QueryEvaluationException>>() {
 				@Override
 				public CloseableIteration<BindingSet, QueryEvaluationException> call() throws Exception {
 					return TopKSourceStatementPattern.super.evaluate(binding);
@@ -180,7 +182,7 @@ public class TopKSourceStatementPattern extends StatementSourcePattern {
 		if (bindings != null) {
 			bindingCache.get(bindingCache.size() - 1).add(bindings);
 			cachedBindingCount++;// += bindings.size();
-			iteration.executeTask(new Callable<CloseableIteration<BindingSet,QueryEvaluationException>>() {
+			iteration.executeTask(getScheduler(), new Callable<CloseableIteration<BindingSet,QueryEvaluationException>>() {
 				@Override
 				public CloseableIteration<BindingSet, QueryEvaluationException> call() throws Exception {
 					return TopKSourceStatementPattern.super.evaluate(bindings);

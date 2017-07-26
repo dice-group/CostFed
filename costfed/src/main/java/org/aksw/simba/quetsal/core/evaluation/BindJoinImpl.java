@@ -6,12 +6,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import org.apache.log4j.Logger;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.TupleExpr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
 
-import com.fluidops.fedx.Config;
 import com.fluidops.fedx.algebra.BoundJoinTupleExpr;
 import com.fluidops.fedx.algebra.FedXService;
 import com.fluidops.fedx.evaluation.FederationEvalStrategy;
@@ -22,10 +23,8 @@ import com.fluidops.fedx.evaluation.iterator.RestartableCloseableIteration;
 import com.fluidops.fedx.evaluation.iterator.RestartableLookAheadIteration;
 import com.fluidops.fedx.structures.QueryInfo;
 
-import info.aduna.iteration.CloseableIteration;
-
 public class BindJoinImpl extends RestartableLookAheadIteration<BindingSet> {
-	public static Logger log = Logger.getLogger(BindJoinImpl.class);
+	public static Logger log = LoggerFactory.getLogger(BindJoinImpl.class);
 	
 	final ControlledWorkerScheduler scheduler;
 	protected final FederationEvalStrategy strategy;		// the evaluation strategy
@@ -63,7 +62,7 @@ public class BindJoinImpl extends RestartableLookAheadIteration<BindingSet> {
 	private boolean canApplyVectoredEvaluation(TupleExpr expr) {
 		if (expr instanceof BoundJoinTupleExpr) {
 			if (expr instanceof FedXService) 
-				return Config.getConfig().getEnableServiceAsBoundJoin();
+				return queryInfo.getFederation().getConfig().getEnableServiceAsBoundJoin();
 			return true;
 		}				
 		return false;
@@ -79,7 +78,7 @@ public class BindJoinImpl extends RestartableLookAheadIteration<BindingSet> {
 		}
 		
 		boolean hasLeftProducedResults = false;
-		int nBindingsCfg = Config.getConfig().getBoundJoinBlockSize();
+		int nBindingsCfg = queryInfo.getFederation().getConfig().getBoundJoinBlockSize();
 		while (true) {
 			List<BindingSet> bindings = new ArrayList<BindingSet>(nBindingsCfg);
 			while (!isClosed() && bindings.size() < nBindingsCfg && leftIter.hasNext()) {

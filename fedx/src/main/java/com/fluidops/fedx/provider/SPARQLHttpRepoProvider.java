@@ -17,9 +17,10 @@
 
 package com.fluidops.fedx.provider;
 
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.http.HTTPRepository;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.http.HTTPRepository;
 
+import com.fluidops.fedx.Config;
 import com.fluidops.fedx.exception.FedXException;
 import com.fluidops.fedx.structures.Endpoint;
 import com.fluidops.fedx.structures.Endpoint.EndpointClassification;
@@ -32,7 +33,12 @@ import com.fluidops.fedx.structures.Endpoint.EndpointClassification;
  * @author Andreas Schwarte
  */
 public class SPARQLHttpRepoProvider implements EndpointProvider {
-
+    
+    final Config config;
+    public SPARQLHttpRepoProvider(Config config) {
+        this.config = config;
+    }
+    
 	@Override
 	public Endpoint loadEndpoint(RepositoryInformation repoInfo) throws FedXException {
 
@@ -40,7 +46,7 @@ public class SPARQLHttpRepoProvider implements EndpointProvider {
 			HTTPRepository repo = new HTTPRepository(repoInfo.getLocation());
 			repo.initialize();
 			
-			ProviderUtil.checkConnectionIfConfigured(repo);
+			ProviderUtil.checkConnectionIfConfigured(config, repo);
 			
 			String location = repoInfo.getLocation();
 			EndpointClassification epc = EndpointClassification.Remote;

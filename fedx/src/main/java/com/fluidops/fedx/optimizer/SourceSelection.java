@@ -22,10 +22,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-import org.openrdf.query.algebra.StatementPattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
 
-import com.fluidops.fedx.EndpointManager;
 import com.fluidops.fedx.algebra.StatementSource;
 import com.fluidops.fedx.cache.Cache;
 import com.fluidops.fedx.structures.Endpoint;
@@ -39,7 +39,7 @@ import com.fluidops.fedx.structures.QueryInfo;
  *
  */
 public abstract class SourceSelection {
-	public static Logger log = Logger.getLogger(SourceSelection.class);
+	public static Logger log = LoggerFactory.getLogger(SourceSelection.class);
 	
 	protected final List<Endpoint> endpoints;
 	protected final Cache cache;
@@ -76,7 +76,7 @@ public abstract class SourceSelection {
 		Set<Endpoint> endpoints = new HashSet<Endpoint>();
 		for (List<StatementSource> sourceList : getStmtToSources().values())
 			for (StatementSource source : sourceList)
-				endpoints.add(EndpointManager.getEndpointManager().getEndpoint(source.getEndpointID()));
+				endpoints.add(queryInfo.getFedXConnection().getEndpointManager().getEndpoint(source.getEndpointID()));
 		return endpoints;
 	}
 	

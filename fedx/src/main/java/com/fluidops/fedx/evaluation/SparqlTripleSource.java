@@ -17,26 +17,26 @@
 
 package com.fluidops.fedx.evaluation;
 
-import org.openrdf.model.IRI;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.Value;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.BooleanQuery;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.Var;
-import org.openrdf.query.impl.EmptyBindingSet;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.RepositoryResult;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.BooleanQuery;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.Var;
+import org.eclipse.rdf4j.query.impl.EmptyBindingSet;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.RepositoryResult;
 
-import com.fluidops.fedx.FederationManager;
+import com.fluidops.fedx.FedX;
 import com.fluidops.fedx.algebra.ExclusiveGroup;
 import com.fluidops.fedx.algebra.FilterValueExpr;
 import com.fluidops.fedx.evaluation.iterator.BufferedCloseableIterator;
@@ -48,10 +48,10 @@ import com.fluidops.fedx.structures.Endpoint;
 import com.fluidops.fedx.structures.SparqlEndpointConfiguration;
 import com.fluidops.fedx.util.QueryStringUtil;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.EmptyIteration;
-import info.aduna.iteration.ExceptionConvertingIteration;
-import info.aduna.iteration.Iterations;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.EmptyIteration;
+import org.eclipse.rdf4j.common.iteration.ExceptionConvertingIteration;
+import org.eclipse.rdf4j.common.iteration.Iterations;
 
 
 
@@ -65,12 +65,13 @@ import info.aduna.iteration.Iterations;
  *
  */
 public class SparqlTripleSource extends TripleSourceBase implements TripleSource {
-
 	
 	private boolean useASKQueries = true;
+	final FederationEvalStrategy strategy;
 	
-	SparqlTripleSource(Endpoint endpoint) {
-		super(FederationManager.getMonitoringService(), endpoint);
+	SparqlTripleSource(FederationEvalStrategy strategy, Endpoint endpoint) {
+		super(FedX.getMonitoring(), endpoint);
+		this.strategy = strategy;
 		if (endpoint.getEndpointConfiguration() instanceof SparqlEndpointConfiguration) {
 			SparqlEndpointConfiguration c = (SparqlEndpointConfiguration) endpoint.getEndpointConfiguration();
 			this.useASKQueries = c.supportsASKQueries();
@@ -96,9 +97,9 @@ public class SparqlTripleSource extends TripleSourceBase implements TripleSource
 			// apply filter and/or insert original bindings
 			if (filterExpr!=null) {
 				if (bindings.size()>0) 
-					res = new FilteringInsertBindingsIteration(filterExpr, bindings, res);
+					res = new FilteringInsertBindingsIteration(strategy, filterExpr, bindings, res);
 				else
-					res = new FilteringIteration(filterExpr, res);
+					res = new FilteringIteration(strategy, filterExpr, res);
 				if (!res.hasNext()) {
 					Iterations.closeCloseable(res);
 					return new EmptyIteration<BindingSet, QueryEvaluationException>();
@@ -112,7 +113,7 @@ public class SparqlTripleSource extends TripleSourceBase implements TripleSource
 			
 		} catch (QueryEvaluationException ex) {
 			Iterations.closeCloseable(res);
-			throw ExceptionUtil.traceExceptionSourceAndRepair(conn, ex, "Subquery: " + preparedQuery);			
+			throw ExceptionUtil.traceExceptionSourceAndRepair(strategy.getFedXConnection().getEndpointManager(), conn, ex, "Subquery: " + preparedQuery);			
 		}
 	}
 
@@ -159,7 +160,7 @@ public class SparqlTripleSource extends TripleSourceBase implements TripleSource
 				boolean hasStatements = query.evaluate();
 				return hasStatements;
 			} catch (QueryEvaluationException ex) {
-				throw ExceptionUtil.traceExceptionSourceAndRepair(conn, ex, "Subquery: " + queryString);			
+				throw ExceptionUtil.traceExceptionSourceAndRepair(strategy.getFedXConnection().getEndpointManager(), conn, ex, "Subquery: " + queryString);			
 			}
 			
 		} else {
@@ -175,7 +176,7 @@ public class SparqlTripleSource extends TripleSourceBase implements TripleSource
 				boolean hasStatements = qRes.hasNext();
 				return hasStatements;
 			} catch (QueryEvaluationException ex) {
-				throw ExceptionUtil.traceExceptionSourceAndRepair(conn, ex, "Subquery: " + queryString);			
+				throw ExceptionUtil.traceExceptionSourceAndRepair(strategy.getFedXConnection().getEndpointManager(), conn, ex, "Subquery: " + queryString);			
 			} finally {
 				if (qRes!=null)
 					qRes.close();
@@ -204,7 +205,7 @@ public class SparqlTripleSource extends TripleSourceBase implements TripleSource
 				boolean hasStatements = qRes.hasNext();
 				return hasStatements;
 			} catch (QueryEvaluationException ex) {
-				throw ExceptionUtil.traceExceptionSourceAndRepair(conn, ex, "Subquery: " + queryString);			
+				throw ExceptionUtil.traceExceptionSourceAndRepair(strategy.getFedXConnection().getEndpointManager(), conn, ex, "Subquery: " + queryString);			
 			} finally {
 				if (qRes!=null)
 					qRes.close();

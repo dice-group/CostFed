@@ -3,67 +3,63 @@ package org.aksw.simba.quetsal.core;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.aksw.simba.quetsal.configuration.QuetzalConfig;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.repository.RepositoryException;
+import org.aksw.simba.quetsal.configuration.Summary;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
 import com.fluidops.fedx.algebra.StatementSource;
 import com.fluidops.fedx.algebra.StatementSource.StatementSourceType;
 
 public class SourceRanking {
-
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
-	}
-	
-	public static List<StatementSource> getRankedTriplePatternSources(StatementPattern stmt, List<StatementSource> stmtSrces, int k) throws RepositoryException, MalformedQueryException, QueryEvaluationException
+    
+	public static List<StatementSource> getRankedTriplePatternSources(Summary summary, StatementPattern stmt, List<StatementSource> stmtSrces, int k) throws RepositoryException, MalformedQueryException, QueryEvaluationException
 	{
 		List<StatementSource> stmtRankedSrces = new ArrayList<StatementSource>();
 		if (boundPredicate(stmt) && !boundSubject(stmt) && !boundObject(stmt) )   //?s <p> ?o
 		{	String p= stmt.getPredicateVar().getValue().toString(); 
 			String  queryString = getPredLookupQuery(p,stmtSrces) ;
-			stmtRankedSrces = getRankedSources(queryString,k);
+			stmtRankedSrces = getRankedSources(summary, queryString,k);
 			}
 		else if (boundPredicate(stmt) && !boundSubject(stmt) && boundObject(stmt) )  //?s <p> <o>
 		{	String p= stmt.getPredicateVar().getValue().toString(); 
 		 	String  queryString = getPred_ObjLookupQuery(p,stmtSrces) ;
 		// 	System.out.println(queryString);
-		 	stmtRankedSrces = getRankedSources(queryString, k);
+		 	stmtRankedSrces = getRankedSources(summary, queryString, k);
 		}
 		else if (boundPredicate(stmt) && boundSubject(stmt) && !boundObject(stmt) ) //<s> <p> ?o
 		{	String p= stmt.getPredicateVar().getValue().toString(); 
 		 	String  queryString = getPred_SbjLookupQuery(p,stmtSrces) ;
-		 	stmtRankedSrces = getRankedSources(queryString, k);
+		 	stmtRankedSrces = getRankedSources(summary, queryString, k);
 		}
 		else if (!boundPredicate(stmt) && !boundSubject(stmt) && boundObject(stmt) ) //?s ?p <o>
 		{	String p= stmt.getPredicateVar().getValue().toString(); 
 		 	String  queryString = getObjLookupQuery(p,stmtSrces) ;
-		 	stmtRankedSrces = getRankedSources(queryString, k);
+		 	stmtRankedSrces = getRankedSources(summary, queryString, k);
 		}
 		else if (!boundPredicate(stmt) && boundSubject(stmt) && !boundObject(stmt) ) //<s> ?p ?o
 		{	
 		 	String  queryString = getSbjLookupQuery(stmtSrces) ;
-		 	stmtRankedSrces = getRankedSources(queryString, k);
+		 	stmtRankedSrces = getRankedSources(summary, queryString, k);
 		}
 		else if (!boundPredicate(stmt) && boundSubject(stmt) && boundObject(stmt) ) //<s> ?p <o>
 		{	
 		 	String  queryString = getSbj_ObjLookupQuery(stmtSrces) ;
-		 	stmtRankedSrces = getRankedSources(queryString, k);
+		 	stmtRankedSrces = getRankedSources(summary, queryString, k);
 		}
 		else if (!boundPredicate(stmt) && !boundSubject(stmt) && !boundObject(stmt) ) //?s ?p ?o
 		{	
 		 	String  queryString = getPred_Sbj_ObjLookupQuery(stmtSrces) ;
-		 	stmtRankedSrces = getRankedSources(queryString, k);
+		 	stmtRankedSrces = getRankedSources(summary, queryString, k);
 		}
       //  System.out.println("cardinality: " + card);
 		return stmtRankedSrces;
-}
+	}
+	
 	public static String getPred_Sbj_ObjLookupQuery(List<StatementSource> stmtSrces) {
 		String union = getEndpointUnion(stmtSrces);
 		String queryString = "Prefix ds:<http://aksw.org/quetsal/> \n"
@@ -128,9 +124,9 @@ public class SourceRanking {
 		}
 	
 
-	public static List<StatementSource> getRankedSources(String queryString, int k) throws RepositoryException, MalformedQueryException, QueryEvaluationException {
+	public static List<StatementSource> getRankedSources(Summary summary, String queryString, int k) throws RepositoryException, MalformedQueryException, QueryEvaluationException {
 		List<StatementSource> rankedSources = new ArrayList<StatementSource>();
-		TupleQuery tupleQuery = QuetzalConfig.con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+		TupleQuery tupleQuery = summary.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryString);
 		//System.out.println(queryString);
 		TupleQueryResult result = tupleQuery.evaluate();
 		int count = 0 ;
@@ -145,6 +141,7 @@ public class SourceRanking {
 
 		return rankedSources;
 	}
+
 	public static String getPred_ObjLookupQuery(String p,List<StatementSource> stmtSrces) {
 		String union = getEndpointUnion(stmtSrces);
 		String queryString = "Prefix ds:<http://aksw.org/quetsal/> \n"

@@ -27,24 +27,22 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.varia.NullAppender;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.TupleQueryResultHandlerException;
-import org.openrdf.query.resultio.sparqljson.SPARQLResultsJSONWriter;
-import org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLWriter;
-import org.openrdf.repository.Repository;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.TupleQueryResultHandlerException;
+import org.eclipse.rdf4j.query.resultio.sparqljson.SPARQLResultsJSONWriter;
+import org.eclipse.rdf4j.query.resultio.sparqlxml.SPARQLResultsXMLWriter;
+import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fluidops.fedx.exception.FedXException;
 import com.fluidops.fedx.exception.FedXRuntimeException;
+import com.fluidops.fedx.sail.FedXSailRepository;
 import com.fluidops.fedx.structures.Endpoint;
 import com.fluidops.fedx.util.EndpointFactory;
 import com.fluidops.fedx.util.QueryStringUtil;
@@ -101,85 +99,150 @@ public class CLI {
 
 	protected enum OutputFormat { STDOUT, JSON, XML; }
 	
+	Config config = null;
+	
 	protected String fedxConfig=null;
 	protected int verboseLevel=0;
 	protected boolean logtofile = false;
 	protected boolean planOnly = false;
 	protected String prefixDeclarations = null;
-	protected List<Endpoint> endpoints = new ArrayList<Endpoint>();
+	
 	protected OutputFormat outputFormat = OutputFormat.STDOUT;
 	protected List<String> queries = new ArrayList<String>();
-	protected Repository repo = null;
+	protected FedXSailRepository repo = null;
 	protected String outFolder = null;
 	
-	
+	final List<String> args;
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		try {
-			new CLI().run(args);
+			new CLI(args).run();
 		} catch (Exception e) {
 			System.out.println("Error while using the FedX CLI. System will exit. \nDetails: " + e.getMessage());
 			System.exit(1);
 		}
 	}
 
+	CLI(String[] args) {
+	    this.args = new LinkedList<String>(Arrays.asList(args));;
+	}
 	
+	class CLIEndpointListProvider implements EndpointListProvider
+	{
+	    protected List<Endpoint> endpoints = new ArrayList<Endpoint>();
+	    
+        @Override
+        public List<Endpoint> getEndpoints(FedX federation) {
+            String arg = args.get(0);
+            
+            if (arg.equals("-s")) {
+                readArg(args);      // remove -s
+                String url = readArg(args,"urlToSparqlEndpoint");
+                try {
+                    Endpoint endpoint = EndpointFactory.loadSPARQLEndpoint(config, federation.getHttpClient(), url);
+                    endpoints.add(endpoint);
+                } catch (FedXException e) {
+                    error("SPARQL endpoint " + url + " could not be loaded: " + e.getMessage(), false);
+                }           
+            }
+            
+            else if (arg.equals("-l")) {
+                readArg(args);      // remove -l
+                String path = readArg(args,"path/to/NativeStore");
+                try {
+                    Endpoint endpoint = EndpointFactory.loadNativeEndpoint(config, path);
+                    endpoints.add(endpoint);
+                } catch (FedXException e) {
+                    error("NativeStore " + path + " could not be loaded: " + e.getMessage(), false);
+                }
+            }
+            
+            else if (arg.equals("-d")) {
+                readArg(args);      // remove -d
+                String dataConfig = readArg(args,"path/to/dataconfig.ttl");
+                try {
+                    List<Endpoint> ep = EndpointFactory.loadFederationMembers(config, federation.getHttpClient(), new File(dataConfig));
+                    endpoints.addAll(ep);
+                } catch (FedXException e) {
+                    error("Data config '" + dataConfig + "' could not be loaded: " + e.getMessage(), false);
+                }
+            }
+            
+            else {          
+                error("Expected at least one federation member (-s, -l, -d), was: " + arg, false);
+            }
+            
+            // generic checks
+            if (endpoints.size() == 0) {
+                error("No federation members specified. At least one data source is required.", true);
+            }
+            
+            if (config.getDataConfig() != null) {
+                // currently there is no duplicate detection, so the following is a hint for the user
+                // can cause problems if members are explicitly specified (-s,-l,-d) and via the fedx configuration
+                if (endpoints.size() > 0) {
+                    System.out.println("WARN: Mixture of implicitely and explicitely specified federation members, dataConfig used: " + config.getDataConfig());
+                }
+                try {
+                    List<Endpoint> additionalEndpoints = EndpointFactory.loadFederationMembers(config, federation.getHttpClient(), new File(config.getDataConfig()));
+                    endpoints.addAll(additionalEndpoints);
+                } catch (FedXException e) {
+                    error("Failed to load implicitly specified data sources from fedx configuration. Data config is: " + config.getDataConfig() + ". Details: " + e.getMessage(), false);
+                }
+            }
+            
+            
+            return endpoints;
+        }
+
+        @Override
+        public void close() {
+            
+        }
+	}
 	
-	public void run(String[] args) {
+	public void run() {
 		configureRootLogger();
 		
 		System.out.println("FedX Cli " + Version.getLongVersion());
 		
 		// parse the arguments and construct config
-		parse(args);
+		parse();
 		
 		// activate logging to stdout if verbose is set
 		configureLogging();
 						
-		
-		if (Config.getConfig().getDataConfig()!=null) {
-			// currently there is no duplicate detection, so the following is a hint for the user
-			// can cause problems if members are explicitly specified (-s,-l,-d) and via the fedx configuration
-			if (endpoints.size()>0)
-				System.out.println("WARN: Mixture of implicitely and explicitely specified federation members, dataConfig used: " + Config.getConfig().getDataConfig());
-			try {
-				List<Endpoint> additionalEndpoints = EndpointFactory.loadFederationMembers(new File(Config.getConfig().getDataConfig()));
-				endpoints.addAll(additionalEndpoints);
-			} catch (FedXException e) {
-				error("Failed to load implicitly specified data sources from fedx configuration. Data config is: " + Config.getConfig().getDataConfig() + ". Details: " + e.getMessage(), false);
-			}
-		}
-		
-		// generic checks
-		if (endpoints.size()==0)
-			error("No federation members specified. At least one data source is required.", true);
-		
-		if (queries.size()==0)
-			error("No queries specified", true);
-		
+        if (queries.size() == 0) {
+            error("No queries specified", true);
+        }
+        
 		// setup the federation
 		try {
-			repo = FedXFactory.initializeFederation(endpoints);
+			repo = FedXFactory.initializeFederation(config, new CLIEndpointListProvider());
 		} catch (FedXException e) {
 			error("Problem occured while setting up the federation: " + e.getMessage(), false);
 		}
 		
-		// initialize default prefix declarations (if the user did not specify anything)
-		if (Config.getConfig().getPrefixDeclarations()==null) {
-			initDefaultPrefixDeclarations();
-		}
-		
+		SailRepositoryConnection conn = repo.getConnection();
+		FedXConnection fconn = (FedXConnection)conn.getSailConnection();
+		QueryManager qm = fconn.getQueryManager();
+
+	      // initialize default prefix declarations (if the user did not specify anything)
+        if (config.getPrefixDeclarations() == null) {
+            initDefaultPrefixDeclarations(qm);
+        }
+        
 		int count=1;
 		for (String queryString : queries) {
 			
 			try {
 				if (planOnly) {
-					System.out.println(QueryManager.getQueryPlan(queryString));
+					System.out.println(qm.getQueryPlan(queryString, fconn.getSummary()));
 				} else {
 					System.out.println("Running Query " + count);
-					runQuery(queryString, count);
+					runQuery(conn, queryString, count);
 				}
 			} catch (Exception e) {
 				error("Query " + count + " could not be evaluated: \n" + e.getMessage(), false);
@@ -187,42 +250,32 @@ public class CLI {
 			count++;
 		}
 		
-		try {
-			FederationManager.getInstance().shutDown();
-		} catch (FedXException e) {
-			System.out.println("WARN: Federation could not be shut down: " + e.getMessage());
-		}
 		System.out.println("Done.");
 		System.exit(0);
  	}
-
 	
-	
-	
-	protected void parse(String[] _args) {
-		if (_args.length==0) {
+	protected void parse() {
+		if (args.size() == 0) {
 			printUsage(true);
 		}
 		
-		if (_args.length==1 && _args[0].equals("-help"))  {
+		if (args.size() == 1 && args.get(0).equals("-help"))  {
 			printUsage(true);		
 		}
 				
-		List<String> args = new LinkedList<String>(Arrays.asList(_args));
-		
+	
 		parseConfiguaration(args, false);
 		
 		// initialize config
 		try {
-			Config.initialize(fedxConfig); // fedxConfig may be null (default values)
-			if (prefixDeclarations!=null) {
-				Config.getConfig().set("prefixDeclarations", prefixDeclarations);	// override in config
+			config = new Config(fedxConfig); // fedxConfig may be null (default values)
+			if (prefixDeclarations != null) {
+			    config.set("prefixDeclarations", prefixDeclarations);	// override in config
 			}
 		} catch (FedXException e) {
 			error("Problem occured while setting up the federation: " + e.getMessage(), false);
 		}		
 		
-		parseEndpoints(args, false);
 		parseOutput(args);
 		parseQueries(args);
 		
@@ -291,62 +344,6 @@ public class CLI {
 		
 		parseConfiguaration(args, false);
 	}
-	
-	
-	/**
-	 * Parse the endpoints, i.e. federation members
-	 *  1) SPARQL Endpoint: -s url
-	 *  2) Local NativeStore: -l path/to/NativeStore
-	 *  3) Dataconfig: -d path/to/dataconfig.ttl
-	 *  
-	 * @param args
-	 */
-	protected void parseEndpoints(List<String> args, boolean printError) {
-		String arg = args.get(0);
-		
-		if (arg.equals("-s")) {
-			readArg(args);		// remove -s
-			String url = readArg(args,"urlToSparqlEndpoint");
-			try {
-				Endpoint endpoint = EndpointFactory.loadSPARQLEndpoint(url);
-				endpoints.add(endpoint);
-			} catch (FedXException e) {
-				error("SPARQL endpoint " + url + " could not be loaded: " + e.getMessage(), false);
-			}			
-		}
-		
-		else if (arg.equals("-l")) {
-			readArg(args);		// remove -l
-			String path = readArg(args,"path/to/NativeStore");
-			try {
-				Endpoint endpoint = EndpointFactory.loadNativeEndpoint(path);
-				endpoints.add(endpoint);
-			} catch (FedXException e) {
-				error("NativeStore " + path + " could not be loaded: " + e.getMessage(), false);
-			}
-		}
-		
-		else if (arg.equals("-d")) {
-			readArg(args);		// remove -d
-			String dataConfig = readArg(args,"path/to/dataconfig.ttl");
-			try {
-				List<Endpoint> ep = EndpointFactory.loadFederationMembers(new File(dataConfig));
-				endpoints.addAll(ep);
-			} catch (FedXException e) {
-				error("Data config '" + dataConfig + "' could not be loaded: " + e.getMessage(), false);
-			}
-		}
-		
-		else {			
-			if (printError)
-				error("Expected at least one federation member (-s, -l, -d), was: " + arg, false);
-			else
-				return;			
-		}
-		
-		parseEndpoints(args, false);
-	}
-	
 	
 	/**
 	 * Parse output options
@@ -434,9 +431,7 @@ public class CLI {
 	/**
 	 * initializes default prefix declarations from com.fluidops.fedx.commonPrefixesCli.prop
 	 */
-	protected void initDefaultPrefixDeclarations() {
-		
-		QueryManager qm = FederationManager.getInstance().getQueryManager();
+	protected void initDefaultPrefixDeclarations(QueryManager qm) {
 		Properties props = new Properties();
 		try	{
 			props.load(CLI.class.getResourceAsStream("/com/fluidops/fedx/commonPrefixesCli.prop"));
@@ -449,11 +444,11 @@ public class CLI {
 		}
 	}
 	
-	protected void runQuery(String queryString, int queryId) throws QueryEvaluationException {
+	protected void runQuery(SailRepositoryConnection conn, String queryString, int queryId) throws QueryEvaluationException {
 			
 		TupleQuery query;
 		try {
-			query = QueryManager.prepareTupleQuery(queryString);
+			query = conn.prepareTupleQuery(queryString);
 		} catch (MalformedQueryException e) {
 			throw new QueryEvaluationException("Query is malformed: " + e.getMessage());
 		} 
@@ -592,12 +587,12 @@ public class CLI {
 	 * Verbose level: 0=off (default), 1=INFO, 2=DEBUG, 3=ALL
 	 */
 	protected void configureLogging() {
-		
+		/*
 		//Logger rootLogger = Logger.getRootLogger();
-		Logger l = Logger.getLogger("com.fluidops.fedx");
-		Logger rootLogger = Logger.getRootLogger();
+		Logger l = LoggerFactory.getLogger("com.fluidops.fedx");
+		Logger rootLogger = l.getRootLogger();
 		if (verboseLevel>0) {
-			//Logger pkgLogger = rootLogger.getLoggerRepository().getLogger("com.fluidops.fedx"); 
+			//Logger pkgLogger = rootLoggerFactory.getLoggerRepository().getLogger("com.fluidops.fedx"); 
 			if (verboseLevel==1) {
 				rootLogger.setLevel(Level.INFO);
 				l.setLevel(Level.INFO);
@@ -619,14 +614,16 @@ public class CLI {
 				l.addAppender(new ConsoleAppender(new PatternLayout("%5p [%t] (%F:%L) - %m%n")));
 			}
 		}		
+		*/
 	}
 	
 	protected void configureRootLogger() {
-		
+		/*
 		Logger rootLogger = Logger.getRootLogger();
 		if (!rootLogger.getAllAppenders().hasMoreElements()) {
 			rootLogger.setLevel(Level.ALL); 
 			rootLogger.addAppender(new NullAppender() );      
 		}
+		*/
 	}
 }

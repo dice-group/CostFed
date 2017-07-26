@@ -19,11 +19,11 @@ package com.fluidops.fedx.algebra;
 
 import java.util.List;
 
-import org.openrdf.query.Binding;
-import org.openrdf.query.algebra.Projection;
-import org.openrdf.query.algebra.ProjectionElemList;
-import org.openrdf.query.algebra.QueryModelVisitor;
-import org.openrdf.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.Binding;
+import org.eclipse.rdf4j.query.algebra.Projection;
+import org.eclipse.rdf4j.query.algebra.ProjectionElemList;
+import org.eclipse.rdf4j.query.algebra.QueryModelVisitor;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
 
 public class ProjectionWithBindings extends Projection implements FedXExpr {
 	private static final long serialVersionUID = 4037850050188019596L;

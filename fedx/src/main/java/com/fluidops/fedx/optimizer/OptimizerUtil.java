@@ -22,10 +22,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
-import org.openrdf.query.algebra.Join;
-import org.openrdf.query.algebra.Service;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.Join;
+import org.eclipse.rdf4j.query.algebra.Service;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
 
 import com.fluidops.fedx.algebra.FedXService;
 import com.fluidops.fedx.algebra.NJoin;

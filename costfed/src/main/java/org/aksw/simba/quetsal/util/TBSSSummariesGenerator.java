@@ -31,21 +31,20 @@ import org.aksw.simba.quetsal.synopsis.Collection;
 import org.aksw.simba.quetsal.synopsis.MIPsynopsis;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.log4j.Logger;
-import org.openrdf.http.client.util.HttpClientBuilders;
-import org.openrdf.model.IRI;
-import org.openrdf.model.Value;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.sparql.SPARQLRepository;
-
-import com.fluidops.fedx.FedXFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.http.client.util.HttpClientBuilders;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 
 
 /**
@@ -53,7 +52,7 @@ import com.fluidops.fedx.FedXFactory;
  *  @author saleem
  */
 public class TBSSSummariesGenerator {
-	static Logger log = Logger.getLogger(TBSSSummariesGenerator.class);
+	static Logger log = LoggerFactory.getLogger(TBSSSummariesGenerator.class);
 	static {
 		try {
 			ClassLoader.getSystemClassLoader().loadClass("org.slf4j.LoggerFactory"). getMethod("getLogger", ClassLoader.getSystemClassLoader().loadClass("java.lang.String")).
@@ -79,7 +78,7 @@ public class TBSSSummariesGenerator {
 		SPARQLRepository repo = reps.get(url);
 		if (repo == null) {
 			repo = new SPARQLRepository(url);
-			repo.setHttpClient(FedXFactory.httpClient);
+			repo.setHttpClient(httpClient);
 			repo.initialize();
 			reps.put(url, repo);
 		}
@@ -294,7 +293,7 @@ public class TBSSSummariesGenerator {
 			try {
 				future.get();
 			} catch (Exception e) {
-    			log.error(e);
+    			log.error("", e);
 			}
 			synchronized (executorService) {
 				tasks.remove(0);
@@ -324,11 +323,11 @@ public class TBSSSummariesGenerator {
 				    			bwr.append(sum);
 				    			bwr.flush();
 				    		} catch (Exception e) {
-				    			log.error(e);
+				    			log.error("", e);
 				    		}
 				    	}
 			    	} catch (Exception e) {
-			    		log.error(e);
+			    		log.error("", e);
 			    	}
 			    }
 			});

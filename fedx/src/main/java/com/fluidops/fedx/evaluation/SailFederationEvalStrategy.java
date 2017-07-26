@@ -17,20 +17,21 @@
 
 package com.fluidops.fedx.evaluation;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.EmptyIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.EmptyIteration;
 
 import java.util.List;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
+import com.fluidops.fedx.FedXConnection;
 import com.fluidops.fedx.algebra.CheckStatementPattern;
 import com.fluidops.fedx.algebra.ExclusiveGroup;
 import com.fluidops.fedx.algebra.FilterTuple;
@@ -65,8 +66,8 @@ import com.fluidops.fedx.util.QueryStringUtil;
 public class SailFederationEvalStrategy extends FederationEvalStrategy {
 
 	
-	public SailFederationEvalStrategy() {
-		
+	public SailFederationEvalStrategy(FedXConnection conn) {
+		super(conn);
 	}
 	
 	
@@ -91,7 +92,7 @@ public class SailFederationEvalStrategy extends FederationEvalStrategy {
 		// apply filter and/or convert to original bindings
 		if (filterExpr!=null && !isEvaluated) {
 			result = new BoundJoinConversionIteration(result, bindings);		// apply conversion
-			result = new FilteringIteration(filterExpr, result);				// apply filter
+			result = new FilteringIteration(this, filterExpr, result);				// apply filter
 			if (!result.hasNext())	
 				return new EmptyIteration<BindingSet, QueryEvaluationException>();
 		} else {

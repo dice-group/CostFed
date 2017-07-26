@@ -13,21 +13,23 @@ import org.aksw.simba.quetsal.configuration.QuetzalConfig;
 import org.aksw.simba.quetsal.core.HibiscusSourceSelection;
 import org.aksw.simba.quetsal.core.QueryRewriting;
 import org.aksw.sparql.query.algebra.helpers.BGPGroupGenerator;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.parser.ParsedQuery;
-import org.openrdf.query.parser.QueryParser;
-import org.openrdf.query.parser.sparql.SPARQLParser;
-import org.openrdf.query.parser.sparql.SPARQLParserFactory;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.sparql.SPARQLRepository;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.parser.ParsedQuery;
+import org.eclipse.rdf4j.query.parser.QueryParser;
+import org.eclipse.rdf4j.query.parser.sparql.SPARQLParser;
+import org.eclipse.rdf4j.query.parser.sparql.SPARQLParserFactory;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 
+import com.fluidops.fedx.Config;
 import com.fluidops.fedx.FedX;
-import com.fluidops.fedx.FederationManager;
+import com.fluidops.fedx.FedXFactory;
+
 import com.fluidops.fedx.algebra.StatementSource;
 import com.fluidops.fedx.cache.Cache;
 import com.fluidops.fedx.structures.Endpoint;
@@ -39,38 +41,44 @@ import com.fluidops.fedx.structures.QueryInfo;
  */
 public class ExecuteHibiscusQuery {
 	public static void main(String[] args) throws Exception {
+	    String cfgName = args[0];
+	    Config config = new Config(cfgName);
+	    QuetzalConfig qcfg = config.getExtension();
+	    
 		long strtTime = System.currentTimeMillis();
 		String FedSummaries = "summaries/FedBench-HiBISCus.n3";
-       //  String FedSummaries = "C://slices/Linked-SQ-DBpedia-Aidan.ttl";
+        //  String FedSummaries = "C://slices/Linked-SQ-DBpedia-Aidan.ttl";
 		QuetzalConfig.Mode mode = QuetzalConfig.Mode.ASK_DOMINANT;;  //{ASK_DOMINANT, INDEX_DOMINANT}
 		double commonPredThreshold = 0.33 ;  //considered a predicate as common predicate if it is presenet in 33% available data sources
-		QuetzalConfig.initialize();//FedSummaries, mode, commonPredThreshold);  // must call this function only one time at the start to load configuration information. Please specify the FedSum mode. 
+		 
 		System.out.println("One time configuration loading time : "+ (System.currentTimeMillis()-strtTime));
-		FedX fed = FederationManager.getInstance().getFederation();
-		List<Endpoint> members = fed.getMembers();
-		Cache cache =FederationManager.getInstance().getCache();
+
+		
+		//FedX fed = FederationManager.getInstance().getFederation();
+		//List<Endpoint> members = fed.getMembers();
+		//Cache cache = FederationManager.getInstance().getCache();
 		List<String> queries = Queries.getFedBenchQueries();
-		SPARQLRepository repo = new SPARQLRepository(members.get(0).getEndpoint());
-		repo.initialize();
+		//SPARQLRepository repo = new SPARQLRepository(members.get(0).getEndpoint());
+		//repo.initialize();
 		int tpsrces = 0; 
 		int count = 0;
 		for (String query : queries)
 		{
 			System.out.println("-------------------------------------\n"+query);
 			long startTime = System.currentTimeMillis();
-			HibiscusSourceSelection sourceSelection = new HibiscusSourceSelection(members, cache, new QueryInfo(query, null));
+			//HibiscusSourceSelection sourceSelection = new HibiscusSourceSelection(members, cache, new QueryInfo(query, null));
 			SPARQLParser parser = new SPARQLParser();
 		    ParsedQuery parsedQuery = parser.parseQuery(query, null);
 			List<List<StatementPattern>> bgpGroups = BGPGroupGenerator.generateBgpGroups(parsedQuery);
-			sourceSelection.performSourceSelection(bgpGroups);
-			Map<StatementPattern, List<StatementSource>> stmtToSources = sourceSelection.getStmtToSources();
+			//sourceSelection.performSourceSelection(bgpGroups);
+			//Map<StatementPattern, List<StatementSource>> stmtToSources = sourceSelection.getStmtToSources();
 			//  System.out.println(DNFgrps)
 			System.out.println("Source selection exe time (ms): "+ (System.currentTimeMillis()-startTime));
                          int srces = 0;
-						for (StatementPattern stmt : stmtToSources.keySet()) 
+			//			for (StatementPattern stmt : stmtToSources.keySet()) 
 						{
-							tpsrces = tpsrces+ stmtToSources.get(stmt).size();
-							srces = srces + stmtToSources.get(stmt).size();
+			//				tpsrces = tpsrces+ stmtToSources.get(stmt).size();
+			//				srces = srces + stmtToSources.get(stmt).size();
 						
 							//System.out.println("-----------\n"+stmt);
 							//System.out.println(stmtToSources.get(stmt));
@@ -84,7 +92,7 @@ public class ExecuteHibiscusQuery {
 
 		}	
 		System.out.println("NetTriple pattern-wise selected sources after step 2 of HIBISCuS source selection : "+ tpsrces);
-		FederationManager.getInstance().shutDown();
+
 		System.exit(0);
 	}
 /**

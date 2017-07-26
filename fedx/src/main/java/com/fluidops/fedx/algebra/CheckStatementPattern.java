@@ -17,23 +17,23 @@
 
 package com.fluidops.fedx.algebra;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.EmptyIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.EmptyIteration;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.QueryModelNode;
-import org.openrdf.query.algebra.QueryModelVisitor;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.algebra.QueryModelNode;
+import org.eclipse.rdf4j.query.algebra.QueryModelVisitor;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
-import com.fluidops.fedx.EndpointManager;
+import com.fluidops.fedx.FedXConnection;
 import com.fluidops.fedx.evaluation.TripleSource;
 import com.fluidops.fedx.evaluation.iterator.SingleBindingSetIteration;
 import com.fluidops.fedx.structures.Endpoint;
@@ -50,10 +50,12 @@ import com.fluidops.fedx.structures.QueryInfo;
  */
 public class CheckStatementPattern implements StatementTupleExpr, BoundJoinTupleExpr {
 	private static final long serialVersionUID = 1543240924098875926L;
+	protected final FedXConnection conn;
 	protected final StatementTupleExpr stmt;
 	
-	public CheckStatementPattern(StatementTupleExpr stmt) {
+	public CheckStatementPattern(FedXConnection conn, StatementTupleExpr stmt) {
 		super();
+		this.conn = conn;
 		this.stmt = stmt;
 	}
 
@@ -151,7 +153,7 @@ public class CheckStatementPattern implements StatementTupleExpr, BoundJoinTuple
 		try {
 			// return true if at least one endpoint has a result for this binding set
 			for (StatementSource source : stmt.getStatementSources()) {
-				Endpoint ownedEndpoint = EndpointManager.getEndpointManager().getEndpoint(source.getEndpointID());
+				Endpoint ownedEndpoint = conn.getEndpointManager().getEndpoint(source.getEndpointID());
 				RepositoryConnection ownedConnection = ownedEndpoint.getConn();
 				TripleSource t = ownedEndpoint.getTripleSource();
 				if (t.hasStatements(st, ownedConnection, bindings)) {

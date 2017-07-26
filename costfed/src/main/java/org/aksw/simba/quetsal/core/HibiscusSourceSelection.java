@@ -10,22 +10,23 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
 import org.aksw.simba.quetsal.configuration.QuetzalConfig;
+import org.aksw.simba.quetsal.configuration.Summary;
 import org.aksw.simba.quetsal.datastructues.HyperGraph.HyperEdge;
 import org.aksw.simba.quetsal.datastructues.HyperGraph.Vertex;
-import org.apache.log4j.Logger;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.impl.EmptyBindingSet;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.impl.EmptyBindingSet;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.fluidops.fedx.EndpointManager;
-import com.fluidops.fedx.FederationManager;
 import com.fluidops.fedx.algebra.EmptyStatementPattern;
 import com.fluidops.fedx.algebra.ExclusiveStatement;
 import com.fluidops.fedx.algebra.StatementSource;
@@ -45,8 +46,6 @@ import com.fluidops.fedx.structures.Endpoint;
 import com.fluidops.fedx.structures.QueryInfo;
 import com.fluidops.fedx.structures.SubQuery;
 import com.fluidops.fedx.util.QueryStringUtil;
-
-import info.aduna.iteration.CloseableIteration;
 /**
  * Perform triple pattern-wise source selection using FedSumaries, cache or SPARQL ASK. 
  * Note that this is first phase of our source selection. In second phase we perform source filtering for each of the statement pattern using Hyper Graphs 
@@ -54,18 +53,24 @@ import info.aduna.iteration.CloseableIteration;
  *
  */
 public class HibiscusSourceSelection extends SourceSelection {
-	static Logger log = Logger.getLogger(HibiscusSourceSelection.class);
+    final static Logger log = LoggerFactory.getLogger(HibiscusSourceSelection.class);
 	
 	public Map<HyperEdge,StatementPattern> hyperEdgeToStmt = new HashMap<HyperEdge,StatementPattern>(); //Hyper edges to Triple pattern Map
 	public List<Set<Vertex>> theDNFHyperVertices = new ArrayList<Set<Vertex>>(); // Sets of vertices in different DNF hypergraphs
 	
+	final QuetzalConfig quetzalConfig;
 	
 	///protected final List<StatementPattern> triplePatterns;
 	
 	public HibiscusSourceSelection(List<Endpoint> endpoints, Cache cache, QueryInfo queryInfo) {
 		super(endpoints, cache, queryInfo);
+		quetzalConfig = queryInfo.getFederation().getConfig().getExtension();
 	}
 	
+	RepositoryConnection getSummaryConnection() {
+	    return ((Summary)(queryInfo.getFedXConnection().getSummary())).getConnection();
+	}
+	   
 	public List<CheckTaskPair> remoteCheckTasks = new ArrayList<CheckTaskPair>();
 
 	/**
@@ -159,7 +164,7 @@ public class HibiscusSourceSelection extends SourceSelection {
 					V.add(objVertex);
 				}
 				 //-------Step 1 of our source selection---i.e Triple pattern-wise source selection----
-			if(QuetzalConfig.mode.equals("ASK_dominant"))   //---ASK_dominant algo
+			if (quetzalConfig.mode.equals("ASK_dominant"))   //---ASK_dominant algo
 			{
 	          if(s.equals("null") && p.equals("null")&& o.equals("null"))
 	          {
@@ -170,7 +175,7 @@ public class HibiscusSourceSelection extends SourceSelection {
 	          {
 	        	  if(p.equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type") && !o.equals("null"))  
 	        		  FedSumClassLookup(stmt,p,o);
-	        	  else if (!QuetzalConfig.commonPredicates.contains(p) || (s.equals("null") && o.equals("null")))
+	        	  else if (!quetzalConfig.commonPredicates.contains(p) || (s.equals("null") && o.equals("null")))
 	        		  FedSumLookup(stmt,sa,p,oa);
 	        	  else
 	        		  cache_ASKselection(stmt);    	 
@@ -219,7 +224,7 @@ public class HibiscusSourceSelection extends SourceSelection {
 		// infrastructure and block until everything is resolved
 		if (remoteCheckTasks.size()>0) {
 			
-			SourceSelectionExecutorWithLatch.run(this, remoteCheckTasks, cache);
+			SourceSelectionExecutorWithLatch.run(queryInfo.getFederation().getScheduler(), this, remoteCheckTasks, cache);
 			System.out.println("Number of ASK request: " + remoteCheckTasks.size());
 		}
 		else
@@ -332,7 +337,7 @@ public void cache_ASKselection(StatementPattern stmt)
 	 */
 	public void FedSumLookup(StatementPattern stmt, String sa, String p, String oa) throws QueryEvaluationException, RepositoryException, MalformedQueryException {
 		    String  queryString = getFedSumLookupQuery(sa,p,oa) ;
-		    TupleQuery tupleQuery = QuetzalConfig.con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+		    TupleQuery tupleQuery = getSummaryConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryString);
 			 TupleQueryResult result = tupleQuery.evaluate();
 			   while(result.hasNext())
 			   {
@@ -441,7 +446,7 @@ public void cache_ASKselection(StatementPattern stmt)
 					+ " 		?s ds:capability ?cap. "
 					+ "		   ?cap ds:predicate <" + p + ">."
 							+ "?cap ds:objAuthority  <" + o + "> }" ;
-		    TupleQuery tupleQuery = QuetzalConfig.con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+		    TupleQuery tupleQuery = getSummaryConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryString);
 			 TupleQueryResult result = tupleQuery.evaluate();
 			   while(result.hasNext())
 			   {
@@ -459,7 +464,7 @@ public void cache_ASKselection(StatementPattern stmt)
 		Set<Endpoint> endpoints = new HashSet<Endpoint>();
 		for (List<StatementSource> sourceList : stmtToSources.values())
 			for (StatementSource source : sourceList)
-				endpoints.add( EndpointManager.getEndpointManager().getEndpoint(source.getEndpointID()));
+				endpoints.add( queryInfo.getFedXConnection().getEndpointManager().getEndpoint(source.getEndpointID()));
 		return endpoints;
 	}	
 	
@@ -696,7 +701,7 @@ public void cache_ASKselection(StatementPattern stmt)
 		
 		  String  queryString = getFedSumSbjAuthLookupQuery(stmt, endPointUrl) ;
 		  
-		     TupleQuery tupleQuery = QuetzalConfig.con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+		     TupleQuery tupleQuery = getSummaryConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryString);
 		     TupleQueryResult result = tupleQuery.evaluate();
 				   while(result.hasNext())
 				     sbjAuthorities.add(result.next().getValue("sbjAuth").stringValue());
@@ -815,7 +820,7 @@ public void cache_ASKselection(StatementPattern stmt)
 			else
 				p =stmt.getPredicateVar().getName().toString(); 
 	   String  queryString = getFedSumObjAuthLookupQuery(stmt, endPointUrl,v) ;
-	    TupleQuery tupleQuery = QuetzalConfig.con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+	    TupleQuery tupleQuery = getSummaryConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryString);
 		 TupleQueryResult result = tupleQuery.evaluate();
 		 if(p.equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")) //for rdf:type
 			 
@@ -1016,20 +1021,21 @@ public void cache_ASKselection(StatementPattern stmt)
 		 * @param tasks Set of SPARQL ASK tasks
 		 * @param cache Cache
 		 */
-		public static void run(HibiscusSourceSelection hibiscusSourceSelection, List<CheckTaskPair> tasks, Cache cache) {
-			new SourceSelectionExecutorWithLatch(hibiscusSourceSelection).executeRemoteSourceSelection(tasks, cache);
+		public static void run(ControlledWorkerScheduler scheduler, HibiscusSourceSelection hibiscusSourceSelection, List<CheckTaskPair> tasks, Cache cache) {
+			new SourceSelectionExecutorWithLatch(scheduler, hibiscusSourceSelection).executeRemoteSourceSelection(tasks, cache);
 		}		
 		
 		private final HibiscusSourceSelection sourceSelection;
-		private ControlledWorkerScheduler scheduler = FederationManager.getInstance().getScheduler();
+		private ControlledWorkerScheduler scheduler;
 		private CountDownLatch latch;
 		private boolean finished = false;
 		private Thread initiatorThread;
 		protected List<Exception> errors = new ArrayList<Exception>();
 		
 
-		private SourceSelectionExecutorWithLatch(HibiscusSourceSelection hibiscusSourceSelection) {
+		private SourceSelectionExecutorWithLatch(ControlledWorkerScheduler scheduler, HibiscusSourceSelection hibiscusSourceSelection) {
 			this.sourceSelection = hibiscusSourceSelection;
+			this.scheduler = scheduler;
 		}
 
 		/**

@@ -19,16 +19,16 @@ package com.fluidops.fedx.evaluation.concurrent;
 
 import java.util.concurrent.Callable;
 
-import org.apache.log4j.Logger;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.LookAheadIteration;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
 
-import com.fluidops.fedx.FederationManager;
 import com.fluidops.fedx.algebra.FedXService;
 import com.fluidops.fedx.evaluation.FederationEvalStrategy;
-
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.LookAheadIteration;
+import com.fluidops.fedx.structures.QueryInfo;
 
 
 /**
@@ -40,7 +40,7 @@ import info.aduna.iteration.LookAheadIteration;
  */
 public class ParallelServiceExecutor extends LookAheadIteration<BindingSet, QueryEvaluationException> implements ParallelExecutor<BindingSet> {
 	
-	public static Logger log = Logger.getLogger(ParallelServiceExecutor.class);
+	public static Logger log = LoggerFactory.getLogger(ParallelServiceExecutor.class);
 	
 	protected final FedXService service;
 	protected final FederationEvalStrategy strategy;
@@ -66,8 +66,9 @@ public class ParallelServiceExecutor extends LookAheadIteration<BindingSet, Quer
 	
 	@Override
 	public void run() {
-		int taskPriotity = service.getQueryInfo().getPriority() + 1;
-		FederationManager.getInstance().getScheduler().schedule(new ParallelServiceTask(taskPriotity), taskPriotity);			
+		int taskPriotity = QueryInfo.getPriority() + 1;
+		
+		service.getQueryInfo().getFederation().getScheduler().schedule(new ParallelServiceTask(taskPriotity), taskPriotity);			
 	}
 
 	@Override

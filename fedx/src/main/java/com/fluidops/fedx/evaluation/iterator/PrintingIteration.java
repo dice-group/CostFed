@@ -17,13 +17,13 @@
 
 package com.fluidops.fedx.evaluation.iterator;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.AbstractCloseableIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.AbstractCloseableIteration;
 
 import java.util.LinkedList;
 
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
 
 
 /**

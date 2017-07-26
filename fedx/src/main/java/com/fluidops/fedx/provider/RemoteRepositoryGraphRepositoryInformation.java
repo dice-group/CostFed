@@ -17,9 +17,9 @@
 
 package com.fluidops.fedx.provider;
 
-import org.openrdf.model.Model;
-import org.openrdf.model.Resource;
-import org.openrdf.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 import com.fluidops.fedx.structures.Endpoint.EndpointType;
 

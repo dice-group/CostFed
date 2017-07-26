@@ -6,10 +6,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.openrdf.query.algebra.Filter;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
+import org.aksw.simba.quetsal.configuration.Summary;
+import org.eclipse.rdf4j.query.algebra.Filter;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.helpers.AbstractQueryModelVisitor;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 
 import com.fluidops.fedx.algebra.ExclusiveGroup;
 import com.fluidops.fedx.algebra.ExclusiveStatement;
@@ -26,6 +28,10 @@ public class CardinalityVisitor extends AbstractQueryModelVisitor<RuntimeExcepti
 		this.queryInfo = queryInfo;
 	}
 	
+	RepositoryConnection getSummaryConnection() {
+	    return ((Summary)(queryInfo.getFedXConnection().getSummary())).getConnection();
+	}
+	   
 	public static class NodeDescriptor {
 		public long card = Long.MAX_VALUE;
 		public double sel = 0;
@@ -122,11 +128,11 @@ public class CardinalityVisitor extends AbstractQueryModelVisitor<RuntimeExcepti
 	@Override
 	public void meet(StatementPattern stmt) {
 		List<StatementSource> stmtSrces = queryInfo.getSourceSelection().getStmtToSources().get(stmt);
-		current.card = Cardinality.getTriplePatternCardinality(stmt, stmtSrces);
+		current.card = Cardinality.getTriplePatternCardinality(queryInfo, stmt, stmtSrces);
 		assert(current.card != 0);
-		current.sel = current.card/(double)Cardinality.getTotalTripleCount(stmtSrces);
-		current.mvsbjkoef = Cardinality.getTriplePatternSubjectMVKoef(stmt, stmtSrces);
-		current.mvobjkoef = Cardinality.getTriplePatternObjectMVKoef(stmt, stmtSrces);
+		current.sel = current.card/(double)Cardinality.getTotalTripleCount(getSummaryConnection(), stmtSrces);
+		current.mvsbjkoef = Cardinality.getTriplePatternSubjectMVKoef(queryInfo, stmt, stmtSrces);
+		current.mvobjkoef = Cardinality.getTriplePatternObjectMVKoef(queryInfo, stmt, stmtSrces);
 	}
 	
 	@Override

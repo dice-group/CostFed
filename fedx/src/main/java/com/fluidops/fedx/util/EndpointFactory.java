@@ -25,17 +25,18 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openrdf.model.Model;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.Value;
-import org.openrdf.model.impl.SimpleValueFactory;
-import org.openrdf.model.impl.TreeModel;
-import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFHandler;
-import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.Rio;
+import org.apache.http.client.HttpClient;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.impl.TreeModel;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFHandler;
+import org.eclipse.rdf4j.rio.RDFHandlerException;
+import org.eclipse.rdf4j.rio.RDFParser;
+import org.eclipse.rdf4j.rio.Rio;
 
 import com.fluidops.fedx.Config;
 import com.fluidops.fedx.exception.FedXException;
@@ -75,11 +76,11 @@ public class EndpointFactory {
 	 * 
 	 * @throws Exception
 	 */
-	public static Endpoint loadSPARQLEndpoint(String name, String endpoint) throws FedXException {
+	public static Endpoint loadSPARQLEndpoint(Config config, HttpClient httpClient, String name, String endpoint) throws FedXException {
 		
-		EndpointProvider repProvider = new SPARQLProvider();
+		EndpointProvider repProvider = new SPARQLProvider(config, httpClient);
 		String id = "sparql_" + endpoint.replace("http://", "").replace("/", "_");
-		return repProvider.loadEndpoint( new RepositoryInformation(id, name, endpoint, EndpointType.SparqlEndpoint));		
+		return repProvider.loadEndpoint(new RepositoryInformation(id, name, endpoint, EndpointType.SparqlEndpoint));		
 	}
 	
 	
@@ -94,22 +95,22 @@ public class EndpointFactory {
 	 * 
 	 * @throws FedXException
 	 */
-	public static Endpoint loadSPARQLEndpoint(String endpoint) throws FedXException {
+	public static Endpoint loadSPARQLEndpoint(Config config, HttpClient httpClient, String endpoint) throws FedXException {
 		try {
 			String id = new URL(endpoint).getHost();
-			if (id.equals("localhost"))
+			if (id.equals("localhost")) {
 				id = id + "_" + new URL(endpoint).getPort();
-			return loadSPARQLEndpoint("http://"+id, endpoint);
+			}
+			return loadSPARQLEndpoint(config, httpClient, "http://"+id, endpoint);
 		} catch (MalformedURLException e) {
 			throw new FedXException("Malformed URL: " + endpoint);
 		}
 	}
 	
 	
-	public static Endpoint loadRemoteRepository(String repositoryServer, String repositoryName) throws FedXException {
-		EndpointProvider repProvider = new RemoteRepositoryProvider();
-		return repProvider.loadEndpoint( new RemoteRepositoryGraphRepositoryInformation(repositoryServer, repositoryName));		
-	
+	public static Endpoint loadRemoteRepository(Config config, String repositoryServer, String repositoryName) throws FedXException {
+		EndpointProvider repProvider = new RemoteRepositoryProvider(config);
+		return repProvider.loadEndpoint(new RemoteRepositoryGraphRepositoryInformation(repositoryServer, repositoryName));		
 	}
 	
 	/**
@@ -125,11 +126,11 @@ public class EndpointFactory {
 	 * 
 	 * @throws Exception
 	 */
-	public static Endpoint loadNativeEndpoint(String name, String location) throws FedXException {
+	public static Endpoint loadNativeEndpoint(Config config, String name, String location) throws FedXException {
 		
-		EndpointProvider repProvider = new NativeStoreProvider();
+		EndpointProvider repProvider = new NativeStoreProvider(config);
 		String id = new File(location).getName();
-		return repProvider.loadEndpoint( new RepositoryInformation(id, name, location, EndpointType.NativeStore) );
+		return repProvider.loadEndpoint(new RepositoryInformation(id, name, location, EndpointType.NativeStore) );
 	}
 	
 	/**
@@ -141,8 +142,8 @@ public class EndpointFactory {
 	 * @return
 	 * @throws Exception
 	 */
-	public static Endpoint loadNativeEndpoint(String name, String location, File baseDir) throws FedXException {
-		return loadNativeEndpoint(name, baseDir.getAbsolutePath() + "/" + location);
+	public static Endpoint loadNativeEndpoint(Config config, String name, String location, File baseDir) throws FedXException {
+		return loadNativeEndpoint(config, name, baseDir.getAbsolutePath() + "/" + location);
 	}
 	
 	
@@ -158,8 +159,8 @@ public class EndpointFactory {
 	 * 
 	 * @throws Exception
 	 */
-	public static Endpoint loadNativeEndpoint(String location) throws FedXException {
-		return loadNativeEndpoint("http://" + new File(location).getName(), location);
+	public static Endpoint loadNativeEndpoint(Config config, String location) throws FedXException {
+		return loadNativeEndpoint(config, "http://" + new File(location).getName(), location);
 	}
 	
 	
@@ -178,7 +179,7 @@ public class EndpointFactory {
 	 * @throws IOException
 	 * @throws Exception
 	 */
-	public static List<Endpoint> loadFederationMembers(File dataConfig) throws FedXException {
+	public static List<Endpoint> loadFederationMembers(Config config, HttpClient httpClient, File dataConfig) throws FedXException {
 		
 		if (!dataConfig.exists())
 			throw new FedXRuntimeException("File does not exist: " + dataConfig.getAbsolutePath());
@@ -195,7 +196,7 @@ public class EndpointFactory {
 		
 		List<Endpoint> res = new ArrayList<Endpoint>();
 		for (Statement st : graph.filter(null, SimpleValueFactory.getInstance().createIRI("http://fluidops.org/config#store"), null)) {
-			Endpoint e = loadEndpoint(graph, st.getSubject(), st.getObject());
+			Endpoint e = loadEndpoint(config, httpClient, graph, st.getSubject(), st.getObject());
 			res.add(e);
 		}
 		
@@ -203,26 +204,26 @@ public class EndpointFactory {
 	}
 	
 	
-	public static Endpoint loadEndpoint(Model graph, Resource repNode, Value repType) throws FedXException {
+	public static Endpoint loadEndpoint(Config config, HttpClient httpClient, Model graph, Resource repNode, Value repType) throws FedXException {
 		
 		EndpointProvider repProvider;
 		
 		// NativeStore => Sesame native store implementation
 		if (repType.equals(SimpleValueFactory.getInstance().createLiteral("NativeStore"))){
-			repProvider = new NativeStoreProvider();
-			return repProvider.loadEndpoint( new NativeGraphRepositoryInformation(graph, repNode) );
+			repProvider = new NativeStoreProvider(config);
+			return repProvider.loadEndpoint(new NativeGraphRepositoryInformation(graph, repNode) );
 		} 
 		
 		// SPARQL Repository => SPARQLRepository 
 		else if (repType.equals(SimpleValueFactory.getInstance().createLiteral("SPARQLEndpoint"))){
-			repProvider =  new SPARQLProvider();	 
-			return repProvider.loadEndpoint( new SPARQLGraphRepositoryInformation(graph, repNode) );
+			repProvider = new SPARQLProvider(config, httpClient);	 
+			return repProvider.loadEndpoint(new SPARQLGraphRepositoryInformation(graph, repNode) );
 		} 
 		
 		// Remote Repository
 		else if (repType.equals(SimpleValueFactory.getInstance().createLiteral("RemoteRepository"))){
-			repProvider =  new RemoteRepositoryProvider();	 
-			return repProvider.loadEndpoint( new RemoteRepositoryGraphRepositoryInformation(graph, repNode) );
+			repProvider =  new RemoteRepositoryProvider(config);	 
+			return repProvider.loadEndpoint(new RemoteRepositoryGraphRepositoryInformation(graph, repNode) );
 		} 
 		
 		// other generic type

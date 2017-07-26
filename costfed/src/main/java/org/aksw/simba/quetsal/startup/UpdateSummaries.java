@@ -9,9 +9,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.aksw.simba.quetsal.util.SummariesUpdate;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.repository.RepositoryException;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
 public class UpdateSummaries {
 

@@ -11,23 +11,24 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
 import org.aksw.simba.quetsal.configuration.QuetzalConfig;
+import org.aksw.simba.quetsal.configuration.Summary;
 import org.aksw.simba.quetsal.datastructues.HyperGraph.HyperEdge;
 import org.aksw.simba.quetsal.datastructues.HyperGraph.Vertex;
 import org.aksw.simba.quetsal.datastructues.Trie;
 import org.aksw.simba.quetsal.datastructues.TrieNode;
-import org.apache.log4j.Logger;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.algebra.Var;
-import org.openrdf.query.impl.EmptyBindingSet;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.algebra.Var;
+import org.eclipse.rdf4j.query.impl.EmptyBindingSet;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
-import com.fluidops.fedx.FederationManager;
 import com.fluidops.fedx.algebra.EmptyStatementPattern;
 import com.fluidops.fedx.algebra.ExclusiveStatement;
 import com.fluidops.fedx.algebra.StatementSource;
@@ -52,7 +53,8 @@ import com.fluidops.fedx.util.QueryStringUtil;
  *
  */
 public class TBSSSourceSelectionOriginal extends SourceSelection {
-	static Logger log = Logger.getLogger(TBSSSourceSelectionOriginal.class);
+	static Logger log = LoggerFactory.getLogger(TBSSSourceSelectionOriginal.class);
+	final QuetzalConfig quetzalConfig;
 	
 	public Map<HyperEdge, StatementPattern> hyperEdgeToStmt = new HashMap<HyperEdge,StatementPattern>(); //Hyper edges to Triple pattern Map
 	public List<Map<String, Vertex>> theDNFHyperVertices = new ArrayList<Map<String, Vertex>>(); // Maps of vertices in different DNF hypergraphs
@@ -67,6 +69,11 @@ public class TBSSSourceSelectionOriginal extends SourceSelection {
 	 */
 	public TBSSSourceSelectionOriginal(List<Endpoint> endpoints, Cache cache, QueryInfo queryInfo) {
 		super(endpoints, cache, queryInfo);
+		quetzalConfig = queryInfo.getFederation().getConfig().getExtension();
+	}
+	
+	RepositoryConnection getSummaryConnection() {
+	    return ((Summary)(queryInfo.getFedXConnection().getSummary())).getConnection();
 	}
 	
 	public List<CheckTaskPair> remoteCheckTasks = new ArrayList<CheckTaskPair>();
@@ -145,7 +152,7 @@ public class TBSSSourceSelectionOriginal extends SourceSelection {
 				}
 				
 				//-------Step 1 of our source selection---i.e Triple pattern-wise source selection----
-				if (QuetzalConfig.mode == QuetzalConfig.Mode.ASK_DOMINANT)   //---ASK_dominant algo
+				if (quetzalConfig.mode == QuetzalConfig.Mode.ASK_DOMINANT)   //---ASK_dominant algo
 				{
 					if (s == null && p == null && o == null)
 					{
@@ -156,7 +163,7 @@ public class TBSSSourceSelectionOriginal extends SourceSelection {
 					{
 						if (p.equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type") && o != null)  
 							lookupFedSumClass(stmt, p, o);
-						else if (!QuetzalConfig.commonPredicates.contains(p) || (s == null && o == null))
+						else if (!quetzalConfig.commonPredicates.contains(p) || (s == null && o == null))
 							lookupFedSum(stmt, sa, p, oa);
 						else
 							cache_ASKselection(stmt);    	 
@@ -195,7 +202,7 @@ public class TBSSSourceSelectionOriginal extends SourceSelection {
 		// if remote checks are necessary, execute them using the concurrency
 		// infrastructure and block until everything is resolved
 		if (remoteCheckTasks.size() > 0) {
-			SourceSelectionExecutorWithLatch.run(this, remoteCheckTasks, cache);
+			SourceSelectionExecutorWithLatch.run(queryInfo.getFederation().getScheduler(), this, remoteCheckTasks, cache);
 		}
 
 		if (log.isDebugEnabled()) {
@@ -321,7 +328,7 @@ public class TBSSSourceSelectionOriginal extends SourceSelection {
 	 */
 	public void lookupFedSum(StatementPattern stmt, String sa, String p, String oa) {
 		String  queryString = getFedSumLookupQuery(sa, p, oa) ;
-		TupleQuery tupleQuery = QuetzalConfig.con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+		TupleQuery tupleQuery = getSummaryConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryString);
 		//System.out.println(queryString);
 		TupleQueryResult result = tupleQuery.evaluate();
 		while(result.hasNext())
@@ -447,7 +454,7 @@ public class TBSSSourceSelectionOriginal extends SourceSelection {
 				+ " 		?s ds:capability ?cap. "
 				+ "		   ?cap ds:predicate <" + p + ">."
 				+ "?cap ds:objPrefix  <" + o + "> }" ;
-		TupleQuery tupleQuery = QuetzalConfig.con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+		TupleQuery tupleQuery = getSummaryConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryString);
 		TupleQueryResult result = tupleQuery.evaluate();
 		while (result.hasNext())
 		{
@@ -871,7 +878,7 @@ public class TBSSSourceSelectionOriginal extends SourceSelection {
 
 		String  queryString = getFedSumSbjAuthLookupQuery(stmt, endPointUrl) ;
 
-		TupleQuery tupleQuery = QuetzalConfig.con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+		TupleQuery tupleQuery = getSummaryConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryString);
 		TupleQueryResult result = tupleQuery.evaluate();
 		while (result.hasNext())
 			sbjAuthorities.add(result.next().getValue("sbjAuth").stringValue());
@@ -986,7 +993,7 @@ public class TBSSSourceSelectionOriginal extends SourceSelection {
 		else
 			p = stmt.getPredicateVar().getName().toString(); 
 		String  queryString = getFedSumObjAuthLookupQuery(stmt, endPointUrl,v) ;
-		TupleQuery tupleQuery = QuetzalConfig.con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+		TupleQuery tupleQuery = getSummaryConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryString);
 		TupleQueryResult result = tupleQuery.evaluate();
 		if (p.equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")) //for rdf:type
 
@@ -1179,14 +1186,15 @@ public class TBSSSourceSelectionOriginal extends SourceSelection {
 		 * @param tasks Set of SPARQL ASK tasks
 		 * @param cache Cache
 		 */
-		public static void run(TBSSSourceSelectionOriginal hibiscusSourceSelection, List<CheckTaskPair> tasks, Cache cache) {
-			new SourceSelectionExecutorWithLatch(hibiscusSourceSelection).executeRemoteSourceSelection(tasks, cache);
+		public static void run(ControlledWorkerScheduler schedule, TBSSSourceSelectionOriginal hibiscusSourceSelection, List<CheckTaskPair> tasks, Cache cache) {
+			new SourceSelectionExecutorWithLatch(schedule, hibiscusSourceSelection).executeRemoteSourceSelection(tasks, cache);
 		}		
 
 		private final TBSSSourceSelectionOriginal sourceSelection;
-		private ControlledWorkerScheduler scheduler = FederationManager.getInstance().getScheduler();
+		private final ControlledWorkerScheduler scheduler;
 
-		private SourceSelectionExecutorWithLatch(TBSSSourceSelectionOriginal hibiscusSourceSelection) {
+		private SourceSelectionExecutorWithLatch(ControlledWorkerScheduler scheduler, TBSSSourceSelectionOriginal hibiscusSourceSelection) {
+		    this.scheduler = scheduler;
 			this.sourceSelection = hibiscusSourceSelection;
 		}
 

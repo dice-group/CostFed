@@ -18,7 +18,8 @@
 package com.fluidops.fedx.evaluation;
 
 import com.fluidops.fedx.Config;
-import com.fluidops.fedx.FederationManager.FederationType;
+import com.fluidops.fedx.FedXConnection;
+import com.fluidops.fedx.FedXConnection.FederationType;
 import com.fluidops.fedx.Util;
 
 /**
@@ -37,13 +38,13 @@ public class EvaluationStrategyFactory {
 	 * @param federationType
 	 * @return
 	 */
-	public static FederationEvalStrategy getEvaluationStrategy(FederationType federationType) {
+	public static FederationEvalStrategy getEvaluationStrategy(FedXConnection conn, FederationType federationType) {
 		
 		switch (federationType) {
-			case LOCAL:		return (FederationEvalStrategy)Util.instantiate(Config.getSailEvaluationStrategy());
+			case LOCAL:		return (FederationEvalStrategy)Util.instantiate(conn.getFederation().getConfig().getSailEvaluationStrategy(), conn);
 			case REMOTE:
 			case HYBRID:
-			default:		return (FederationEvalStrategy)Util.instantiate(Config.getSPARQLEvaluationStrategy());
+			default:		return (FederationEvalStrategy)Util.instantiate(conn.getFederation().getConfig().getSPARQLEvaluationStrategy(), conn);
 		}
 	}
 }

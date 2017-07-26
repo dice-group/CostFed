@@ -20,11 +20,8 @@ package com.fluidops.fedx.monitoring;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.log4j.Layout;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.RollingFileAppender;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fluidops.fedx.structures.QueryInfo;
 
@@ -37,7 +34,7 @@ import com.fluidops.fedx.structures.QueryInfo;
  */
 public class QueryLog
 {
-	public static Logger log = Logger.getLogger(QueryLog.class);
+	public static Logger log = LoggerFactory.getLogger(QueryLog.class);
 	
 	private Logger queryLog;
 	private File queryLogFile = new File("logs", "queryLog.log");
@@ -48,17 +45,17 @@ public class QueryLog
 	}
 	
 	private void initQueryLog() throws IOException {
-		queryLog = Logger.getLogger("QueryBackLog");
-		queryLog.setAdditivity(false);
-		queryLog.setLevel(Level.INFO);
-		queryLog.removeAllAppenders();
+		queryLog = LoggerFactory.getLogger("QueryBackLog");
+		//queryLog.setAdditivity(false);
+		//queryLog.setLevel(Level.INFO);
+		//queryLog.removeAllAppenders();
 		
-		Layout layout = new PatternLayout("%d{yyyy-MM-dd HH:mm:ss}: %m%n");
+		//Layout layout = new PatternLayout("%d{yyyy-MM-dd HH:mm:ss}: %m%n");
 		
-		RollingFileAppender appender = new RollingFileAppender(layout, queryLogFile.getAbsolutePath(), true);
-		appender.setMaxFileSize("1024KB");
-		appender.setMaxBackupIndex(5);
-		queryLog.addAppender(appender);		
+		//RollingFileAppender appender = new RollingFileAppender(layout, queryLogFile.getAbsolutePath(), true);
+		//appender.setMaxFileSize("1024KB");
+		//appender.setMaxBackupIndex(5);
+		//queryLog.addAppender(appender);		
 	}
 	
 	public void logQuery(QueryInfo query) {

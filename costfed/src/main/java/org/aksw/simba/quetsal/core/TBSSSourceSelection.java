@@ -15,20 +15,18 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.aksw.simba.quetsal.configuration.QuetzalConfig;
+import org.aksw.simba.quetsal.configuration.Summary;
 import org.aksw.simba.quetsal.datastructues.HyperGraph.HyperEdge;
 import org.aksw.simba.quetsal.datastructues.HyperGraph.Vertex;
 import org.aksw.simba.quetsal.datastructues.Trie;
 import org.aksw.simba.quetsal.datastructues.TrieNode;
-import org.apache.log4j.Logger;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.algebra.Var;
-import org.openrdf.query.impl.EmptyBindingSet;
-import org.openrdf.repository.RepositoryConnection;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.algebra.Var;
+import org.eclipse.rdf4j.query.impl.EmptyBindingSet;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.fluidops.fedx.FederationManager;
 import com.fluidops.fedx.algebra.EmptyStatementPattern;
 import com.fluidops.fedx.algebra.ExclusiveStatement;
 import com.fluidops.fedx.algebra.StatementSource;
@@ -37,9 +35,7 @@ import com.fluidops.fedx.algebra.StatementSourcePattern;
 import com.fluidops.fedx.cache.Cache;
 import com.fluidops.fedx.cache.Cache.StatementSourceAssurance;
 import com.fluidops.fedx.cache.CacheEntry;
-import com.fluidops.fedx.cache.CacheEntryImpl;
 import com.fluidops.fedx.cache.CacheUtils;
-import com.fluidops.fedx.cache.EndpointEntry;
 import com.fluidops.fedx.evaluation.TripleSource;
 import com.fluidops.fedx.evaluation.concurrent.ControlledWorkerScheduler;
 import com.fluidops.fedx.exception.ExceptionUtil;
@@ -55,11 +51,13 @@ import com.fluidops.fedx.util.QueryStringUtil;
  *
  */
 public class TBSSSourceSelection extends SourceSelection {
-	static Logger log = Logger.getLogger(TBSSSourceSelection.class);
+	static Logger log = LoggerFactory.getLogger(TBSSSourceSelection.class);
 	
 	public Map<HyperEdge, StatementPattern> hyperEdgeToStmt = new HashMap<HyperEdge,StatementPattern>(); //Hyper edges to Triple pattern Map
 	public List<Map<String, Vertex>> theDNFHyperVertices = new ArrayList<Map<String, Vertex>>(); // Maps of vertices in different DNF hypergraphs
 
+	final QuetzalConfig quetzalConfig;
+	
 	///protected final List<StatementPattern> triplePatterns;
 	
 	/**
@@ -70,6 +68,7 @@ public class TBSSSourceSelection extends SourceSelection {
 	 */
 	public TBSSSourceSelection(List<Endpoint> endpoints, Cache cache, QueryInfo queryInfo) {
 		super(endpoints, cache, queryInfo);
+		quetzalConfig = queryInfo.getFederation().getConfig().getExtension();
 	}
 	
 	public List<CheckTaskPair> remoteCheckTasks = new ArrayList<CheckTaskPair>();
@@ -149,7 +148,7 @@ public class TBSSSourceSelection extends SourceSelection {
 				}
 				
 				//-------Step 1 of our source selection---i.e Triple pattern-wise source selection----
-				if (QuetzalConfig.mode == QuetzalConfig.Mode.ASK_DOMINANT)   //---ASK_dominant algo
+				if (quetzalConfig.mode == QuetzalConfig.Mode.ASK_DOMINANT)   //---ASK_dominant algo
 				{
 					if (s == null && p == null && o == null)
 					{
@@ -160,7 +159,7 @@ public class TBSSSourceSelection extends SourceSelection {
 					{
 						if (p.equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type") && o != null) {
 							lookupFedSumClass(stmt, p, o);
-						} else if (!QuetzalConfig.commonPredicates.contains(p) || (s == null && o == null)) {
+						} else if (!quetzalConfig.commonPredicates.contains(p) || (s == null && o == null)) {
 							lookupFedSum(stmt, s /*sa*/, p, o /*oa*/);
 						} else {
 							cache_ASKselection(stmt);
@@ -201,7 +200,7 @@ public class TBSSSourceSelection extends SourceSelection {
 		// if remote checks are necessary, execute them using the concurrency
 		// infrastructure and block until everything is resolved
 		if (remoteCheckTasks.size() > 0) {
-			SourceSelectionExecutorWithLatch.run(this, remoteCheckTasks, cache);
+			SourceSelectionExecutorWithLatch.run(queryInfo.getFederation().getScheduler(), this, remoteCheckTasks, cache);
 		}
 
 		if (log.isDebugEnabled()) {
@@ -326,13 +325,14 @@ public class TBSSSourceSelection extends SourceSelection {
 	 * @param p Predicate
 	 * @param oa Object authority
 	 */
+	/*
 	public void lookupFedSum2(StatementPattern stmt, String sa, String p, String oa) {
 		SubQuery q = new SubQuery(sa, p, oa);
 		CacheEntry ce = cache.getCacheEntry(q);
 		if (ce == null) {
 			ce = new CacheEntryImpl();
 			String  queryString = getFedSumLookupQuery(sa, p, oa) ;
-			TupleQuery tupleQuery = QuetzalConfig.con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+			TupleQuery tupleQuery = quetzalConfig.con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
 			//System.out.println(queryString);
 			TupleQueryResult result = tupleQuery.evaluate();
 
@@ -363,6 +363,7 @@ public class TBSSSourceSelection extends SourceSelection {
 			}
 		}
 	}
+	*/
 	/**
 	 * Get SPARQL query for index lookup
 	 * @param sa Subject Authority
@@ -465,7 +466,7 @@ public class TBSSSourceSelection extends SourceSelection {
 	}
 	
 	public void lookupFedSum(StatementPattern stmt, String s, String p, String o) {
-		Set<String> ids = QuetzalConfig.summary.lookupSources(stmt);
+		Set<String> ids = ((Summary)(queryInfo.getFedXConnection().getSummary())).lookupSources(stmt);
 		if (ids != null && !ids.isEmpty()) {
 			List<StatementSource> sources = stmtToSources.get(stmt);
 			synchronized (sources) {
@@ -483,7 +484,7 @@ public class TBSSSourceSelection extends SourceSelection {
 	 * @param stmt Statement Pattern
 	 */
 	public void lookupFedSumClass(StatementPattern stmt, String p, String o) {
-		Set<String> ids = QuetzalConfig.summary.lookupSources(stmt);
+		Set<String> ids = ((Summary)(queryInfo.getFedXConnection().getSummary())).lookupSources(stmt);
 		if (ids != null && !ids.isEmpty()) {
 			List<StatementSource> sources = stmtToSources.get(stmt);
 			synchronized (sources) {
@@ -494,6 +495,7 @@ public class TBSSSourceSelection extends SourceSelection {
 		}
 	}
 	
+	/*
 	public void lookupFedSumClass2(StatementPattern stmt, String p, String o) {
 		String  queryString = "Prefix ds:<http://aksw.org/quetsal/> "
 				+ "SELECT  Distinct ?url "
@@ -501,7 +503,7 @@ public class TBSSSourceSelection extends SourceSelection {
 				+ " 		?s ds:capability ?cap. "
 				+ "		   ?cap ds:predicate <" + p + ">."
 				+ "?cap ds:objPrefix  <" + o + "> }" ;
-		TupleQuery tupleQuery = QuetzalConfig.con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+		TupleQuery tupleQuery = quetzalConfig.con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
 		TupleQueryResult result = tupleQuery.evaluate();
 		while (result.hasNext())
 		{
@@ -510,6 +512,7 @@ public class TBSSSourceSelection extends SourceSelection {
 			addSource(stmt, new StatementSource(id, StatementSourceType.REMOTE));
 		}
 	}
+	*/
 	
 	//------------------------------------------------------------
 	static class PrefixSets {
@@ -1017,9 +1020,10 @@ public class TBSSSourceSelection extends SourceSelection {
 
 	public Set<String> getFedSumDMatchingSbjAuthorities(StatementPattern stmt, StatementSource src)
 	{
-		return QuetzalConfig.summary.lookupSbjPrefixes(stmt, src.getEndpointID());
+		return ((Summary)(queryInfo.getFedXConnection().getSummary())).lookupSbjPrefixes(stmt, src.getEndpointID());
 	}
 	
+	/*
 	public Set<String> getFedSumDMatchingSbjAuthorities2(StatementPattern stmt, StatementSource src)
 	{
 		String endPointUrl = "http://" + src.getEndpointID().replace("sparql_", "");
@@ -1035,6 +1039,8 @@ public class TBSSSourceSelection extends SourceSelection {
 
 		return sbjAuthorities;
 	}
+	*/
+	
 	/**
 	 *  A SPARQL query to retrieve matching subject authorities for a capable source of a triple pattern
 	 * @param stmt Triple Pattern
@@ -1131,9 +1137,10 @@ public class TBSSSourceSelection extends SourceSelection {
 	 */
 	public Set<String> FedSumD_getMatchingObjAuthorities(StatementPattern stmt, StatementSource src, Vertex v)
 	{
-		return QuetzalConfig.summary.lookupObjPrefixes(stmt, src.getEndpointID());
+		return ((Summary)(queryInfo.getFedXConnection().getSummary())).lookupObjPrefixes(stmt, src.getEndpointID());
 	}
 	
+	/*
 	public Set<String> FedSumD_getMatchingObjAuthorities2(StatementPattern stmt, StatementSource src, Vertex v)
 	{
 		String endPointUrl = "http://"+src.getEndpointID().replace("sparql_", "");
@@ -1178,6 +1185,7 @@ public class TBSSSourceSelection extends SourceSelection {
 		}
 		return objAuthorities;
 	}
+	*/
 	/**
 	 *  A SPARQL query to retrieve matching object authorities for a capable source of a triple pattern
 	 * @param stmt Triple Pattern
@@ -1339,14 +1347,15 @@ public class TBSSSourceSelection extends SourceSelection {
 		 * @param tasks Set of SPARQL ASK tasks
 		 * @param cache Cache
 		 */
-		public static void run(TBSSSourceSelection hibiscusSourceSelection, List<CheckTaskPair> tasks, Cache cache) {
-			new SourceSelectionExecutorWithLatch(hibiscusSourceSelection).executeRemoteSourceSelection(tasks, cache);
+		public static void run(ControlledWorkerScheduler scheduler, TBSSSourceSelection hibiscusSourceSelection, List<CheckTaskPair> tasks, Cache cache) {
+			new SourceSelectionExecutorWithLatch(scheduler, hibiscusSourceSelection).executeRemoteSourceSelection(tasks, cache);
 		}		
 
 		private final TBSSSourceSelection sourceSelection;
-		private ControlledWorkerScheduler scheduler = FederationManager.getInstance().getScheduler();
+		private final ControlledWorkerScheduler scheduler;
 
-		private SourceSelectionExecutorWithLatch(TBSSSourceSelection hibiscusSourceSelection) {
+		private SourceSelectionExecutorWithLatch(ControlledWorkerScheduler scheduler, TBSSSourceSelection hibiscusSourceSelection) {
+		    this.scheduler = scheduler;
 			this.sourceSelection = hibiscusSourceSelection;
 		}
 

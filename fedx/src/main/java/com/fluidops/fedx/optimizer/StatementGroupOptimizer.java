@@ -21,12 +21,13 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-import org.openrdf.query.algebra.QueryModelNode;
-import org.openrdf.query.algebra.Service;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.query.algebra.QueryModelNode;
+import org.eclipse.rdf4j.query.algebra.Service;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.helpers.AbstractQueryModelVisitor;
 
 import com.fluidops.fedx.algebra.EmptyNJoin;
 import com.fluidops.fedx.algebra.EmptyResult;
@@ -50,7 +51,7 @@ import com.fluidops.fedx.util.QueryStringUtil;
  */
 public class StatementGroupOptimizer extends AbstractQueryModelVisitor<OptimizationException> implements FedXOptimizer {
 
-	public static Logger log = Logger.getLogger(StatementGroupOptimizer.class);
+	public static Logger log = LoggerFactory.getLogger(StatementGroupOptimizer.class);
 	
 	protected final QueryInfo queryInfo;
 		

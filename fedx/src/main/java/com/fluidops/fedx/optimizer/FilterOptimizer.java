@@ -21,24 +21,25 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Value;
-import org.openrdf.query.Binding;
-import org.openrdf.query.algebra.And;
-import org.openrdf.query.algebra.Compare;
-import org.openrdf.query.algebra.Filter;
-import org.openrdf.query.algebra.Not;
-import org.openrdf.query.algebra.Or;
-import org.openrdf.query.algebra.Projection;
-import org.openrdf.query.algebra.QueryModelNode;
-import org.openrdf.query.algebra.Service;
-import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.ValueConstant;
-import org.openrdf.query.algebra.ValueExpr;
-import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
-import org.openrdf.query.impl.SimpleBinding;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.query.Binding;
+import org.eclipse.rdf4j.query.algebra.And;
+import org.eclipse.rdf4j.query.algebra.Compare;
+import org.eclipse.rdf4j.query.algebra.Filter;
+import org.eclipse.rdf4j.query.algebra.Not;
+import org.eclipse.rdf4j.query.algebra.Or;
+import org.eclipse.rdf4j.query.algebra.Projection;
+import org.eclipse.rdf4j.query.algebra.QueryModelNode;
+import org.eclipse.rdf4j.query.algebra.Service;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.ValueConstant;
+import org.eclipse.rdf4j.query.algebra.ValueExpr;
+import org.eclipse.rdf4j.query.algebra.Var;
+import org.eclipse.rdf4j.query.algebra.helpers.AbstractQueryModelVisitor;
+import org.eclipse.rdf4j.query.impl.SimpleBinding;
 
 import com.fluidops.fedx.algebra.EmptyResult;
 import com.fluidops.fedx.algebra.FilterExpr;
@@ -55,7 +56,7 @@ import com.fluidops.fedx.exception.OptimizationException;
  */
 public class FilterOptimizer extends AbstractQueryModelVisitor<OptimizationException> implements FedXOptimizer {
 
-	public static Logger log = Logger.getLogger(FilterOptimizer.class);
+	public static Logger log = LoggerFactory.getLogger(FilterOptimizer.class);
 	
 	/* map containing the inserted values, i.e. filter values which could be
 	 * directly replaced into the query

@@ -17,13 +17,13 @@
 
 package com.fluidops.fedx.cache;
 
-import info.aduna.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.openrdf.model.Statement;
+import org.eclipse.rdf4j.model.Statement;
 
 import com.fluidops.fedx.EndpointManager;
 import com.fluidops.fedx.cache.Cache.StatementSourceAssurance;
@@ -52,10 +52,10 @@ public class CacheEntryImpl implements CacheEntry{
 					( entry.doesProvideStatements() ? StatementSourceAssurance.HAS_REMOTE_STATEMENTS : StatementSourceAssurance.NONE );
 	}
 
-	@Override
-	public List<Endpoint> getEndpoints() {
-		return EndpointManager.getEndpointManager().getEndpoints(entries.keySet());
-	}
+//	@Override
+//	public List<Endpoint> getEndpoints() {
+//		return EndpointManager.getEndpointManager().getEndpoints(entries.keySet());
+//	}
 
 	@Override
 	public CloseableIteration<? extends Statement, Exception> getStatements() {

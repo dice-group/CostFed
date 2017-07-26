@@ -23,19 +23,19 @@ import com.fluidops.fedx.structures.Endpoint.EndpointType;
 public class TripleSourceFactory
 {
 
-	public static TripleSource tripleSourceFor(Endpoint e, EndpointType t) {
+	public static TripleSource tripleSourceFor(FederationEvalStrategy strategy, Endpoint e, EndpointType t) {
 		switch (t)
 		{
 		case NativeStore:
-			return new SailTripleSource(e);
+			return new SailTripleSource(strategy, e);
 		case SparqlEndpoint:
-			return new SparqlTripleSource(e);
+			return new SparqlTripleSource(strategy, e);
 		case RemoteRepository:
-			return new SparqlTripleSource(e);
+			return new SparqlTripleSource(strategy, e);
 		case Other:
-			return new SparqlTripleSource(e);
+			return new SparqlTripleSource(strategy, e);
 		default:
-			return new SparqlTripleSource(e);
+			return new SparqlTripleSource(strategy, e);
 		}
 	}
 }

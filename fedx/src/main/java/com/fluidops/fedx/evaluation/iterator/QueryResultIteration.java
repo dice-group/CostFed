@@ -17,13 +17,12 @@
 
 package com.fluidops.fedx.evaluation.iterator;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.AbstractCloseableIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.AbstractCloseableIteration;
 
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
 
-import com.fluidops.fedx.FederationManager;
 import com.fluidops.fedx.QueryManager;
 import com.fluidops.fedx.structures.QueryInfo;
 
@@ -64,7 +63,7 @@ public class QueryResultIteration extends AbstractCloseableIteration<BindingSet,
 			return true;
 		else {
 			// inform the query manager that this query is done
-			FederationManager.getInstance().getQueryManager().finishQuery(queryInfo);
+		    queryInfo.getQueryManager().finishQuery(queryInfo);
 			return false;
 		}
 	}
@@ -74,7 +73,7 @@ public class QueryResultIteration extends AbstractCloseableIteration<BindingSet,
 		try {
 			BindingSet next = inner.next();
 			if (next==null)
-				FederationManager.getInstance().getQueryManager().finishQuery(queryInfo);
+			    queryInfo.getQueryManager().finishQuery(queryInfo);
 			return next;
 		} catch (QueryEvaluationException e){
 			abortQuery();
@@ -99,7 +98,7 @@ public class QueryResultIteration extends AbstractCloseableIteration<BindingSet,
 	 * Abort the query in the schedulers if it is still running.
 	 */
 	protected void abortQuery() {
-		QueryManager qm = FederationManager.getInstance().getQueryManager();
+		QueryManager qm = queryInfo.getQueryManager();
 		if (qm.isRunning(queryInfo))
 			qm.abortQuery(queryInfo);
 	}

@@ -19,10 +19,11 @@ package com.fluidops.fedx.evaluation.join;
 
 import java.util.concurrent.Callable;
 
-import org.apache.log4j.Logger;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.TupleExpr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
 
 import com.fluidops.fedx.evaluation.FederationEvalStrategy;
 import com.fluidops.fedx.evaluation.concurrent.Async;
@@ -30,9 +31,9 @@ import com.fluidops.fedx.evaluation.iterator.BufferedCloseableIterator;
 import com.fluidops.fedx.evaluation.iterator.QueueIterator;
 import com.fluidops.fedx.structures.QueryInfo;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.EmptyIteration;
-import info.aduna.iteration.LookAheadIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.EmptyIteration;
+import org.eclipse.rdf4j.common.iteration.LookAheadIteration;
 
 
 /**
@@ -46,7 +47,7 @@ import info.aduna.iteration.LookAheadIteration;
  */
 public abstract class JoinExecutorBase<T> extends LookAheadIteration<T, QueryEvaluationException> {
 
-	static Logger log = Logger.getLogger(JoinExecutorBase.class);
+	static Logger log = LoggerFactory.getLogger(JoinExecutorBase.class);
 	
 	protected static int NEXT_JOIN_ID = 1;
 	
@@ -122,7 +123,7 @@ public abstract class JoinExecutorBase<T> extends LookAheadIteration<T, QueryEva
 				return;
 			}
 			//log.info("join: " + res.getClass().toString());
-			if (res instanceof org.openrdf.http.client.BackgroundTupleResult) {
+			if (res instanceof org.eclipse.rdf4j.query.resultio.helpers.BackgroundTupleResult) {
 				rightQueue.add_release(new BufferedCloseableIterator<T, QueryEvaluationException>(res));
 			} else {
 				rightQueue.add_release(res);

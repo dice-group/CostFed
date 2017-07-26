@@ -2,13 +2,13 @@ package com.fluidops.fedx.evaluation.concurrent;
 
 import java.util.concurrent.Callable;
 
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
 
 import com.fluidops.fedx.algebra.FedXService;
 import com.fluidops.fedx.evaluation.FederationEvalStrategy;
 
-import info.aduna.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 
 public class ParallelServiceTask implements Callable<CloseableIteration<BindingSet, QueryEvaluationException>> {
 	

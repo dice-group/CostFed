@@ -28,10 +28,10 @@ public class MonitoringFactory
 	 * 
 	 * @return
 	 */
-	public static Monitoring createMonitoring() {
+	public static Monitoring createMonitoring(Config config) {
 		
-		if (Config.getConfig().isEnableMonitoring())
-			return new MonitoringImpl();
+		if (config.isEnableMonitoring())
+			return new MonitoringImpl(config);
 		return new NoopMonitoringImpl();
 	}
 }
