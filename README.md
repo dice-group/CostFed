@@ -2,7 +2,10 @@
  
  CostFed is an index-assisted federation engine for federated SPARQL query processing over multiple SPARQL endpoints. CostFed makes use of statistical information collected from endpoints to perform efficient source selection and cost-based query planning. In contrast to the state of the art, it relies on a non-linear model for the estimation of the selectivity of joins. Therewith, it is able to generate better plans than the state-of-the-art federation engines. In an experimental evaluation based on FedBench benchmark, we show
 that CostFed is 3 to 121 times faster than the state of the art SPARQL endpoint federation engines. 
-
+## Live Demo (For ISWC 2017)
+The SQCFramework live demo comprise the following two main applications:
+  The endpoint manager is is available [here](http://136.243.47.194:7070/costfed-web/#/). 
+  The query formulator/executer is availble [here](http://136.243.47.194:7070/rdf4j-workbench/repositories/costfed/query)
 ### How to Run CostFed?
 * Checkout: the source code and import as new maven project. it will create three sub-projects, i.e, costfed, fex, and semagrow-bench. 
 * Create Index: Since CostFed is an index-assisted appraoch, the first step is to generate an index for all the endpoints in hand. The index generation, updation is given costfed/src/main/java/org/aksw/simba/quetsal/util/TBSSSummariesGenerator.java. Note for FedBench, LargeRDFBench, the index is already given at costfed/summaries/sum-localhost.n3. 
