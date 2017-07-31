@@ -4,7 +4,7 @@
 that CostFed is 3 to 121 times faster than the state of the art SPARQL endpoint federation engines. 
 ## Live Demo (For ISWC 2017)
 The SQCFramework live demo comprise the following two main applications:
- * The endpoint manager is is available [here](http://monitor.costfed.aksw.org). Using endpoint manager you can select the endpoints to be included in the federation. Also it allows to create/update CostFed's indexes. 
+ * The endpoint manager is is available [here](http://manager.costfed.aksw.org). Using endpoint manager you can select the endpoints to be included in the federation. Also it allows to create/update CostFed's indexes. 
  * The query formulator/executer is availble [here](http://costfed.aksw.org). This is the main interface which allows executing both federated and non-federated queries. 
 ### How to Run CostFed?
 * Checkout: the source code and import as new maven project. it will create three sub-projects, i.e, costfed, fex, and semagrow-bench. 
