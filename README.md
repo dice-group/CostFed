@@ -6,6 +6,8 @@ that CostFed is 3 to 121 times faster than the state of the art SPARQL endpoint 
 The SQCFramework live demo comprise the following two main applications:
  * The endpoint manager is is available [here](http://manager.costfed.aksw.org). Using endpoint manager you can select the endpoints to be included in the federation. Also it allows to create/update CostFed's indexes. 
  * The query formulator/executer is availble [here](http://costfed.aksw.org). This is the main interface which allows executing both federated and non-federated queries. 
+ 
+ To help user, we provided some federated queries [here](http://costfed.aksw.org/rdf4j-workbench/repositories/costfed/saved-queries) from FedBench and LargeRDFBench which can be directly executed. 
 ### How to Run CostFed?
 * Checkout: the source code and import as new maven project. it will create three sub-projects, i.e, costfed, fex, and semagrow-bench. 
 * Create Index: Since CostFed is an index-assisted appraoch, the first step is to generate an index for all the endpoints in hand. The index generation, updation is given costfed/src/main/java/org/aksw/simba/quetsal/util/TBSSSummariesGenerator.java. Note for FedBench, LargeRDFBench, the index is already given at costfed/summaries/sum-localhost.n3. 
