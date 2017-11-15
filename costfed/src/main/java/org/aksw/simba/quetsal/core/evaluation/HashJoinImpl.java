@@ -170,8 +170,6 @@ public class HashJoinImpl extends RestartableLookAheadIteration<BindingSet> {
 			int gotRecs = 0;
 			int putRecs = 0;
 			
-
-			
 			while (res.hasNext() && !isClosed()) {
 				if (true || runCount.get() > 1) {
 					buff.clear();
@@ -227,7 +225,7 @@ public class HashJoinImpl extends RestartableLookAheadIteration<BindingSet> {
 
 		@Override
 		public void exception(Exception e) {
-			log.warn("Error executing union operator: " + e.getMessage());
+			log.warn("Error executing hash operator: " + e.getMessage());
 			resultQueue.add(e);
 		}
 	}

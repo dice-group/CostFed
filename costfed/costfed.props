@@ -16,8 +16,8 @@ endpointProviderClass=org.aksw.simba.quetsal.configuration.EndpointListFromDirec
 quetzal.mode=ASK_DOMINANT
 quetzal.inputCommonPredThreshold=0.33
 #quetzal.fedSummaries=summaries/sum-localhost.n3
-quetzal.fedSummaries=d:\\projects\\costfed\\summaries
-quetzal.endpoints=d:\\projects\\costfed\\endpoints
+quetzal.fedSummaries=d:\\projects\\costfed\\sake-summaries
+quetzal.endpoints=d:\\projects\\costfed\\sake-endpoints
 
 statementGroupOptimizerClass=org.aksw.simba.quetsal.core.JoinOrderOptimizer
 #prefixDeclarations

@@ -54,7 +54,7 @@ public class QueryEvaluation {
 		//String queries = "S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 C1 C2 C3 C4 C6 C7 C8 C9 C10"; //"C1 C3 C5 C6 C7 C8 C9 C10 L1 L2 L3 L4 L5 L6 L7 L8";
 		//String queries = "S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 C1 C2 C3 C6 C7 C8 C9 C10";
 		//String queries = "S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 C1 C2 C3 C4 C6 C7 C8 C9 C10";
-		String queries = "S1"; // S3 C6 C2
+		String queries = "SAKE2"; // S3 C6 C2
 		
 		List<String> endpointsMin = Arrays.asList(
 			 "http://" + host + ":8890/sparql",
@@ -105,9 +105,14 @@ public class QueryEvaluation {
 			 "http://" + host + ":8899/sparql"
 		);
 
-		List<String> endpoints = endpointsMin;
+		List<String> endpointsSake = Arrays.asList(
+		        "http://144.76.166.111:8900/sparql",
+		        "http://144.76.166.111:8901/sparql"
+		);
 		
-		Map<String, List<List<Object>>> reports = multyEvaluate(queries, 3, cfgName, endpoints);
+		List<String> endpoints = endpointsSake;
+		
+		Map<String, List<List<Object>>> reports = multyEvaluate(queries, 1, cfgName, endpoints);
 	
 		for (Map.Entry<String, List<List<Object>>> e : reports.entrySet())
 		{
@@ -154,7 +159,7 @@ public class QueryEvaluation {
 			
 			    while (res.hasNext()) {
 			    	BindingSet row = res.next();
-			    	//System.out.println(count+": "+ row);
+			    	System.out.println(count+": "+ row);
 			    	count++;
 			    }
 			  

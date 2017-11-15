@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
@@ -15,8 +16,17 @@ import org.aksw.simba.quetsal.datastructues.Pair;
 import org.aksw.simba.quetsal.datastructues.Trie2;
 import org.aksw.simba.quetsal.datastructues.Tuple2;
 import org.aksw.simba.quetsal.datastructues.Tuple3;
+import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.impl.NoConnectionReuseStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.BasicClientConnectionManager;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.eclipse.rdf4j.http.client.util.HttpClientBuilders;
@@ -52,7 +62,30 @@ public class SummaryGenerator {
         httpClientBuilder.setMaxConnTotal(10);
         httpClientBuilder.setMaxConnPerRoute(5);
         //httpClientBuilder.setConnectionReuseStrategy(new NoConnectionReuseStrategy());
+        
+        //httpClientBuilder.setConnectionManager(HttpClientConnectionManager)
+        //org.apache.http.client.config.RequestConfig req = org.apache.http.client.config.RequestConfig.custom();
+        //.setContentCompressionEnabled(false).build();
+        //httpClientBuilder.setDefaultRequestConfig(req);
+        
+        
+        ////////////////////
+        //RegistryBuilder<ConnectionSocketFactory> socketFactoryRegistryBuilder = RegistryBuilder.create();
+        //socketFactoryRegistryBuilder = socketFactoryRegistryBuilder.setConnectionManagerSchemeHttp(socketFactoryRegistryBuilder);
+        //socketFactoryRegistryBuilder = setConnectionManagerSchemeHttps(socketFactoryRegistryBuilder);
+        //final HttpClientConnectionManager connectionManager = new BasicHttpClientConnectionManager(); //PoolingHttpClientConnectionManager();//socketFactoryRegistryBuilder.build());
+        //final HttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();//socketFactoryRegistryBuilder.build());
+        
+
+        //httpClientBuilder.setConnectionManager(connectionManager);
+        //final ClientConfig config = new ClientConfig();
+        
         httpClient = httpClientBuilder.build();
+        //httpClient.
+        //httpClientBuilder.set
+        
+        
+        //httpClient.getParams().setParameter("http.protocol.version", HttpVersion.HTTP_1_0);
     }
     
     // repository management
@@ -184,6 +217,14 @@ public class SummaryGenerator {
         return sb.toString();
     }
     
+    static boolean hasNext(TupleQueryResult r) {
+        try {
+            return r.hasNext();
+        } catch (Exception e) {
+            log.warn("exception during the hasNext call", e);
+            return false;
+        }
+    }
     /**
      * Write all the distinct subject prefixes  for triples with predicate p. 
      * @param predicate  Predicate
@@ -218,7 +259,7 @@ public class SummaryGenerator {
         {
             rc = 0;
             StringBuilder qb = new StringBuilder();
-            qb.append("SELECT ?s count(?o) as ?oc");
+            qb.append("SELECT ?s (count(?o) as ?oc)");
             if (null != graph) {
                 qb.append(" FROM <").append(graph).append('>');
             }
@@ -229,7 +270,7 @@ public class SummaryGenerator {
                 TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, qb.toString()); 
                 TupleQueryResult res = query.evaluate();
                 
-                while (res.hasNext()) 
+                while (hasNext(res)) 
                 {
                     ++rc;
                     BindingSet bs = res.next();
@@ -262,8 +303,7 @@ public class SummaryGenerator {
             try {
                 TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, qb.toString()); 
                 TupleQueryResult res = query.evaluate();
-                
-                while (res.hasNext()) 
+                while (hasNext(res)) 
                 {
                     ++rc;
                     BindingSet bs = res.next();
