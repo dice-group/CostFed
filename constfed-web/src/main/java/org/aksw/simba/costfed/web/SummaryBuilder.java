@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 public class SummaryBuilder {
     static Logger log = LoggerFactory.getLogger(SummaryBuilder.class);
     
-    private final static int GENERATOR_THREAD_COUNT = 4;
+    private final static int GENERATOR_THREAD_COUNT = 1;
     private final static int branchLimit = 4;
     
     static class GeneratorDescriptor implements ProgressListener, Runnable
