@@ -14,7 +14,7 @@ package org.aksw.simba.quetsal.core;
 // * @author saleem
 // *
 // */
-//public class DAWTriplePatternRanking {
+public class DAWTriplePatternRanking {
 ///**
 // * Single Triple pattern shource ranking and Skipping. 
 // * Note that the selectivity multiplication to the MIPs vectors are pre computed. 
@@ -66,4 +66,4 @@ package org.aksw.simba.quetsal.core;
 //		}
 //		while(hshMipsV.size()>0);	
 //		}
-//	}
+}
