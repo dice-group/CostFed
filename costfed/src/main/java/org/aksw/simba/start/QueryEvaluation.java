@@ -152,7 +152,8 @@ public class QueryEvaluation {
 			
 			try {
 				repo = FedXFactory.initializeSparqlFederation(config, endpoints);
-				TupleQuery query = repo.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, curQuery); 
+				TupleQuery query = repo.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, curQuery);
+				
 			   	long startTime = System.currentTimeMillis();
 			   	res = query.evaluate();
 			    long count = 0;

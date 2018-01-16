@@ -47,6 +47,10 @@ public class Version {
 	protected static String productName = "fluid FedX";
 	
     
+	static String getValue(String val, String defaultVal) {
+	    return val != null ? val : defaultVal;
+	}
+	
 	static {
 		
 		try {
@@ -58,14 +62,14 @@ public class Version {
 				
 				Manifest buildManifest = jar.getManifest();
 	    	    if(buildManifest!=null) {
-	    	    	project = buildManifest.getMainAttributes().getValue("project");
-	    	    	date = buildManifest.getMainAttributes().getValue("date");
-	    	        longVersion = buildManifest.getMainAttributes().getValue("version");
-	    	        build =  buildManifest.getMainAttributes().getValue("build");		// roughly svn version
-	    	        version = buildManifest.getMainAttributes().getValue("ProductVersion");
-	    	        contact =  buildManifest.getMainAttributes().getValue("ProductContact");  	       
-	    	        companyName = buildManifest.getMainAttributes().getValue("CompanyName");
-	    	        productName = buildManifest.getMainAttributes().getValue("ProductName");
+	    	    	project = getValue(buildManifest.getMainAttributes().getValue("project"), project);
+	    	    	date = getValue(buildManifest.getMainAttributes().getValue("date"), date);
+	    	        longVersion = getValue(buildManifest.getMainAttributes().getValue("version"), longVersion);
+	    	        build =  getValue(buildManifest.getMainAttributes().getValue("build"), build);		// roughly svn version
+	    	        version = getValue(buildManifest.getMainAttributes().getValue("ProductVersion"), version);
+	    	        contact =  getValue(buildManifest.getMainAttributes().getValue("ProductContact"), contact);  	       
+	    	        companyName = getValue(buildManifest.getMainAttributes().getValue("CompanyName"), companyName);
+	    	        productName = getValue(buildManifest.getMainAttributes().getValue("ProductName"), productName);
 	    	    }
 	    	    
 	    	    jar.close();

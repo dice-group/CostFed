@@ -68,7 +68,7 @@ public class CostFedSummaryProvider implements SummaryProvider {
                 watchKey = null;
             }
             
-            File file = new File(path);
+            File file = new File(path).getCanonicalFile();
             if (file.isDirectory()) {
                 Path dir = Paths.get(path);
                 watchKey = dir.register(watcher, java.nio.file.StandardWatchEventKinds.ENTRY_CREATE, java.nio.file.StandardWatchEventKinds.ENTRY_DELETE, java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY);
