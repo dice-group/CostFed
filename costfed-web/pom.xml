@@ -18,6 +18,7 @@
 	    <version>2.3</version>
 	    <configuration>
                 <warSourceDirectory>web</warSourceDirectory>
+                <failOnMissingWebXml>false</failOnMissingWebXml>
             </configuration>
          </plugin>
          <plugin>

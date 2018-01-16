@@ -4,6 +4,11 @@
   <artifactId>CostFed</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
+
+  <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
   <build>
     <plugins>
         <plugin>
@@ -45,7 +50,9 @@
   <modules>
         <module>fedx</module>
         <module>costfed</module>
+        <!-- 
         <module>semagrow-bench</module>
+         -->
         <module>costfed-web</module>
   </modules>
 </project>
