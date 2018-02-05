@@ -26,13 +26,16 @@ import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
+
 import com.fluidops.fedx.Config;
 import com.fluidops.fedx.FedXFactory;
 import com.fluidops.fedx.structures.QueryInfo;
 
 
+
 public class FeasibleQueryEvalaution {
-	
+	protected static final Logger log = LoggerFactory.getLogger(FeasibleQueryEvalaution.class);
 	/**
 	 * write results into file
 	 */
@@ -59,10 +62,9 @@ public static void main(String[] args) throws Exception
 	List<String> endpoints = loadEndpoints();
 	String cfgName = "costfed.props";
 	Config config = new Config(cfgName);
-	SailRepository repo = null;
-	repo = FedXFactory.initializeSparqlFederation(config, endpoints);
-		
-		System.out.println("Repo is initialized with all endpoints..."); 
+	SailRepository repo = FedXFactory.initializeSparqlFederation(config, endpoints);
+	SailRepositoryConnection con = repo.getConnection();
+	//	System.out.println("Repo is initialized with all endpoints..."); 
 //	String results = "D:/BigRDFBench/completeness_correctness/results.n3";
    // ResultsLoader.loadResults(results);
 	//SailRepository repo = FedXFactory.initializeSparqlFederation(endpoints);
@@ -88,13 +90,17 @@ public static void main(String[] args) throws Exception
 	{
 	System.out.println(i+":-------------------------------------\n"+queries[i].replace("\n", " "));
 	bw.write(i+":-------------------------------------\n"+queries[i].replace("\n", " ")+"\n");
-	long sTime = System.currentTimeMillis();
-	TupleQuery query = repo.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queries[i]); 
+	
+	Runtime.getRuntime().gc();
+	TupleQueryResult res = null;
+	 System.out.println("Resultset iterator is set to null...");
+	 long sTime = System.currentTimeMillis();
+	TupleQuery query = con.prepareTupleQuery(QueryLanguage.SPARQL, queries[i]); 
 	
       long count = 0;
-    //  query.setMaxQueryTime((int) (timeout/1000));
+      query.setMaxQueryTime((int) (timeout/1000));
        try{
-    TupleQueryResult res = query.evaluate();
+     res = query.evaluate();
     //
  //   if(args[0].equals("-qr")){
    
@@ -105,7 +111,7 @@ public static void main(String[] args) throws Exception
 	  //  bw.write(count +": "+res.next()+"\n");
 		count++;
 	}
-      } catch(Exception ex){ System.err.println(" error in running query. processing bypassed .."+ex.getMessage()); bw.write(" error in running query. processing bypassed ..\n"); }
+      } catch(Exception ex){ log.error(" error in running query. processing by-passed ..",ex); bw.write(" error in running query. processing by-passed but the query has most probably zero results due to empty statement pattern.\n"); }
   System.out.println("Total Number of Records: " + count ); 
   bw.write("Total Number of Records: " + count+"\n");
   long runTime =System.currentTimeMillis()-sTime;
@@ -154,7 +160,7 @@ public static void main(String[] args) throws Exception
 	
 
 	}
-private static List<String> loadEndpoints() throws IOException {
+public static List<String> loadEndpoints() throws IOException {
 	List<String> endpoints = new ArrayList<String>();
 	BufferedReader br = new BufferedReader(new FileReader("endpoints"));
 	String line;
