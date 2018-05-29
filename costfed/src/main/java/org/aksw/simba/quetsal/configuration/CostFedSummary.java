@@ -575,7 +575,7 @@ public class CostFedSummary implements Summary {
 	@Override
 	public Set<String> lookupSbjPrefixes(StatementPattern stmt, String eid) {
 		String subject = asUrlValue(stmt.getSubjectVar().getValue());
-		if (subject != null) throw new RuntimeException("internal error: subject is not null");
+		//if (subject != null) throw new RuntimeException("internal error: subject is not null");
 		String object = asUrlValue(stmt.getObjectVar().getValue());
 		String predicate = asUrlValue(stmt.getPredicateVar().getValue());
 		if (predicate != null) {
