@@ -45,6 +45,7 @@ import com.fluidops.fedx.evaluation.iterator.QueueIteration;
 import com.fluidops.fedx.evaluation.iterator.SingleBindingSetIteration;
 import com.fluidops.fedx.evaluation.join.ControlledWorkerBoundJoin;
 import com.fluidops.fedx.exception.IllegalQueryException;
+import com.fluidops.fedx.structures.Pair;
 import com.fluidops.fedx.structures.QueryInfo;
 import com.fluidops.fedx.util.QueryStringUtil;
 
@@ -186,14 +187,11 @@ public class SparqlFederationEvalStrategy extends FederationEvalStrategy {
 			ExclusiveGroup group, RepositoryConnection conn,
 			TripleSource tripleSource, BindingSet bindings)
 	{
-		
-		Boolean isEvaluated = false;
-			
 		try  {
-			String preparedQuery = QueryStringUtil.selectQueryString(group, bindings, group.getFilterExpr(), isEvaluated);
-			// in order to avoid licking http route while iteration
+			Pair<String, Boolean> preparedQuery = QueryStringUtil.selectQueryString(group, bindings, group.getFilterExpr());
+			// in order to avoid leaking http route while iteration
 			return new BufferedCloseableIterator<BindingSet, QueryEvaluationException>(
-				tripleSource.getStatements(preparedQuery, conn, bindings, (isEvaluated ? null : group.getFilterExpr()))
+				tripleSource.getStatements(preparedQuery.getFirst(), conn, bindings, (preparedQuery.getSecond() ? null : group.getFilterExpr()))
 			);
 		} catch (IllegalQueryException e) {
 			/* no projection vars, e.g. local vars only, can occur in joins */

@@ -1,4 +1,4 @@
-package org.aksw.simba.quetsal.datastructues;
+package com.fluidops.fedx.structures;
 
 public class Pair<FirstT, SecondT> {
 	FirstT first;

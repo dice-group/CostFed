@@ -51,6 +51,7 @@ import com.fluidops.fedx.evaluation.SparqlFederationEvalStrategyWithValues;
 import com.fluidops.fedx.evaluation.iterator.BoundJoinVALUESConversionIteration;
 import com.fluidops.fedx.exception.FilterConversionException;
 import com.fluidops.fedx.exception.IllegalQueryException;
+import com.fluidops.fedx.structures.Pair;
 
 /**
  * Various static functions for query handling and parsing.
@@ -141,7 +142,7 @@ public class QueryStringUtil {
 	 * @throws IllegalQueryException
 	 * 				if the query does not have any free variables
 	 */
-	public static String selectQueryString( FedXStatementPattern stmt, BindingSet bindings, FilterValueExpr filterExpr, Boolean evaluated) throws IllegalQueryException {
+	public static Pair<String, Boolean> selectQueryString( FedXStatementPattern stmt, BindingSet bindings, FilterValueExpr filterExpr) throws IllegalQueryException {
 		
 		Set<String> varNames = new HashSet<String>();
 		String s = constructStatement(stmt, varNames, bindings);
@@ -160,6 +161,7 @@ public class QueryStringUtil {
 			res.append(" ?").append(var);
 		
 		res.append(" WHERE { ").append(s);
+		boolean evaluated = false;
 		
 		if (filterExpr!=null) {
 			try {
@@ -173,7 +175,7 @@ public class QueryStringUtil {
 	
 		res.append(" }");
 		
-		return res.toString();		
+		return new Pair<String, Boolean>(res.toString(), evaluated);
 	}
 	
 	/**
@@ -193,7 +195,7 @@ public class QueryStringUtil {
 	 * @throws IllegalQueryException 
 	 * 
 	 */
-	public static String selectQueryString( ExclusiveGroup group, BindingSet bindings, FilterValueExpr filterExpr, Boolean evaluated) throws IllegalQueryException  {
+	public static Pair<String, Boolean> selectQueryString( ExclusiveGroup group, BindingSet bindings, FilterValueExpr filterExpr) throws IllegalQueryException  {
 		
 		StringBuilder sb = new StringBuilder();
 		Set<String> varNames = new HashSet<String>();
@@ -216,6 +218,8 @@ public class QueryStringUtil {
 		
 		res.append(" WHERE { ").append(sb);
 		
+		boolean evaluated = false;
+		
 		if (filterExpr!=null) {
 			try {
 				String filter = FilterUtils.toSparqlString(filterExpr);
@@ -228,7 +232,7 @@ public class QueryStringUtil {
 		
 		res.append(" }");
 		
-		return res.toString();
+		return new Pair<String, Boolean>(res.toString(), evaluated);
 	}
 
 	/**

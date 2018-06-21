@@ -30,6 +30,7 @@ import com.fluidops.fedx.evaluation.TripleSource;
 import com.fluidops.fedx.evaluation.iterator.SingleBindingSetIteration;
 import com.fluidops.fedx.exception.IllegalQueryException;
 import com.fluidops.fedx.structures.Endpoint;
+import com.fluidops.fedx.structures.Pair;
 import com.fluidops.fedx.structures.QueryInfo;
 import com.fluidops.fedx.util.QueryStringUtil;
 
@@ -70,11 +71,9 @@ public class ExclusiveStatement extends FedXStatementPattern {
 		 */			
 	
 		if (t.usePreparedQuery()) {
-			
-			Boolean isEvaluated = false;	// is filter evaluated
-			String preparedQuery;
+			Pair<String, Boolean> preparedQuery;
 			try {
-				preparedQuery = QueryStringUtil.selectQueryString(this, bindings, filterExpr, isEvaluated);
+				preparedQuery = QueryStringUtil.selectQueryString(this, bindings, filterExpr);
 			} catch (IllegalQueryException e1) {
 				// TODO there might be an issue with filters being evaluated => investigate
 				/* all vars are bound, this must be handled as a check query, can occur in joins */
@@ -83,7 +82,7 @@ public class ExclusiveStatement extends FedXStatementPattern {
 				return new EmptyIteration<BindingSet, QueryEvaluationException>();
 			}
 					
-			return t.getStatements(preparedQuery, ownedConnection, bindings, (isEvaluated ? null : filterExpr) );
+			return t.getStatements(preparedQuery.getFirst(), ownedConnection, bindings, (preparedQuery.getSecond() ? null : filterExpr) );
 		} else {
 			return t.getStatements(this, ownedConnection, bindings, filterExpr);
 		}

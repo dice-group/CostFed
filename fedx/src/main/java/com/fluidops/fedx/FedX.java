@@ -94,7 +94,7 @@ public class FedX implements Sail {
         httpClientBuilder.setMaxConnPerRoute(config.getMaxHttpConnectionCountPerRoute());
 
         //httpClientBuilder.evictExpiredConnections();
-        httpClientBuilder.setConnectionReuseStrategy(new NoConnectionReuseStrategy());
+        //httpClientBuilder.setConnectionReuseStrategy(new NoConnectionReuseStrategy());
         //httpClientBuilder.setConnectionTimeToLive(1000, TimeUnit.MILLISECONDS);
         //httpClientBuilder.disableAutomaticRetries();
 

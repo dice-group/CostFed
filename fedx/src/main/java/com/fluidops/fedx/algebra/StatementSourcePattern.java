@@ -35,6 +35,7 @@ import com.fluidops.fedx.evaluation.union.ParallelUnionTask;
 import com.fluidops.fedx.evaluation.union.WorkerUnionBase;
 import com.fluidops.fedx.exception.IllegalQueryException;
 import com.fluidops.fedx.structures.Endpoint;
+import com.fluidops.fedx.structures.Pair;
 import com.fluidops.fedx.structures.QueryInfo;
 import com.fluidops.fedx.util.QueryStringUtil;
 
@@ -64,8 +65,7 @@ public class StatementSourcePattern extends FedXStatementPattern {
 		if (bindings == null) return new EmptyIteration<BindingSet, QueryEvaluationException>();
 		
 		try {
-			Boolean isEvaluated = false;	// is filter evaluated in prepared query
-			String preparedQuery = null;	// used for some triple sources
+			Pair<String, Boolean> preparedQuery = null;	// used for some triple sources
 			WorkerUnionBase<BindingSet> union = queryInfo.getFedXConnection().createWorkerUnion(queryInfo);
 			
 			for (StatementSource source : sources) {
@@ -85,14 +85,14 @@ public class StatementSourcePattern extends FedXStatementPattern {
 					// queryString needs to be constructed only once for a given bindingset
 					if (preparedQuery==null) {
 						try {
-							preparedQuery = QueryStringUtil.selectQueryString(this, bindings, filterExpr, isEvaluated);
+							preparedQuery = QueryStringUtil.selectQueryString(this, bindings, filterExpr);
 						} catch (IllegalQueryException e1) {
 							/* all vars are bound, this must be handled as a check query, can occur in joins */
 							return handleStatementSourcePatternCheck(bindings, sources);
 						}
 					}
 
-					union.addTask(new ParallelPreparedUnionTask(preparedQuery, t, ownedEndpoint, bindings, (isEvaluated ? null : filterExpr)));
+					union.addTask(new ParallelPreparedUnionTask(preparedQuery.getFirst(), t, ownedEndpoint, bindings, (preparedQuery.getSecond() ? null : filterExpr)));
 					
 				} else {
 					union.addTask(new ParallelUnionTask(this, t, ownedEndpoint, bindings, filterExpr));

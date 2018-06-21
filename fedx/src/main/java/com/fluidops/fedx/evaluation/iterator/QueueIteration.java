@@ -82,7 +82,7 @@ public class QueueIteration<E> extends RestartableLookAheadIteration<E> {
 
 		@Override
 		public void exception(Exception e) {
-			log.warn("Error executing queue operator: " + e.getMessage());
+			log.warn("Error executing queue operator", e);
 			resultQueue.add(e);
 		}
 		

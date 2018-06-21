@@ -22,8 +22,10 @@ import java.util.List;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.eclipse.rdf4j.query.algebra.And;
 import org.eclipse.rdf4j.query.algebra.Compare;
+import org.eclipse.rdf4j.query.algebra.Regex;
 import org.eclipse.rdf4j.query.algebra.ValueConstant;
 import org.eclipse.rdf4j.query.algebra.ValueExpr;
 import org.eclipse.rdf4j.query.algebra.Var;
@@ -124,18 +126,26 @@ public class FilterUtils {
 	}
 	
 	protected static void append(ValueExpr expr, StringBuilder sb) throws FilterConversionException {
-		
 		if (expr instanceof Compare) {
 			append((Compare)expr, sb);
 		} else if (expr instanceof Var) {
 			append((Var)expr, sb);
 		} else if (expr instanceof ValueConstant) {
 			append((ValueConstant)expr, sb);
+		} else if (expr instanceof Regex) {
+		    append((Regex)expr, sb);
 		} else {
 			// TODO add more!
 			throw new FilterConversionException("Expression type not supported, fallback to sesame evaluation: " + expr.getClass().getCanonicalName());
 		}
-		
+	}
+	
+	protected static void append(Regex re, StringBuilder sb) throws FilterConversionException {
+	    sb.append("REGEX (");
+	    append(re.getLeftArg(), sb);
+	    sb.append(",");
+	    append(re.getRightArg(), sb);
+	    sb.append(" )");
 	}
 	
 	protected static void append(Compare cmp, StringBuilder sb) throws FilterConversionException {
@@ -178,17 +188,15 @@ public class FilterUtils {
 	}
 
 	protected static StringBuilder appendLiteral(StringBuilder sb, Literal lit) {
-		sb.append('\'');
+		sb.append('"');
 		sb.append(lit.getLabel().replace("\"", "\\\""));
-		sb.append('\'');
+		sb.append('"');
 
 		if (lit.getLanguage() != null && lit.getLanguage().isPresent()) {
 			sb.append('@');
 			sb.append(lit.getLanguage());
-		}
-
-		if (lit.getDatatype() != null) {
-			sb.append("^^<");
+		} else if (!XMLSchema.STRING.equals(lit.getDatatype()) && lit.getDatatype() != null) {
+		    sb.append("^^<");
 			sb.append(lit.getDatatype().stringValue());
 			sb.append('>');
 		}

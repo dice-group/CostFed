@@ -99,6 +99,8 @@ public class FedXConnection extends AbstractSailConnection {
 		this.federation = federation;
 		this.endpoints = endpoints;
 		this.summary = summary;
+	
+		updateStrategy();
 		
 		for (Endpoint endpoint : endpoints) {
             try {
@@ -110,8 +112,6 @@ public class FedXConnection extends AbstractSailConnection {
         }
 		
 		endpointManager = new EndpointManager(endpoints);
-		
-		updateStrategy();
 	}
 
 	public FedX getFederation() {
@@ -567,4 +567,10 @@ public class FedXConnection extends AbstractSailConnection {
 			// we do not need this in FedX
 		}
 	}
+
+    @Override
+    public boolean pendingRemovals() {
+        // TODO Auto-generated method stub
+        return false;
+    }
 }

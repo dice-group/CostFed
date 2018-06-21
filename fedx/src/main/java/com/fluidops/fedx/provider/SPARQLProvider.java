@@ -53,7 +53,7 @@ public class SPARQLProvider implements EndpointProvider {
 		try {
 			SPARQLRepository repo = new SPARQLRepository(repoInfo.getLocation());
 			if (httpClient != null) {
-			    repo.setHttpClient(httpClient);
+			    // repo.setHttpClient(httpClient);
 			}
 			repo.initialize();
 			
