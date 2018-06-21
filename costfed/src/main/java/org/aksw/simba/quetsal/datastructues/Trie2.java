@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fluidops.fedx.structures.Pair;
+
 public class Trie2 {
 	public static class Node {
 		long hits = 0;

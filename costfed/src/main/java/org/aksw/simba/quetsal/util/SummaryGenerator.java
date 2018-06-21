@@ -12,7 +12,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.aksw.simba.quetsal.datastructues.Pair;
 import org.aksw.simba.quetsal.datastructues.Trie2;
 import org.aksw.simba.quetsal.datastructues.Tuple2;
 import org.aksw.simba.quetsal.datastructues.Tuple3;
@@ -29,6 +28,9 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fluidops.fedx.structures.Pair;
+
 import org.eclipse.rdf4j.http.client.util.HttpClientBuilders;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Value;

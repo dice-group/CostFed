@@ -20,7 +20,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.aksw.simba.quetsal.datastructues.Pair;
 import org.aksw.simba.quetsal.datastructues.Trie;
 import org.aksw.simba.quetsal.datastructues.Trie2;
 import org.aksw.simba.quetsal.datastructues.TrieNode;
@@ -33,6 +32,9 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fluidops.fedx.structures.Pair;
+
 import org.eclipse.rdf4j.http.client.util.HttpClientBuilders;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Value;
@@ -198,12 +200,12 @@ public class TBSSSummariesGenerator {
 		);
 
 		List<String> endpointsTest = Arrays.asList(
-			 "http://" + host + ":8895/sparql"
-			 //,
-			 //"http://" + host + ":8891/sparql"
+			   "http://" + host + ":8890/sparql"
+			 , "http://" + host + ":8891/sparql"
+			 , "http://" + host + ":8892/sparql"
 			 //,
 				///*
-			 //"http://" + host + ":8892/sparql",
+			 //
 			 //"http://" + host + ":8893/sparql"
 			 //,
 			 //"http://" + host + ":8894/sparql"
@@ -223,10 +225,15 @@ public class TBSSSummariesGenerator {
 			 //*/
 		);
 		
-		//List<String> endpoints = endpointsTest;
-		List<String> endpoints = endpointsMin2;
+		List<String> endpointsExt = Arrays.asList(
+		        "http://" + host + ":8887/sparql"
+		);
+		
+		List<String> endpoints = endpointsExt;
+		//List<String> endpoints = endpointsMin2;
 		//String outputFile = "summaries/sumX-localhost5.n3";
-		String outputFile = "summaries/sum-localhost.n3";
+		//String outputFile = "summaries/sum-localhost.n3";
+		String outputFile = "summaries/sum-localhost_ext.n3";
 		//String namedGraph = "http://aksw.org/fedbench/";  //can be null. in that case all graph will be considered 
 		String namedGraph = null;
 		TBSSSummariesGenerator generator = new TBSSSummariesGenerator(outputFile);
@@ -340,15 +347,15 @@ public class TBSSSummariesGenerator {
 	public String generateSummary(String endpoint, String graph, int branchLimit, int dsnum) throws Exception
 	{
 		long totalTrpl = 0;
+		log.info("getting distinct subject count");
 		long totalSbj = getDistinctSubjectCount(endpoint);
-		long totalObj = getDistinctObjectCount(endpoint);
-		
-		StringBuilder sb = new StringBuilder();
-		
-		List<String> lstPred = getPredicates(endpoint, graph);
 		log.info("total distinct subjects: "+ totalSbj + " for endpoint: " + endpoint);
-		log.info("total distinct predicates: "+ lstPred.size() + " for endpoint: " + endpoint);
+		long totalObj = getDistinctObjectCount(endpoint);
 		log.info("total distinct objects: "+ totalObj + " for endpoint: " + endpoint);
+		List<String> lstPred = getPredicates(endpoint, graph);
+        log.info("total distinct predicates: "+ lstPred.size() + " for endpoint: " + endpoint);
+        
+		StringBuilder sb = new StringBuilder();
 		
 		sb.append("#---------------------"+endpoint+" Summaries-------------------------------\n");
 		sb.append("[] a ds:Service ;\n");

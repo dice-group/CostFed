@@ -1,4 +1,4 @@
-cacheLocation=d:\\projects\\costfed\\cache.db
+cacheLocation=k:\\projects\\costfed\\cache.db
 workerThreads=20
 boundJoinBlockSize=20
 enforceMaxQueryTime=30
@@ -15,9 +15,9 @@ endpointProviderClass=org.aksw.simba.quetsal.configuration.EndpointListFromDirec
 #quetzal.mode=INDEX_DOMINANT
 quetzal.mode=ASK_DOMINANT
 quetzal.inputCommonPredThreshold=0.33
-#quetzal.fedSummaries=summaries/sum-localhost.n3
-quetzal.fedSummaries=d:\\projects\\costfed\\sake-summaries
-quetzal.endpoints=d:\\projects\\costfed\\sake-endpoints
+quetzal.fedSummaries=summaries/sum-localhost.n3
+#quetzal.fedSummaries=k:\\projects\\costfed\\sake-summaries
+#quetzal.endpoints=C:\\Users\\Saleem\\Downloads\\CostFed-master\\costfed\\endpoints
 
 statementGroupOptimizerClass=org.aksw.simba.quetsal.core.JoinOrderOptimizer
 #prefixDeclarations
@@ -30,5 +30,5 @@ debugWorkerScheduler=false
 debugQueryPlan=false
 
 # http client related config
-maxHttpConnectionCount=50
-maxHttpConnectionCountPerRoute=50
+maxHttpConnectionCount=30
+maxHttpConnectionCountPerRoute=30
