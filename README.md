@@ -7,7 +7,7 @@ The CostFed live demo comprise the following two main applications:
  * The endpoint manager is is available [here](http://manager.costfed.aksw.org). Using endpoint manager you can select the endpoints to be included in the federation. Also it allows to create/update CostFed's indexes. 
  * The query formulator/executer is availble [here](http://costfed.aksw.org). This is the main interface which allows executing both federated and non-federated queries. 
  
- The start CostFed-web and create your own local demo, the Dockerfile can be downloaded from here [https://github.com/dice-group/CostFed/blob/master/Dokerfile]
+ The start CostFed-web and create your own local demo, the Dockerfile can be downloaded from here[https://github.com/dice-group/CostFed/blob/master/Dokerfile]
  
  To help user, we provided some federated queries [here](http://costfed.aksw.org/rdf4j-workbench/repositories/costfed/saved-queries) from FedBench and LargeRDFBench which can be directly executed. 
 ### How to Run CostFed?
