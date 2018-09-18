@@ -44,11 +44,11 @@ We have compared 5 - [FedX](https://www.mpi-inf.mpg.de/~khose/publications/ISWC2
 
 ### Authors
 
- * [Muhammad Saleem](https://sites.google.com/site/saleemsweb/) (AKSW, University of Leipzig) 
+* [Muhammad Saleem](https://sites.google.com/site/saleemsweb/) (AKSW, University of Leipzig) 
 * Alexander Potocki (AKSW, University of Leipzig) 
-  * [Tommaso Soru](http://tommaso-soru.it/) (AKSW, University of Leipzig)
-  * [Olaf Hartig](http://olafhartig.de/) (Linköping University, Sweden)
-  * [Axel-Cyrille Ngonga Ngomo](http://aksw.org/AxelNgonga.html) (AKSW, University of Leipzig)
+* [Tommaso Soru](http://tommaso-soru.it/) (AKSW, University of Leipzig)
+* [Olaf Hartig](http://olafhartig.de/) (Linköping University, Sweden)
+* [Axel-Cyrille Ngonga Ngomo](http://aksw.org/AxelNgonga.html) (AKSW, University of Leipzig)
  
 We are especially thankful to Andreas Schwarte (fluid Operations, Germany), Olaf Görlitz (University Koblenz, Germany), and Angelos Charalambidis	(Institute of Informatics and Telecommunication, Paraskevi, Greece) for all their email conversations, feedbacks, and explanations. 	
 
