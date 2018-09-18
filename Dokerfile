@@ -1,0 +1,17 @@
+FROM tomcat:7-jre8
+
+WORKDIR /tmp
+RUN wget -q http://mirror.switch.ch/eclipse/rdf4j/eclipse-rdf4j-2.3.2-sdk.zip && unzip eclipse-rdf4j-2.3.2-sdk.zip 'eclipse-rdf4j-*/war/*' -d /tmp
+RUN wget -q https://repo1.maven.org/maven2/com/google/code/gson/gson/2.8.1/gson-2.8.1.jar
+RUN cp gson-2.8.1.jar /usr/local/tomcat/lib/
+RUN cp eclipse-rdf4j-2.3.2/war/rdf4j-server.war /usr/local/tomcat/webapps/
+RUN cp eclipse-rdf4j-2.3.2/war/rdf4j-workbench.war /usr/local/tomcat/webapps/
+
+COPY costfed-web/target/costfed-web-0.0.1-SNAPSHOT.war /usr/local/tomcat/webapps/costfed-web.war
+COPY costfed-web/setenv.sh /usr/local/tomcat/bin
+
+RUN mkdir -p /usr/local/tomcat/costfed_data/endpoints
+RUN mkdir -p /usr/local/tomcat/costfed_data/errors
+RUN mkdir -p /usr/local/tomcat/costfed_data/summaries
+
+RUN rm -rf /tmp/*
