@@ -2,6 +2,10 @@
  
  CostFed is an index-assisted federation engine for federated SPARQL query processing over multiple SPARQL endpoints. CostFed makes use of statistical information collected from endpoints to perform efficient source selection and cost-based query planning. In contrast to the state of the art, it relies on a non-linear model for the estimation of the selectivity of joins. Therewith, it is able to generate better plans than the state-of-the-art federation engines. In an experimental evaluation based on FedBench benchmark, we show
 that CostFed is 3 to 121 times faster than the state of the art SPARQL endpoint federation engines. 
+### Citation
+
+Saleem, M., Potocki, A., Soru, T., Hartig, O. and Ngomo, A.C.N., 2018. CostFed: Cost-based query optimization for SPARQL endpoint federation. Semantics 2018, Procedia Computer Science, 137, pp.163-174.
+
 ## Live Demo
 The CostFed live demo comprise the following two main applications:
  * The endpoint manager is is available [here](http://manager.costfed.aksw.org). Using endpoint manager you can select the endpoints to be included in the federation. Also it allows to create/update CostFed's indexes. 
@@ -41,6 +45,11 @@ All the datasets and corresponding virtuoso SPARQL endpoints can be downloaded f
 We have compared 5 - [FedX](https://www.mpi-inf.mpg.de/~khose/publications/ISWC2011.pdf ), [SPLENDID](http://ceur-ws.org/Vol-782/GoerlitzAndStaab_COLD2011.pdf ), [ANAPSID](http://link.springer.com/chapter/10.1007%2F978-3-642-25073-6_2#page-1 ), [SemaGrow](http://dl.acm.org/citation.cfm?id=2814886),
 [HiBISUCuS](http://svn.aksw.org/papers/2014/HiBISCuS_ESWC/public.pdf) - state-of-the-art SPARQL endpoint federation systems with CostFed. Our complete evaluation results can be downloaded from [here](https://github.com/AKSW/CostFed/blob/master/Results.xlsx). 
  
+### 
+Recent Virtuoso public SPARQL endpoints (version 7 and above ) do not support SPARQL ASK queries to be sent gia RDF4J api, if you encounter such error then please make the following changes in the code 
+
+package package com.fluidops.fedx.evaluation;
+We need to go to go public class SparqlTripleSource class and change the boolean to false private boolean useASKQueries = false;
 
 ### Authors
 
