@@ -14,6 +14,7 @@ The CostFed live demo comprise the following two main applications:
  The start CostFed-web and create your own local demo, the Dockerfile can be downloaded from [here](https://github.com/dice-group/CostFed/blob/master/Dokerfile)
  
  To help user, we provided some federated queries [here](http://costfed.aksw.org/rdf4j-workbench/repositories/costfed/saved-queries) from FedBench and LargeRDFBench which can be directly executed. 
+
 ### How to Run CostFed?
 * Checkout: the source code and import as new maven project. it will create three sub-projects, i.e, costfed, fex, and semagrow-bench. 
 * Create Index: Since CostFed is an index-assisted appraoch, the first step is to generate an index for all the endpoints in hand. The index generation, updation is given costfed/src/main/java/org/aksw/simba/quetsal/util/TBSSSummariesGenerator.java. Note for FedBench, LargeRDFBench, the index is already given at costfed/summaries/sum-localhost.n3. 
@@ -45,7 +46,8 @@ All the datasets and corresponding virtuoso SPARQL endpoints can be downloaded f
 We have compared 5 - [FedX](https://www.mpi-inf.mpg.de/~khose/publications/ISWC2011.pdf ), [SPLENDID](http://ceur-ws.org/Vol-782/GoerlitzAndStaab_COLD2011.pdf ), [ANAPSID](http://link.springer.com/chapter/10.1007%2F978-3-642-25073-6_2#page-1 ), [SemaGrow](http://dl.acm.org/citation.cfm?id=2814886),
 [HiBISUCuS](http://svn.aksw.org/papers/2014/HiBISCuS_ESWC/public.pdf) - state-of-the-art SPARQL endpoint federation systems with CostFed. Our complete evaluation results can be downloaded from [here](https://github.com/AKSW/CostFed/blob/master/Results.xlsx). 
  
-### 
+### SPARQL ASK queries Error with Virtuoso
+
 Recent Virtuoso public SPARQL endpoints (version 7 and above ) do not support SPARQL ASK queries to be sent gia RDF4J api, if you encounter such error then please make the following changes in the code 
 
 package package com.fluidops.fedx.evaluation;
